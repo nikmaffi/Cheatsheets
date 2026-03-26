@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COBOL CHEATSHEET — TERMINALE v2.0</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+  :root {
+    --bg:        #05031a;
+    --bg2:       #080525;
+    --panel:     #0b073a;
+    --panel2:    #0e0940;
+    --border:    #1a1060;
+    --border2:   #2a1a80;
+    --glow:      #4422cc;
+    --glow2:     #6633ff;
+    --dim:       #2a1a70;
+    --text:      #b0a0f8;
+    --text2:     #d0c8ff;
+    --bright:    #e8e0ff;
+    --accent:    #8866ff;
+    --accent2:   #aa88ff;
+    --key:       #6644dd;
+    --kw:        #cc99ff;
+    --str:       #99ccff;
+    --num:       #ffcc77;
+    --cmt:       #557799;
+    --lbl:       #ff9966;
+    --head:      #cc88ff;
+    --hr:        #1e1266;
+    --scan:      rgba(100,60,255,0.04);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* CRT scanlines overlay */
+  body::before {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scan) 2px,
+      var(--scan) 4px
+    );
+    pointer-events:none;
+    z-index:9999;
+  }
+
+  /* CRT vignette */
+  body::after {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: radial-gradient(ellipse at center,
+      transparent 60%,
+      rgba(0,0,10,0.7) 100%
+    );
+    pointer-events:none;
+    z-index:9998;
+  }
+
+  /* ─── HEADER ─────────────────────────────────── */
+  #header {
+    background: linear-gradient(180deg, #0d0840 0%, var(--bg2) 100%);
+    border-bottom: 2px solid var(--glow);
+    padding: 18px 24px 14px;
+    position: sticky; top:0; z-index:100;
+    box-shadow: 0 0 30px rgba(68,34,204,0.5);
+  }
+
+  #header h1 {
+    font-family: 'VT323', monospace;
+    font-size: 2.4rem;
+    color: var(--bright);
+    text-shadow: 0 0 12px var(--glow2), 0 0 30px var(--glow);
+    letter-spacing: 3px;
+  }
+
+  #header .subtitle {
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  #header .subtitle span { color: var(--accent); }
+
+  /* ─── LAYOUT ─────────────────────────────────── */
+  #layout { display:flex; gap:0; }
+
+  /* ─── SIDEBAR / INDEX ────────────────────────── */
+  #sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    position: sticky;
+    top: 70px;
+    padding: 12px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow) var(--bg);
+  }
+
+  #sidebar::-webkit-scrollbar { width:5px; }
+  #sidebar::-webkit-scrollbar-track { background: var(--bg); }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--glow); border-radius:3px; }
+
+  .nav-head {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    color: var(--accent2);
+    padding: 6px 14px 4px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px var(--glow);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .nav-section {
+    margin-bottom: 2px;
+  }
+
+  .nav-section-title {
+    color: var(--kw);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 6px 14px 2px;
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  #sidebar a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: 3px 14px 3px 20px;
+    font-size: 11.5px;
+    transition: all 0.12s;
+    border-left: 2px solid transparent;
+  }
+
+  #sidebar a::before { content:'> '; color:var(--dim); }
+
+  #sidebar a:hover {
+    color: var(--bright);
+    background: rgba(100,60,255,0.12);
+    border-left-color: var(--accent);
+    text-shadow: 0 0 6px var(--glow2);
+  }
+
+  /* ─── MAIN CONTENT ───────────────────────────── */
+  #main {
+    flex:1;
+    padding: 20px 28px 60px;
+    overflow-x: hidden;
+    max-width: calc(100vw - 240px);
+  }
+
+  /* ─── SECTION ────────────────────────────────── */
+  .section {
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--panel2);
+    box-shadow: 0 0 18px rgba(20,10,80,0.6);
+    overflow: hidden;
+  }
+
+  .section-header {
+    background: linear-gradient(90deg, var(--glow) 0%, var(--panel) 100%);
+    padding: 7px 14px;
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: var(--bright);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--glow2);
+    border-bottom: 1px solid var(--border2);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .section-header .icon { opacity:0.7; font-size:0.95rem; }
+
+  .section-body { padding: 12px 14px; }
+
+  /* ─── SUB-SECTION ────────────────────────────── */
+  .sub {
+    margin: 10px 0;
+  }
+
+  .sub-title {
+    color: var(--lbl);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    border-bottom: 1px dashed var(--hr);
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ─── CODE BLOCKS ────────────────────────────── */
+  pre, code {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  pre {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--glow);
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text2);
+    border-radius: 1px;
+    margin: 6px 0;
+    white-space: pre;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow) var(--bg);
+  }
+
+  pre::-webkit-scrollbar { height:4px; }
+  pre::-webkit-scrollbar-track { background:var(--bg); }
+  pre::-webkit-scrollbar-thumb { background:var(--glow); }
+
+  .kw   { color: var(--kw);    }
+  .str  { color: var(--str);   }
+  .num  { color: var(--num);   }
+  .cmt  { color: var(--cmt);   font-style: italic; }
+  .lbl  { color: var(--lbl);   }
+  .hd   { color: var(--head);  font-weight:bold; }
+  .dim  { color: var(--dim);   }
+
+  /* ─── TABLES ──────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 6px 0;
+  }
+
+  th {
+    background: rgba(68,34,180,0.35);
+    color: var(--accent2);
+    text-align: left;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  td {
+    padding: 4px 8px;
+    border: 1px solid var(--hr);
+    vertical-align: top;
+    color: var(--text2);
+  }
+
+  tr:nth-child(even) td { background: rgba(20,10,60,0.3); }
+  tr:hover td { background: rgba(68,34,180,0.15); }
+
+  td code, th code {
+    color: var(--str);
+    background: rgba(0,0,0,0.25);
+    padding: 1px 4px;
+    border-radius: 1px;
+  }
+
+  /* ─── INLINE ──────────────────────────────────── */
+  p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
+
+  .note {
+    background: rgba(68,34,100,0.2);
+    border-left: 3px solid var(--lbl);
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: var(--text);
+  }
+
+  .warn {
+    background: rgba(100,20,20,0.2);
+    border-left: 3px solid #ff4444;
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: #ffaaaa;
+  }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+  @media(max-width:900px) {
+    .grid2, .grid3 { grid-template-columns:1fr; }
+    #sidebar { display:none; }
+    #main { max-width:100vw; padding:14px; }
+  }
+
+  /* Cursor blink */
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  .cursor::after { content:'█'; animation:blink 1s infinite; color:var(--accent); }
+
+  /* anchor offset for sticky header */
+  .anchor { display:block; height:70px; margin-top:-70px; visibility:hidden; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>◈ COBOL REFERENCE MANUAL <span class="cursor"></span></h1>
+  <div class="subtitle">GnuCOBOL 3.x — <span>COMPLETE CHEATSHEET</span> — COMPILATO DA DEREK BANAS + ESTENSIONI</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">◈ INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Struttura</div>
+    <a href="#s-structure">Struttura Programma</a>
+    <a href="#s-divisions">Le 4 Divisioni</a>
+    <a href="#s-format">Source Format</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Dati</div>
+    <a href="#s-picture">PIC / PICTURE</a>
+    <a href="#s-levels">Level Numbers</a>
+    <a href="#s-constants">Costanti & Figurative</a>
+    <a href="#s-comp">COMP / USAGE Clause</a>
+    <a href="#s-compx">COMP-X Dettaglio</a>
+    <a href="#s-edited">Edited Pictures</a>
+    <a href="#s-redefines">REDEFINES</a>
+    <a href="#s-level88">Level 88 / Condition Names</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Operazioni</div>
+    <a href="#s-move">MOVE</a>
+    <a href="#s-math">Aritmetica</a>
+    <a href="#s-strings">Stringhe</a>
+    <a href="#s-inspect">INSPECT</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Controllo</div>
+    <a href="#s-if">IF / EVALUATE</a>
+    <a href="#s-perform">PERFORM / Loop</a>
+    <a href="#s-goto">GO TO</a>
+    <a href="#s-paragraphs">Paragrafi & Sezioni</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Tabelle</div>
+    <a href="#s-tables">Tabelle (Array)</a>
+    <a href="#s-search">SEARCH</a>
+    <a href="#s-sort">SORT / MERGE</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">File I/O</div>
+    <a href="#s-files-seq">File Sequenziali</a>
+    <a href="#s-files-idx">File Indexed</a>
+    <a href="#s-reports">Report Writer</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Subprog.</div>
+    <a href="#s-call">CALL / Subroutine</a>
+    <a href="#s-call-static">CALL STATIC</a>
+    <a href="#s-call-lib">Librerie & Syscall</a>
+    <a href="#s-oo">OO COBOL</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Interop C</div>
+    <a href="#s-ctypes">C → COBOL Tipi</a>
+    <a href="#s-cstruct">struct/enum/puntatori</a>
+    <a href="#s-carrays">array/matrici/stringhe C</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Screen</div>
+    <a href="#s-screen">Screen Section</a>
+    <a href="#s-accept-display">ACCEPT/DISPLAY Avanz.</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Compilazione</div>
+    <a href="#s-compile">Compilare con cobc</a>
+    <a href="#s-multi">Multi-sorgente</a>
+    <a href="#s-libs">Librerie Esterne</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Funzioni</div>
+    <a href="#s-intrinsic">Funzioni Intrinseche</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ─── STRUTTURA PROGRAMMA ───────────────────────────────────── -->
+<a class="anchor" id="s-structure"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRUTTURA DEL PROGRAMMA</div>
+  <div class="section-body">
+    <p>Un programma COBOL è strutturato gerarchicamente: <b>Program → Division → Section → Paragraph → Sentence → Statement</b>.</p>
+    <pre><span class="cmt">*> Template minimo GnuCOBOL</span>
+       <span class="hd">&gt;&gt;SOURCE FORMAT FREE</span>
+
+<span class="hd">IDENTIFICATION DIVISION.</span>
+<span class="kw">PROGRAM-ID.</span>   nome-programma.
+<span class="kw">AUTHOR.</span>       Nome Autore.
+<span class="kw">DATE-WRITTEN.</span> 01 Jan 2025.
+
+<span class="hd">ENVIRONMENT DIVISION.</span>
+<span class="kw">CONFIGURATION SECTION.</span>
+<span class="kw">SPECIAL-NAMES.</span>
+    <span class="cmt">*> Classificazioni personalizzate</span>
+<span class="kw">INPUT-OUTPUT SECTION.</span>
+<span class="kw">FILE-CONTROL.</span>
+    <span class="cmt">*> Associazione file</span>
+
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">FILE SECTION.</span>
+    <span class="cmt">*> Descrittori FD/SD</span>
+<span class="kw">WORKING-STORAGE SECTION.</span>
+    <span class="cmt">*> Variabili globali del programma</span>
+<span class="kw">LOCAL-STORAGE SECTION.</span>
+    <span class="cmt">*> Variabili locali (reinizializzate ad ogni CALL)</span>
+<span class="kw">LINKAGE SECTION.</span>
+    <span class="cmt">*> Parametri passati da programma chiamante</span>
+<span class="kw">SCREEN SECTION.</span>
+    <span class="cmt">*> Definizioni schermi interattivi</span>
+
+<span class="hd">PROCEDURE DIVISION</span> [<span class="kw">USING</span> param1 param2] [<span class="kw">RETURNING</span> ret].
+    <span class="cmt">*> Logica del programma</span>
+    <span class="kw">STOP RUN.</span></pre>
+  </div>
+</div>
+
+<!-- ─── LE 4 DIVISIONI ────────────────────────────────────────── -->
+<a class="anchor" id="s-divisions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LE 4 DIVISIONI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Divisione</th><th>Scopo</th><th>Sezioni principali</th></tr>
+      <tr><td><code>IDENTIFICATION</code></td><td>Metadati del programma</td><td>PROGRAM-ID, AUTHOR, DATE-WRITTEN, SECURITY</td></tr>
+      <tr><td><code>ENVIRONMENT</code></td><td>Ambiente HW/SW, file</td><td>CONFIGURATION, INPUT-OUTPUT</td></tr>
+      <tr><td><code>DATA</code></td><td>Definizione dati</td><td>FILE, WORKING-STORAGE, LOCAL-STORAGE, LINKAGE, SCREEN</td></tr>
+      <tr><td><code>PROCEDURE</code></td><td>Logica elaborazione</td><td>Paragrafi, Sezioni, Statements</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ─── SOURCE FORMAT ─────────────────────────────────────────── -->
+<a class="anchor" id="s-format"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SOURCE FORMAT — COLONNE</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Fixed Format (default)</div>
+        <table>
+          <tr><th>Col.</th><th>Uso</th></tr>
+          <tr><td>1-6</td><td>Numero sequenza (punch card)</td></tr>
+          <tr><td>7</td><td><code>*</code> commento, <code>-</code> continuazione, <code>/</code> form feed</td></tr>
+          <tr><td>8-11</td><td>Area A: DIVISION, SECTION, FD, livello 01/77</td></tr>
+          <tr><td>12-72</td><td>Area B: istruzioni, livelli 02-49</td></tr>
+          <tr><td>73-80</td><td>Identificazione (ignorato)</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="sub-title">Free Format (raccomandato)</div>
+        <pre><span class="hd">&gt;&gt;SOURCE FORMAT FREE</span>   <span class="cmt">*&gt; riga 1</span>
+<span class="cmt">*> o in alternativa:</span>
+<span class="dim">cobc -free ...</span></pre>
+        <div class="note">Con FREE non ci sono vincoli di colonna. I commenti usano <code>*&gt;</code> ovunque nella riga.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PICTURE CLAUSE ───────────────────────────────────────── -->
+<a class="anchor" id="s-picture"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PIC / PICTURE CLAUSE</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Simbolo</th><th>Significato</th><th>Esempio</th><th>Note</th></tr>
+      <tr><td><code>9</code></td><td>Cifra numerica (0-9)</td><td><code>PIC 9(4)</code></td><td>4 cifre intere</td></tr>
+      <tr><td><code>X</code></td><td>Qualsiasi carattere</td><td><code>PIC X(20)</code></td><td>Stringa alfanumerica</td></tr>
+      <tr><td><code>A</code></td><td>Solo lettere e spazi</td><td><code>PIC A(10)</code></td><td>Alfabetico</td></tr>
+      <tr><td><code>S</code></td><td>Segno (±)</td><td><code>PIC S9(4)</code></td><td>Prefix, non occupa byte extra a meno di SIGN SEPARATE</td></tr>
+      <tr><td><code>V</code></td><td>Punto decimale virtuale</td><td><code>PIC 9(4)V99</code></td><td>Non memorizza il punto fisicamente</td></tr>
+      <tr><td><code>P</code></td><td>Scaling position</td><td><code>PIC 9PPP</code></td><td>Moltiplicazione/divisione per 10<sup>n</sup></td></tr>
+      <tr><td><code>N</code></td><td>DBCS national char</td><td><code>PIC N(10)</code></td><td>Caratteri nazionali (DBCS)</td></tr>
+      <tr><td><code>1</code></td><td>Bit (boolean)</td><td><code>PIC 1</code></td><td>Con USAGE BIT</td></tr>
+    </table>
+
+    <div class="grid2" style="margin-top:10px">
+      <div>
+        <div class="sub-title">Esempi PIC</div>
+        <pre><span class="num">01</span> Nome        <span class="kw">PIC X(30)</span>  <span class="kw">VALUE</span> <span class="str">"Mario"</span>.
+<span class="num">01</span> Eta         <span class="kw">PIC 99</span>     <span class="kw">VALUE</span> <span class="num">0</span>.
+<span class="num">01</span> Stipendio   <span class="kw">PIC 9(6)V99</span> <span class="kw">VALUE ZEROS</span>.
+<span class="num">01</span> Temperatura <span class="kw">PIC S9(3)V9</span>.
+<span class="num">01</span> Codice      <span class="kw">PIC X(8)</span>.
+<span class="num">01</span> Lettera     <span class="kw">PIC A</span>      <span class="kw">VALUE</span> <span class="str">'A'</span>.</pre>
+      </div>
+      <div>
+        <div class="sub-title">PIC con SIGN</div>
+        <pre><span class="cmt">*> Segno incorporato (default)</span>
+<span class="num">01</span> N1 <span class="kw">PIC S9(4)</span>.
+<span class="cmt">*> Segno come carattere separato</span>
+<span class="num">01</span> N2 <span class="kw">PIC S9(4) SIGN LEADING SEPARATE</span>.
+<span class="num">01</span> N3 <span class="kw">PIC S9(4) SIGN TRAILING SEPARATE</span>.
+<span class="cmt">*> +0012  oppure  0012+</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LEVEL NUMBERS ────────────────────────────────────────── -->
+<a class="anchor" id="s-levels"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LEVEL NUMBERS</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Livello</th><th>Uso</th></tr>
+      <tr><td><code>01</code></td><td>Record (Group item o Elementary item)</td></tr>
+      <tr><td><code>02-49</code></td><td>Campi subordinati (Group o Elementary)</td></tr>
+      <tr><td><code>66</code></td><td>RENAMES — rinomina range di campi</td></tr>
+      <tr><td><code>77</code></td><td>Elementary item standalone (non in gruppo)</td></tr>
+      <tr><td><code>78</code></td><td>Costante (GnuCOBOL: <code>78 PI VALUE 3.14159</code>)</td></tr>
+      <tr><td><code>88</code></td><td>Condition name — valori speciali per condizioni booleane</td></tr>
+    </table>
+    <pre><span class="num">01</span> Cliente.
+   <span class="num">02</span> IDCliente    <span class="kw">PIC 9(5)</span>.
+   <span class="num">02</span> NomeCliente.
+       <span class="num">03</span> Cognome  <span class="kw">PIC X(20)</span>.
+       <span class="num">03</span> Nome     <span class="kw">PIC X(20)</span>.
+   <span class="num">02</span> DataNascita.
+       <span class="num">03</span> Giorno   <span class="kw">PIC 99</span>.
+       <span class="num">03</span> Mese     <span class="kw">PIC 99</span>.
+       <span class="num">03</span> Anno     <span class="kw">PIC 9(4)</span>.
+<span class="cmt">*> FILLER: campo senza nome (placeholder)</span>
+   <span class="num">02</span> <span class="kw">FILLER</span>       <span class="kw">PIC X(5)</span> <span class="kw">VALUE SPACES</span>.
+
+<span class="cmt">*> CONSTANT (GnuCOBOL)</span>
+<span class="num">01</span> MAX-SIZE     <span class="kw">CONSTANT AS</span> <span class="num">100</span>.
+<span class="num">78</span> PI-VALUE     <span class="kw">VALUE</span> <span class="num">3.14159265</span>.
+
+<span class="cmt">*> RENAMES (66)</span>
+<span class="num">01</span> DataRec.
+   <span class="num">02</span> Anno  <span class="kw">PIC 9(4)</span>.
+   <span class="num">02</span> Mese  <span class="kw">PIC 99</span>.
+   <span class="num">02</span> Giorno <span class="kw">PIC 99</span>.
+<span class="num">66</span> MeseGiorno <span class="kw">RENAMES</span> Mese <span class="kw">THRU</span> Giorno.</pre>
+  </div>
+</div>
+
+<!-- ─── COSTANTI E FIGURATIVE ─────────────────────────────────── -->
+<a class="anchor" id="s-constants"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COSTANTI E FIGURATIVE CONSTANTS</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <table>
+          <tr><th>Figurativa</th><th>Significato</th></tr>
+          <tr><td><code>ZERO / ZEROS / ZEROES</code></td><td>Tutti i byte a zero ('0' per PIC 9, ' ' per PIC X non è zero)</td></tr>
+          <tr><td><code>SPACE / SPACES</code></td><td>Tutti i caratteri = spazio</td></tr>
+          <tr><td><code>HIGH-VALUE / HIGH-VALUES</code></td><td>Valore massimo del tipo (x'FF')</td></tr>
+          <tr><td><code>LOW-VALUE / LOW-VALUES</code></td><td>Valore minimo del tipo (x'00')</td></tr>
+          <tr><td><code>QUOTE / QUOTES</code></td><td>Carattere doppio apice</td></tr>
+          <tr><td><code>ALL "x"</code></td><td>Ripete il carattere x fino a riempire</td></tr>
+          <tr><td><code>NULL / NULLS</code></td><td>Puntatore null (per USAGE POINTER)</td></tr>
+        </table>
+      </div>
+      <div>
+        <pre><span class="kw">MOVE ZEROS  TO</span> Stipendio.
+<span class="kw">MOVE SPACES TO</span> Nome.
+<span class="kw">MOVE HIGH-VALUES TO</span> EOF-Flag.
+<span class="kw">MOVE ALL</span> <span class="str">"*"</span> <span class="kw">TO</span> SeparatorLine.
+<span class="cmt">*> Letterali numerici e alfanumerici</span>
+<span class="kw">MOVE</span> <span class="num">42</span>      <span class="kw">TO</span> Numero.
+<span class="kw">MOVE</span> <span class="str">"ciao"</span>  <span class="kw">TO</span> Testo.
+<span class="kw">MOVE</span> <span class="num">3.14</span>   <span class="kw">TO</span> PiGreco.
+<span class="cmt">*> Esadecimale</span>
+<span class="kw">MOVE</span> X<span class="str">"41"</span>  <span class="kw">TO</span> CarattereA.
+<span class="cmt">*> Booleano (BIT)</span>
+<span class="kw">MOVE</span> B<span class="str">"1010"</span> <span class="kw">TO</span> Flags.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── COMP / USAGE ──────────────────────────────────────────── -->
+<a class="anchor" id="s-comp"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMP / USAGE CLAUSE — RAPPRESENTAZIONE INTERNA</div>
+  <div class="section-body">
+    <table>
+      <tr><th>USAGE</th><th>Alias</th><th>Rappresentazione</th><th>Note</th></tr>
+      <tr><td><code>DISPLAY</code></td><td>default</td><td>EBCDIC/ASCII zoned decimal</td><td>1 byte per cifra, stampa diretta</td></tr>
+      <tr><td><code>COMPUTATIONAL</code></td><td><code>COMP</code></td><td>Binario (dipende dal compilatore)</td><td>GnuCOBOL = binario nativo</td></tr>
+      <tr><td><code>COMP-1</code></td><td>—</td><td>Float a singola precisione (32-bit IEEE 754)</td><td>Equivalente a <code>float</code> C</td></tr>
+      <tr><td><code>COMP-2</code></td><td>—</td><td>Float a doppia precisione (64-bit IEEE 754)</td><td>Equivalente a <code>double</code> C</td></tr>
+      <tr><td><code>COMP-3</code></td><td><code>PACKED-DECIMAL</code></td><td>Decimale compresso (BCD): 2 cifre per byte</td><td>Comune nei mainframe IBM</td></tr>
+      <tr><td><code>COMP-4</code></td><td><code>BINARY</code></td><td>Binario intero puro</td><td>2 o 4 byte secondo PIC</td></tr>
+      <tr><td><code>COMP-5</code></td><td><code>BINARY-C-LONG</code></td><td>Binario nativo (endianness host)</td><td>Usa tutti i bit, non solo quelli definiti in PIC</td></tr>
+      <tr><td><code>COMP-6</code></td><td>—</td><td>Packed decimal senza segno</td><td>Come COMP-3 ma unsigned</td></tr>
+      <tr><td><code>COMP-X</code></td><td>—</td><td>Dipendente dal compilatore/mainframe</td><td>Vedi sezione dedicata ↓</td></tr>
+      <tr><td><code>POINTER</code></td><td>—</td><td>Puntatore di memoria (4 o 8 byte)</td><td>Per interop C</td></tr>
+      <tr><td><code>FUNCTION-POINTER</code></td><td>—</td><td>Puntatore a funzione</td><td>Per callback C</td></tr>
+      <tr><td><code>OBJECT REFERENCE</code></td><td>—</td><td>Riferimento oggetto OO</td><td>Solo OO COBOL</td></tr>
+    </table>
+    <pre><span class="num">01</span> ContBin    <span class="kw">PIC 9(4)  USAGE BINARY</span>.         <span class="cmt">*> int16</span>
+<span class="num">01</span> ContBin4   <span class="kw">PIC 9(9)  USAGE BINARY</span>.         <span class="cmt">*> int32</span>
+<span class="num">01</span> ValFloat   <span class="kw">USAGE COMP-1</span>.                   <span class="cmt">*> float C</span>
+<span class="num">01</span> ValDouble  <span class="kw">USAGE COMP-2</span>.                   <span class="cmt">*> double C</span>
+<span class="num">01</span> ValPacked  <span class="kw">PIC S9(7)V99 USAGE COMP-3</span>.     <span class="cmt">*> packed dec</span>
+<span class="num">01</span> Puntatore  <span class="kw">USAGE POINTER</span>.                 <span class="cmt">*> void* C</span></pre>
+    <div class="note">La dimensione in byte di COMP/BINARY dipende dal numero di cifre PIC:<br>
+    1-4 cifre → 2 byte | 5-9 cifre → 4 byte | 10-18 cifre → 8 byte</div>
+  </div>
+</div>
+
+<!-- ─── COMP-X DETTAGLIO ──────────────────────────────────────── -->
+<a class="anchor" id="s-compx"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMP-X — DETTAGLIO ESTESO</div>
+  <div class="section-body">
+    <p>COMP-X è una clausola USAGE specifica di GnuCOBOL e alcuni dialetti (MF, IBM). Il comportamento dipende dal contesto:</p>
+
+    <div class="sub-title">COMP-X con PIC X(n) — Intero unsigned n byte</div>
+    <table>
+      <tr><th>Dichiarazione</th><th>Byte</th><th>Range</th><th>Equiv. C</th></tr>
+      <tr><td><code>PIC X(1) COMP-X</code></td><td>1</td><td>0 – 255</td><td><code>uint8_t</code></td></tr>
+      <tr><td><code>PIC X(2) COMP-X</code></td><td>2</td><td>0 – 65535</td><td><code>uint16_t</code></td></tr>
+      <tr><td><code>PIC X(4) COMP-X</code></td><td>4</td><td>0 – 4294967295</td><td><code>uint32_t</code></td></tr>
+      <tr><td><code>PIC X(8) COMP-X</code></td><td>8</td><td>0 – 2<sup>64</sup>-1</td><td><code>uint64_t</code></td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">COMP-X con PIC 9(n) — Binario unsigned (stile MF)</div>
+    <table>
+      <tr><th>Dichiarazione</th><th>Byte</th><th>Note</th></tr>
+      <tr><td><code>PIC 9(1) COMP-X</code></td><td>1</td><td>0-255, come COMP-5 ma unsigned forced</td></tr>
+      <tr><td><code>PIC 9(4) COMP-X</code></td><td>2</td><td>0-65535</td></tr>
+      <tr><td><code>PIC 9(9) COMP-X</code></td><td>4</td><td>0-4294967295</td></tr>
+      <tr><td><code>PIC 9(18) COMP-X</code></td><td>8</td><td>0-18446744073709551615</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">COMP-X speciali (GnuCOBOL esteso)</div>
+    <table>
+      <tr><th>Tipo</th><th>Descrizione</th></tr>
+      <tr><td><code>USAGE BINARY-CHAR</code></td><td>1 byte signed (<code>int8_t</code>)</td></tr>
+      <tr><td><code>USAGE BINARY-CHAR UNSIGNED</code></td><td>1 byte unsigned (<code>uint8_t</code>)</td></tr>
+      <tr><td><code>USAGE BINARY-SHORT</code></td><td>2 byte signed (<code>int16_t</code>)</td></tr>
+      <tr><td><code>USAGE BINARY-SHORT UNSIGNED</code></td><td>2 byte unsigned (<code>uint16_t</code>)</td></tr>
+      <tr><td><code>USAGE BINARY-LONG</code></td><td>4 byte signed (<code>int32_t</code>)</td></tr>
+      <tr><td><code>USAGE BINARY-LONG UNSIGNED</code></td><td>4 byte unsigned (<code>uint32_t</code>)</td></tr>
+      <tr><td><code>USAGE BINARY-DOUBLE</code></td><td>8 byte signed (<code>int64_t</code>)</td></tr>
+      <tr><td><code>USAGE BINARY-DOUBLE UNSIGNED</code></td><td>8 byte unsigned (<code>uint64_t</code>)</td></tr>
+      <tr><td><code>USAGE FLOAT-SHORT</code></td><td>32-bit IEEE 754 (<code>float</code>)</td></tr>
+      <tr><td><code>USAGE FLOAT-LONG</code></td><td>64-bit IEEE 754 (<code>double</code>)</td></tr>
+      <tr><td><code>USAGE FLOAT-EXTENDED</code></td><td>80/128-bit extended (<code>long double</code>)</td></tr>
+    </table>
+
+    <pre><span class="cmt">*> Esempio pratico: buffer di byte per interop C</span>
+<span class="num">01</span> RawByte    <span class="kw">PIC X(1) COMP-X</span> <span class="kw">VALUE</span> <span class="num">0</span>.
+<span class="num">01</span> Word16     <span class="kw">PIC X(2) COMP-X</span>.
+<span class="num">01</span> DWord32    <span class="kw">PIC X(4) COMP-X</span>.
+<span class="num">01</span> QWord64    <span class="kw">PIC X(8) COMP-X</span>.
+<span class="num">01</span> Cnt8s      <span class="kw">USAGE BINARY-CHAR</span>.       <span class="cmt">*> int8_t</span>
+<span class="num">01</span> Cnt8u      <span class="kw">USAGE BINARY-CHAR UNSIGNED</span>. <span class="cmt">*> uint8_t</span>
+<span class="num">01</span> IntVal     <span class="kw">USAGE BINARY-LONG</span>.       <span class="cmt">*> int32_t</span>
+<span class="num">01</span> BigVal     <span class="kw">USAGE BINARY-DOUBLE</span>.     <span class="cmt">*> int64_t</span>
+<span class="num">01</span> FltVal     <span class="kw">USAGE FLOAT-LONG</span>.        <span class="cmt">*> double</span></pre>
+
+    <div class="warn">⚠ COMP-X con PIC X(n) usa <b>big-endian</b> su alcuni sistemi mainframe. GnuCOBOL usa l'endianness nativo dell'host (little-endian su x86). Verificare con <code>-fcomp-version</code> o test espliciti.</div>
+  </div>
+</div>
+
+<!-- ─── EDITED PICTURES ──────────────────────────────────────── -->
+<a class="anchor" id="s-edited"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> EDITED PICTURES — FORMATTAZIONE OUTPUT</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Simbolo</th><th>Effetto</th><th>Esempio</th><th>Input → Output</th></tr>
+      <tr><td><code>Z</code></td><td>Sopprime zero a sinistra (sostituisce con spazio)</td><td><code>ZZZ9</code></td><td>0012 → "  12"</td></tr>
+      <tr><td><code>*</code></td><td>Riempie zero a sinistra con asterisco</td><td><code>***9</code></td><td>0012 → "**12"</td></tr>
+      <tr><td><code>$</code></td><td>Simbolo valuta mobile</td><td><code>$$,$$$,$$9.99</code></td><td>1234.56 → "$1,234.56"</td></tr>
+      <tr><td><code>+</code></td><td>Mostra segno + o -</td><td><code>+9(4)</code></td><td>+1234 → "+1234"</td></tr>
+      <tr><td><code>-</code></td><td>Mostra - se negativo, spazio se positivo</td><td><code>-9(4)</code></td><td>-42 → "-  42"</td></tr>
+      <tr><td><code>,</code></td><td>Inserisce virgola</td><td><code>9,999</code></td><td>1234 → "1,234"</td></tr>
+      <tr><td><code>.</code></td><td>Punto decimale fisico</td><td><code>9(4).99</code></td><td>1234.56 → "1234.56"</td></tr>
+      <tr><td><code>/</code></td><td>Inserisce slash</td><td><code>99/99/9999</code></td><td>12212024 → "12/21/2024"</td></tr>
+      <tr><td><code>B</code></td><td>Inserisce spazio</td><td><code>99B99</code></td><td>1234 → "12 34"</td></tr>
+      <tr><td><code>0</code></td><td>Inserisce zero fisso</td><td><code>9(4)099</code></td><td>1234.5 → "12340050"</td></tr>
+      <tr><td><code>CR</code></td><td>Stampa CR se negativo</td><td><code>9(6).99CR</code></td><td>-100 → "    100.00CR"</td></tr>
+      <tr><td><code>DB</code></td><td>Stampa DB se negativo</td><td><code>9(6).99DB</code></td><td></td></tr>
+    </table>
+    <pre><span class="num">01</span> StartNum  <span class="kw">PIC 9(8)V99</span>  <span class="kw">VALUE</span> <span class="num">1234.56</span>.
+<span class="num">01</span> Formattato <span class="kw">PIC</span> <span class="str">$$,$$$,$$9.99</span>.   <span class="cmt">*> $1,234.56</span>
+<span class="num">01</span> Data       <span class="kw">PIC 99/99/9999</span>.      <span class="cmt">*> 12/21/2024</span>
+<span class="num">01</span> SenzaZeri  <span class="kw">PIC ZZZZ9.99</span>.        <span class="cmt">*>    1234.56 (no leading zeros)</span>
+<span class="kw">MOVE</span> StartNum <span class="kw">TO</span> Formattato
+<span class="kw">DISPLAY</span> Formattato.</pre>
+  </div>
+</div>
+
+<!-- ─── REDEFINES ────────────────────────────────────────────── -->
+<a class="anchor" id="s-redefines"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> REDEFINES — UNIONE DI VARIABILI</div>
+  <div class="section-body">
+    <p>REDEFINES permette di accedere alla stessa area di memoria con layout diversi (simile a <code>union</code> in C).</p>
+    <pre><span class="cmt">*> Stesso storage, visto come testo o come float</span>
+<span class="num">01</span> TextoNumero   <span class="kw">PIC X(6)</span>.
+<span class="num">01</span> FloatNumero   <span class="kw">REDEFINES</span> TextoNumero <span class="kw">PIC 9(4)V99</span>.
+
+<span class="cmt">*> Pre-riempimento tabella con REDEFINES</span>
+<span class="num">01</span> ProdTable.
+   <span class="num">02</span> ProdData.
+       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(8)</span> <span class="kw">VALUE</span> <span class="str">"Red  SML"</span>.
+       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(8)</span> <span class="kw">VALUE</span> <span class="str">"Blue SML"</span>.
+       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(8)</span> <span class="kw">VALUE</span> <span class="str">"GreenSML"</span>.
+   <span class="num">02</span> <span class="kw">FILLER REDEFINES</span> ProdData.
+       <span class="num">03</span> Shirt <span class="kw">OCCURS 3 TIMES</span>.
+           <span class="num">04</span> ProdName  <span class="kw">PIC X(5)</span>.
+           <span class="num">04</span> ProdSizes <span class="kw">PIC A OCCURS 3 TIMES</span>.</pre>
+  </div>
+</div>
+
+<!-- ─── LEVEL 88 ──────────────────────────────────────────────── -->
+<a class="anchor" id="s-level88"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LEVEL 88 — CONDITION NAMES</div>
+  <div class="section-body">
+    <pre><span class="num">01</span> PuoVotare    <span class="kw">PIC 9</span> <span class="kw">VALUE</span> <span class="num">0</span>.
+   <span class="num">88</span> SiVota       <span class="kw">VALUE</span> <span class="num">1</span>.
+   <span class="num">88</span> NoVota       <span class="kw">VALUE</span> <span class="num">0</span>.
+
+<span class="num">01</span> Stato          <span class="kw">PIC X</span>.
+   <span class="num">88</span> StApertura   <span class="kw">VALUE</span> <span class="str">'A'</span>.
+   <span class="num">88</span> StChiusura   <span class="kw">VALUE</span> <span class="str">'C'</span>.
+   <span class="num">88</span> StErrore     <span class="kw">VALUE</span> <span class="str">'E'</span>, <span class="str">'F'</span>, <span class="str">'G'</span>.
+   <span class="num">88</span> StRange      <span class="kw">VALUE</span> <span class="str">'1'</span> <span class="kw">THRU</span> <span class="str">'5'</span>.
+   <span class="num">88</span> EOF-Flag     <span class="kw">VALUE HIGH-VALUES</span>.
+
+<span class="cmt">*> Uso in PROCEDURE</span>
+<span class="kw">SET</span> SiVota <span class="kw">TO TRUE</span>.
+<span class="kw">IF</span> SiVota   <span class="kw">DISPLAY</span> <span class="str">"Vota!"</span> <span class="kw">END-IF</span>.
+<span class="kw">IF NOT</span> StApertura <span class="kw">DISPLAY</span> <span class="str">"Non aperto"</span> <span class="kw">END-IF</span>.</pre>
+    <div class="note">Un livello 88 non ha PIC proprio — è una condizione sul valore del genitore. <code>SET x TO TRUE</code> scrive il primo VALUE in genitore.</div>
+  </div>
+</div>
+
+<!-- ─── MOVE ─────────────────────────────────────────────────── -->
+<a class="anchor" id="s-move"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> MOVE — ASSEGNAMENTO</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <pre><span class="kw">MOVE</span> sorgente <span class="kw">TO</span> dest1 [dest2 ...].
+<span class="kw">MOVE CORRESPONDING</span> src <span class="kw">TO</span> dest.
+<span class="cmt">*> Sposta campi con stesso nome</span>
+
+<span class="kw">MOVE</span> <span class="str">"Mario"</span>  <span class="kw">TO</span> Nome.
+<span class="kw">MOVE</span> <span class="num">100</span>     <span class="kw">TO</span> Eta, Conta.
+<span class="kw">MOVE ZEROS  TO</span> Totale.
+<span class="kw">MOVE SPACES TO</span> Linea.
+<span class="cmt">*> MOVE per Group item: copia raw</span>
+<span class="kw">MOVE</span> RecordA <span class="kw">TO</span> RecordB.</pre>
+      </div>
+      <div>
+        <div class="note">Regole MOVE:<br>
+          • Numerico → Numerico: allineamento al punto decimale<br>
+          • Alfa → Alfa: allineamento a sinistra, troncamento o padding con spazi<br>
+          • Numerico → Alfa: converte in stringa<br>
+          • Alfa → Numerico: converte se il contenuto è numerico valido</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ARITMETICA ───────────────────────────────────────────── -->
+<a class="anchor" id="s-math"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ARITMETICA</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Verbi Aritmetici</div>
+        <pre><span class="kw">ADD</span>      A <span class="kw">TO</span> B.              <span class="cmt">*> B = B+A</span>
+<span class="kw">ADD</span>      A <span class="kw">TO</span> B <span class="kw">GIVING</span> C.    <span class="cmt">*> C = A+B</span>
+<span class="kw">ADD</span>      A, B, C <span class="kw">TO</span> D.       <span class="cmt">*> D = A+B+C+D</span>
+<span class="kw">SUBTRACT</span> A <span class="kw">FROM</span> B.           <span class="cmt">*> B = B-A</span>
+<span class="kw">SUBTRACT</span> A <span class="kw">FROM</span> B <span class="kw">GIVING</span> C. <span class="cmt">*> C = B-A</span>
+<span class="kw">MULTIPLY</span> A <span class="kw">BY</span> B.             <span class="cmt">*> B = A*B</span>
+<span class="kw">MULTIPLY</span> A <span class="kw">BY</span> B <span class="kw">GIVING</span> C.   <span class="cmt">*> C = A*B</span>
+<span class="kw">DIVIDE</span>   A <span class="kw">INTO</span> B.           <span class="cmt">*> B = B/A</span>
+<span class="kw">DIVIDE</span>   A <span class="kw">INTO</span> B <span class="kw">GIVING</span> C  <span class="cmt">*> C=B/A</span>
+         <span class="kw">REMAINDER</span> R.         <span class="cmt">*> R=B mod A</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">COMPUTE (espressioni)</div>
+        <pre><span class="kw">COMPUTE</span> C = A + B.
+<span class="kw">COMPUTE</span> C = A - B.
+<span class="kw">COMPUTE</span> C = A * B.
+<span class="kw">COMPUTE</span> C = A / B.
+<span class="kw">COMPUTE</span> C = A ** <span class="num">2</span>.    <span class="cmt">*> potenza</span>
+<span class="kw">COMPUTE</span> C = (A + B) * D.
+<span class="kw">COMPUTE</span> C <span class="kw">ROUNDED</span> = A / B.
+<span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> C <span class="kw">ON SIZE ERROR</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Overflow"</span>
+<span class="kw">END-ADD</span>.</pre>
+      </div>
+    </div>
+    <div class="note">Clausola <b>ROUNDED</b>: arrotondamento al più vicino (default NEAREST-EVEN). Varianti: ROUNDED MODE TRUNCATION, FLOOR, CEILING, TOWARD-GREATER, TOWARD-LESSER.</div>
+  </div>
+</div>
+
+<!-- ─── STRINGHE ─────────────────────────────────────────────── -->
+<a class="anchor" id="s-strings"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OPERAZIONI SU STRINGHE</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">STRING — Concatenazione</div>
+        <pre><span class="kw">STRING</span> Str1 <span class="kw">DELIMITED BY SIZE</span>
+       Str2 <span class="kw">DELIMITED BY SPACE</span>
+       Str3 <span class="kw">DELIMITED BY</span> <span class="str">"#"</span>
+       <span class="kw">INTO</span> Dest
+       [<span class="kw">WITH POINTER</span> Ptr]
+       [<span class="kw">ON OVERFLOW</span> ...]
+<span class="kw">END-STRING</span>.</pre>
+      </div>
+      <div>
+        <div class="sub-title">UNSTRING — Split</div>
+        <pre><span class="kw">UNSTRING</span> Sorgente
+    <span class="kw">DELIMITED BY</span> <span class="str">","</span> <span class="kw">OR</span> <span class="str">" "</span>
+    <span class="kw">INTO</span> Parte1, Parte2
+    [<span class="kw">DELIMITER IN</span> DelChar]
+    [<span class="kw">COUNT IN</span> NumChar]
+    [<span class="kw">WITH POINTER</span> Ptr]
+    [<span class="kw">TALLYING IN</span> Count]
+    [<span class="kw">ON OVERFLOW</span> ...]
+<span class="kw">END-UNSTRING</span>.</pre>
+      </div>
+    </div>
+
+    <div class="sub-title" style="margin-top:8px">Funzioni stringa intrinseche</div>
+    <pre><span class="kw">FUNCTION UPPER-CASE</span>(Str)       <span class="cmt">*> tutto maiuscolo</span>
+<span class="kw">FUNCTION LOWER-CASE</span>(Str)       <span class="cmt">*> tutto minuscolo</span>
+<span class="kw">FUNCTION LENGTH</span>(Str)           <span class="cmt">*> lunghezza in caratteri</span>
+<span class="kw">FUNCTION TRIM</span>(Str [LEADING|TRAILING]) <span class="cmt">*> rimozione spazi</span>
+<span class="kw">FUNCTION REVERSE</span>(Str)          <span class="cmt">*> inverti stringa</span>
+<span class="kw">FUNCTION CONCATENATE</span>(S1, S2)   <span class="cmt">*> join (GnuCOBOL)</span>
+<span class="kw">FUNCTION SUBSTITUTE</span>(Str, Da, A) <span class="cmt">*> replace</span>
+<span class="kw">FUNCTION NUMVAL</span>(Str)           <span class="cmt">*> stringa → numero</span>
+<span class="kw">FUNCTION NUMVAL-C</span>(Str [,Symbol]) <span class="cmt">*> stringa valuta → num</span>
+<span class="kw">FUNCTION CHAR</span>(N)               <span class="cmt">*> numero → ASCII char</span>
+<span class="kw">FUNCTION ORD</span>(Ch)               <span class="cmt">*> char → posizione</span></pre>
+  </div>
+</div>
+
+<!-- ─── INSPECT ──────────────────────────────────────────────── -->
+<a class="anchor" id="s-inspect"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> INSPECT — SCANSIONE E SOSTITUZIONE</div>
+  <div class="section-body">
+    <pre><span class="cmt">*> Conta caratteri</span>
+<span class="kw">INSPECT</span> Str <span class="kw">TALLYING</span>
+    Count1 <span class="kw">FOR CHARACTERS</span>
+    Count2 <span class="kw">FOR ALL</span> <span class="str">'e'</span>
+    Count3 <span class="kw">FOR LEADING</span> <span class="str">' '</span>
+    Count4 <span class="kw">FOR FIRST</span>   <span class="str">'A'</span>.
+
+<span class="cmt">*> Sostituisce caratteri</span>
+<span class="kw">INSPECT</span> Str <span class="kw">REPLACING</span>
+    <span class="kw">ALL</span>     <span class="str">'a'</span> <span class="kw">BY</span> <span class="str">'@'</span>
+    <span class="kw">LEADING</span> <span class="str">' '</span> <span class="kw">BY</span> <span class="str">'0'</span>
+    <span class="kw">FIRST</span>   <span class="str">'X'</span> <span class="kw">BY</span> <span class="str">'Y'</span>
+    <span class="kw">CHARACTERS BY</span> <span class="str">'*'</span>.
+
+<span class="cmt">*> Combina TALLYING e REPLACING</span>
+<span class="kw">INSPECT</span> Str
+    <span class="kw">TALLYING</span>  Cnt <span class="kw">FOR ALL</span> <span class="str">'e'</span>
+    <span class="kw">REPLACING ALL</span> <span class="str">'e'</span> <span class="kw">BY</span> <span class="str">'3'</span>.
+
+<span class="cmt">*> CONVERTING (mappatura carattere per carattere)</span>
+<span class="kw">INSPECT</span> Str <span class="kw">CONVERTING</span> <span class="str">"aeiou"</span> <span class="kw">TO</span> <span class="str">"AEIOU"</span>.</pre>
+  </div>
+</div>
+
+<!-- ─── IF / EVALUATE ────────────────────────────────────────── -->
+<a class="anchor" id="s-if"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> IF / EVALUATE — CONDIZIONI</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">IF</div>
+        <pre><span class="kw">IF</span> Eta > <span class="num">18</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Maggiorenne"</span>
+<span class="kw">ELSE IF</span> Eta = <span class="num">18</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Appena maggiorenne"</span>
+<span class="kw">ELSE</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Minore"</span>
+<span class="kw">END-IF</span>.
+
+<span class="cmt">*> Operatori di confronto</span>
+<span class="cmt">*> =  EQUAL TO</span>
+<span class="cmt">*> &gt;  GREATER THAN</span>
+<span class="cmt">*> &lt;  LESS THAN</span>
+<span class="cmt">*> &gt;= GREATER THAN OR EQUAL TO</span>
+<span class="cmt">*> &lt;= LESS THAN OR EQUAL TO</span>
+<span class="cmt">*> NOT EQUAL TO</span>
+<span class="cmt">*> AND, OR, NOT (logici)</span>
+<span class="cmt">*> IS NUMERIC / ALPHABETIC</span>
+<span class="cmt">*> IS ALPHABETIC-UPPER/LOWER</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">EVALUATE (switch)</div>
+        <pre><span class="kw">EVALUATE</span> TRUE
+    <span class="kw">WHEN</span> IsPrime    <span class="kw">DISPLAY</span> <span class="str">"Primo"</span>
+    <span class="kw">WHEN</span> IsOdd      <span class="kw">DISPLAY</span> <span class="str">"Dispari"</span>
+    <span class="kw">WHEN</span> IsEven     <span class="kw">DISPLAY</span> <span class="str">"Pari"</span>
+    <span class="kw">WHEN OTHER</span>      <span class="kw">DISPLAY</span> <span class="str">"Default"</span>
+<span class="kw">END-EVALUATE</span>.
+
+<span class="kw">EVALUATE</span> Scelta <span class="kw">ALSO</span> Modo
+    <span class="kw">WHEN</span> <span class="num">1</span> <span class="kw">ALSO</span> <span class="str">'A'</span>  <span class="kw">PERFORM</span> ParagA
+    <span class="kw">WHEN</span> <span class="num">2</span> <span class="kw">ALSO ANY</span>  <span class="kw">PERFORM</span> ParagB
+    <span class="kw">WHEN</span> <span class="num">3</span> <span class="kw">THRU</span> <span class="num">5</span>
+           <span class="kw">ALSO</span> <span class="kw">ANY</span>  <span class="kw">PERFORM</span> ParagC
+<span class="kw">END-EVALUATE</span>.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PERFORM / LOOP ───────────────────────────────────────── -->
+<a class="anchor" id="s-perform"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PERFORM — LOOP E CHIAMATA PARAGRAFI</div>
+  <div class="section-body">
+    <pre><span class="cmt">*> Chiama un paragrafo</span>
+<span class="kw">PERFORM</span> NomeParagrafo.
+<span class="kw">PERFORM</span> NomeParagrafo <span class="kw">THRU</span> AltroParagrafo.
+
+<span class="cmt">*> Ripeti N volte</span>
+<span class="kw">PERFORM</span> <span class="num">5</span> <span class="kw">TIMES</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Loop"</span>
+<span class="kw">END-PERFORM</span>.
+
+<span class="cmt">*> While (test prima)</span>
+<span class="kw">PERFORM UNTIL</span> Indice > <span class="num">10</span>
+    <span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> Indice
+<span class="kw">END-PERFORM</span>.
+
+<span class="cmt">*> Do-While (test dopo)</span>
+<span class="kw">PERFORM WITH TEST AFTER UNTIL</span> Indice > <span class="num">10</span>
+    <span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> Indice
+<span class="kw">END-PERFORM</span>.
+
+<span class="cmt">*> For loop</span>
+<span class="kw">PERFORM VARYING</span> I <span class="kw">FROM</span> <span class="num">1</span> <span class="kw">BY</span> <span class="num">1</span> <span class="kw">UNTIL</span> I > <span class="num">10</span>
+    <span class="kw">DISPLAY</span> I
+<span class="kw">END-PERFORM</span>.
+
+<span class="cmt">*> For loop annidato</span>
+<span class="kw">PERFORM VARYING</span> I <span class="kw">FROM</span> <span class="num">1</span> <span class="kw">BY</span> <span class="num">1</span> <span class="kw">UNTIL</span> I > <span class="num">3</span>
+    <span class="kw">AFTER</span> J <span class="kw">FROM</span> <span class="num">1</span> <span class="kw">BY</span> <span class="num">1</span> <span class="kw">UNTIL</span> J > <span class="num">3</span>
+        <span class="kw">DISPLAY</span> I <span class="str">" "</span> J
+<span class="kw">END-PERFORM</span>.
+
+<span class="cmt">*> PERFORM con paragrafo esterno e VARYING</span>
+<span class="kw">PERFORM</span> StampaRiga <span class="kw">VARYING</span> I <span class="kw">FROM</span> <span class="num">1</span> <span class="kw">BY</span> <span class="num">1</span> <span class="kw">UNTIL</span> I > <span class="num">5</span>.</pre>
+  </div>
+</div>
+
+<!-- ─── GO TO ────────────────────────────────────────────────── -->
+<a class="anchor" id="s-goto"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> GO TO — SALTO INCONDIZIONATO</div>
+  <div class="section-body">
+    <pre><span class="kw">GO TO</span> Paragrafo.
+<span class="cmt">*> DEPENDING ON: switch su variabile</span>
+<span class="kw">GO TO</span> Para1, Para2, Para3
+    <span class="kw">DEPENDING ON</span> Scelta.
+<span class="cmt">*> EXIT: uscita da paragrafo/sezione</span>
+<span class="kw">EXIT</span>.
+<span class="kw">EXIT PROGRAM</span>.   <span class="cmt">*> ritorna al chiamante</span>
+<span class="kw">EXIT SECTION</span>.   <span class="cmt">*> esce dalla sezione corrente</span>
+<span class="kw">STOP RUN</span>.       <span class="cmt">*> termina il programma</span></pre>
+    <div class="warn">⚠ GO TO è sconsigliato nella programmazione strutturata moderna. Preferire PERFORM.</div>
+  </div>
+</div>
+
+<!-- ─── PARAGRAFI & SEZIONI ──────────────────────────────────── -->
+<a class="anchor" id="s-paragraphs"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PARAGRAFI, SEZIONI E GRAVITY</div>
+  <div class="section-body">
+    <p><b>Open paragraph</b> = blocco di codice con etichetta; eseguito per "gravity" (cascata). <b>Closed paragraph</b> = funzione tradizionale con dati locali.</p>
+    <pre><span class="hd">PROCEDURE DIVISION.</span>
+<span class="lbl">Main.</span>
+    <span class="kw">PERFORM</span> CalcolaIVA.
+    <span class="kw">DISPLAY</span> <span class="str">"Fatto"</span>.
+    <span class="kw">STOP RUN</span>.
+
+<span class="lbl">CalcolaIVA.</span>
+    <span class="kw">COMPUTE</span> TotaleIVA = Imponibile * <span class="num">1.22</span>.
+
+<span class="cmt">*> Sezione nella PROCEDURE DIVISION</span>
+<span class="lbl">SezioneUno SECTION.</span>
+<span class="lbl">    ParagA.</span>
+        <span class="kw">DISPLAY</span> <span class="str">"A"</span>.
+<span class="lbl">    ParagB.</span>
+        <span class="kw">DISPLAY</span> <span class="str">"B"</span>.
+        <span class="kw">EXIT SECTION</span>.</pre>
+  </div>
+</div>
+
+<!-- ─── TABELLE ──────────────────────────────────────────────── -->
+<a class="anchor" id="s-tables"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TABELLE (ARRAY)</div>
+  <div class="section-body">
+    <pre><span class="cmt">*> Array 1D — subscript parte da 1!</span>
+<span class="num">01</span> Tabella1.
+   <span class="num">02</span> Amico   <span class="kw">PIC X(15) OCCURS 5 TIMES</span>.
+
+<span class="cmt">*> Array 2D</span>
+<span class="num">01</span> TabClienti.
+   <span class="num">02</span> Cliente <span class="kw">OCCURS 10 TIMES</span>.
+       <span class="num">03</span> CNome   <span class="kw">PIC X(20)</span>.
+       <span class="num">03</span> CEmail  <span class="kw">PIC X(40)</span>.
+
+<span class="cmt">*> Tabella con INDEX esplicito</span>
+<span class="num">01</span> OrdineTab.
+   <span class="num">02</span> Prodotto <span class="kw">OCCURS 5 TIMES INDEXED BY</span> I.
+       <span class="num">03</span> ProdNome <span class="kw">PIC X(10)</span>.
+       <span class="num">03</span> ProdSize <span class="kw">OCCURS 3 TIMES INDEXED BY</span> J.
+           <span class="num">04</span> TipoTaglia <span class="kw">PIC A</span>.
+
+<span class="cmt">*> OCCURS con range variabile (ODO)</span>
+<span class="num">01</span> MaxItems <span class="kw">PIC 99</span> <span class="kw">VALUE</span> <span class="num">10</span>.
+<span class="num">01</span> ListaDin.
+   <span class="num">02</span> Elem <span class="kw">PIC X(10) OCCURS 1 TO 20 TIMES</span>
+              <span class="kw">DEPENDING ON</span> MaxItems.
+
+<span class="cmt">*> Accesso a elementi</span>
+<span class="kw">MOVE</span> <span class="str">'Joy'</span>    <span class="kw">TO</span> Amico(<span class="num">1</span>).
+<span class="kw">DISPLAY</span>        Amico(<span class="num">2</span>).
+<span class="kw">SET</span> I J <span class="kw">TO</span> <span class="num">1</span>.
+<span class="kw">MOVE</span> <span class="str">'S'</span> <span class="kw">TO</span>   TipoTaglia(I, J).
+<span class="kw">SET</span> I <span class="kw">UP BY</span> <span class="num">1</span>.   <span class="cmt">*> incremento index</span>
+<span class="kw">SET</span> I <span class="kw">DOWN BY</span> <span class="num">1</span>. <span class="cmt">*> decremento index</span>
+
+<span class="cmt">*> Tabella con ASCENDING/DESCENDING KEY (per SEARCH ALL)</span>
+<span class="num">01</span> CodTab.
+   <span class="num">02</span> CodEntry <span class="kw">OCCURS 100 TIMES</span>
+              <span class="kw">ASCENDING KEY IS</span> CodID
+              <span class="kw">INDEXED BY</span> KI.
+       <span class="num">03</span> CodID   <span class="kw">PIC 9(5)</span>.
+       <span class="num">03</span> CodDesc <span class="kw">PIC X(30)</span>.</pre>
+  </div>
+</div>
+
+<!-- ─── SEARCH ───────────────────────────────────────────────── -->
+<a class="anchor" id="s-search"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SEARCH — RICERCA IN TABELLA</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">SEARCH (lineare)</div>
+        <pre><span class="kw">SET</span> I <span class="kw">TO</span> <span class="num">1</span>.
+<span class="kw">SEARCH</span> Prodotto
+    <span class="kw">AT END</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Non trovato"</span>
+    <span class="kw">WHEN</span> ProdNome(I) = <span class="str">'Blue'</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Trovato"</span>
+<span class="kw">END-SEARCH</span>.</pre>
+      </div>
+      <div>
+        <div class="sub-title">SEARCH ALL (binaria)</div>
+        <pre><span class="cmt">*> Richiede ASCENDING/DESCENDING KEY</span>
+<span class="kw">SEARCH ALL</span> CodEntry
+    <span class="kw">AT END</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Codice non trovato"</span>
+    <span class="kw">WHEN</span> CodID(KI) = Cerca
+        <span class="kw">DISPLAY</span> CodDesc(KI)
+<span class="kw">END-SEARCH</span>.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SORT / MERGE ─────────────────────────────────────────── -->
+<a class="anchor" id="s-sort"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SORT / MERGE FILE</div>
+  <div class="section-body">
+    <pre><span class="cmt">*> SORT: ordina un file tramite file di lavoro</span>
+<span class="kw">SORT</span> WorkFile
+    <span class="kw">ON ASCENDING KEY</span>  WIDNum
+    [<span class="kw">ON DESCENDING KEY</span> WNome]
+    <span class="kw">USING</span>  OrgFile
+    <span class="kw">GIVING</span> SortedFile.
+
+<span class="cmt">*> SORT con INPUT/OUTPUT PROCEDURE</span>
+<span class="kw">SORT</span> WorkFile <span class="kw">ON ASCENDING KEY</span> WIDNum
+    <span class="kw">INPUT PROCEDURE</span>  IS ReadAndFilter
+    <span class="kw">OUTPUT PROCEDURE</span> IS WriteOutput.
+
+<span class="cmt">*> MERGE: unisce file già ordinati</span>
+<span class="kw">MERGE</span> WorkFile <span class="kw">ON ASCENDING KEY</span> WIDNum
+    <span class="kw">USING</span>  File1, File2
+    <span class="kw">GIVING</span> NewFile.
+
+<span class="cmt">*> RELEASE (dentro INPUT PROCEDURE) → aggiunge record al sort</span>
+<span class="kw">RELEASE</span> WStudData <span class="kw">FROM</span> StudData.
+<span class="cmt">*> RETURN (dentro OUTPUT PROCEDURE) → legge record dal sort</span>
+<span class="kw">RETURN</span> WorkFile <span class="kw">INTO</span> StudData <span class="kw">AT END</span> <span class="kw">MOVE</span> <span class="str">'Y'</span> <span class="kw">TO</span> Done.</pre>
+  </div>
+</div>
+
+<!-- ─── FILE SEQUENZIALI ─────────────────────────────────────── -->
+<a class="anchor" id="s-files-seq"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FILE I/O — SEQUENZIALI</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Definizione FILE-CONTROL</div>
+        <pre><span class="kw">FILE-CONTROL.</span>
+<span class="kw">SELECT</span> ClienteFile
+    <span class="kw">ASSIGN TO</span> <span class="str">"clienti.dat"</span>
+    <span class="kw">ORGANIZATION IS LINE SEQUENTIAL</span>
+    <span class="kw">ACCESS IS SEQUENTIAL</span>
+    [<span class="kw">FILE STATUS IS</span> WS-FileStatus].</pre>
+      </div>
+      <div>
+        <div class="sub-title">FILE STATUS codes</div>
+        <table>
+          <tr><th>Codice</th><th>Significato</th></tr>
+          <tr><td>00</td><td>OK</td></tr>
+          <tr><td>10</td><td>End of file</td></tr>
+          <tr><td>22</td><td>Chiave duplicata</td></tr>
+          <tr><td>23</td><td>Chiave non trovata</td></tr>
+          <tr><td>30</td><td>Errore I/O permanente</td></tr>
+          <tr><td>35</td><td>File non trovato</td></tr>
+          <tr><td>41</td><td>File già aperto</td></tr>
+          <tr><td>42</td><td>File non aperto</td></tr>
+          <tr><td>47</td><td>File non aperto in INPUT</td></tr>
+          <tr><td>48</td><td>File non aperto in OUTPUT</td></tr>
+        </table>
+      </div>
+    </div>
+    <pre><span class="cmt">*> Scrittura</span>
+<span class="kw">OPEN OUTPUT</span> ClienteFile.
+    <span class="kw">MOVE</span> <span class="num">1</span> <span class="kw">TO</span> IDNum.
+    <span class="kw">WRITE</span> ClienteData [<span class="kw">FROM</span> WSCliente]
+        [<span class="kw">AFTER ADVANCING</span> <span class="num">1</span> <span class="kw">LINE</span>]
+        [<span class="kw">INVALID KEY</span> <span class="kw">DISPLAY</span> <span class="str">"Errore"</span>]
+    <span class="kw">END-WRITE</span>.
+<span class="kw">CLOSE</span> ClienteFile.
+
+<span class="cmt">*> Lettura</span>
+<span class="kw">OPEN INPUT</span> ClienteFile.
+<span class="kw">PERFORM UNTIL</span> EOF = <span class="str">'Y'</span>
+    <span class="kw">READ</span> ClienteFile [<span class="kw">INTO</span> WSCliente]
+        <span class="kw">AT END MOVE</span> <span class="str">'Y'</span> <span class="kw">TO</span> EOF
+        <span class="kw">NOT AT END DISPLAY</span> WSCliente
+    <span class="kw">END-READ</span>
+<span class="kw">END-PERFORM</span>.
+<span class="kw">CLOSE</span> ClienteFile.
+
+<span class="cmt">*> Append</span>
+<span class="kw">OPEN EXTEND</span> ClienteFile.
+    <span class="kw">WRITE</span> ClienteData.
+<span class="kw">CLOSE</span> ClienteFile.</pre>
+  </div>
+</div>
+
+<!-- ─── FILE INDEXED ─────────────────────────────────────────── -->
+<a class="anchor" id="s-files-idx"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FILE I/O — INDEXED (ISAM)</div>
+  <div class="section-body">
+    <pre><span class="kw">FILE-CONTROL.</span>
+<span class="kw">SELECT</span> ClienteFile <span class="kw">ASSIGN TO</span> <span class="str">"clienti.idx"</span>
+    <span class="kw">ORGANIZATION IS INDEXED</span>
+    <span class="kw">ACCESS MODE IS RANDOM</span>    <span class="cmt">*> o DYNAMIC o SEQUENTIAL</span>
+    <span class="kw">RECORD KEY IS</span> IDNum
+    [<span class="kw">ALTERNATE RECORD KEY IS</span> Cognome <span class="kw">WITH DUPLICATES</span>]
+    <span class="kw">FILE STATUS IS</span> FS.
+
+<span class="cmt">*> Aggiunta (WRITE)</span>
+<span class="kw">OPEN I-O</span> ClienteFile.
+<span class="kw">MOVE</span> <span class="num">99</span> <span class="kw">TO</span> IDNum.
+<span class="kw">WRITE</span> ClienteData <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"ID duplicato"</span> <span class="kw">END-WRITE</span>.
+
+<span class="cmt">*> Lettura per chiave (RANDOM)</span>
+<span class="kw">MOVE</span> <span class="num">5</span> <span class="kw">TO</span> IDNum.
+<span class="kw">READ</span> ClienteFile <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Non trovato"</span> <span class="kw">END-READ</span>.
+
+<span class="cmt">*> Aggiornamento</span>
+<span class="kw">REWRITE</span> ClienteData <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Errore"</span> <span class="kw">END-REWRITE</span>.
+
+<span class="cmt">*> Cancellazione</span>
+<span class="kw">DELETE</span> ClienteFile <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Non trovato"</span> <span class="kw">END-DELETE</span>.
+
+<span class="cmt">*> Lettura sequenziale (ACCESS DYNAMIC)</span>
+<span class="kw">START</span> ClienteFile <span class="kw">KEY GREATER THAN</span> IDNum
+    <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Errore"</span> <span class="kw">END-START</span>.
+<span class="kw">READ</span> ClienteFile <span class="kw">NEXT RECORD INTO</span> WSCliente
+    <span class="kw">AT END MOVE</span> <span class="str">'Y'</span> <span class="kw">TO</span> EOF <span class="kw">END-READ</span>.</pre>
+  </div>
+</div>
+
+<!-- ─── REPORT WRITER ─────────────────────────────────────────── -->
+<a class="anchor" id="s-reports"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> REPORT WRITER (stampa formattata)</div>
+  <div class="section-body">
+    <pre><span class="cmt">*> Pattern per stampa report su file</span>
+<span class="num">01</span> PageHeading.
+   <span class="num">02</span> <span class="kw">FILLER</span> <span class="kw">PIC X(13)</span> <span class="kw">VALUE</span> <span class="str">"LISTA CLIENTI"</span>.
+<span class="num">01</span> PageFooting.
+   <span class="num">02</span> <span class="kw">FILLER</span>    <span class="kw">PIC X(7)</span>  <span class="kw">VALUE</span> <span class="str">"Pagina "</span>.
+   <span class="num">02</span> PrnPageNum <span class="kw">PIC Z9</span>.
+<span class="num">01</span> PrintLine    <span class="kw">PIC X(80)</span>.
+<span class="num">01</span> LineCount    <span class="kw">PIC 99</span>  <span class="kw">VALUE ZERO</span>.
+       <span class="num">88</span> NuovaPagina <span class="kw">VALUE</span> <span class="num">60</span> <span class="kw">THRU</span> <span class="num">99</span>.
+<span class="num">01</span> PageCount    <span class="kw">PIC 99</span>  <span class="kw">VALUE ZERO</span>.
+
+<span class="cmt">*> Stampa con avanzamento righe</span>
+<span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> PageHeading
+    <span class="kw">AFTER ADVANCING PAGE</span>.
+<span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> LineaDettaglio
+    <span class="kw">AFTER ADVANCING</span> <span class="num">1</span> <span class="kw">LINE</span>.
+<span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> Separatore
+    <span class="kw">BEFORE ADVANCING</span> <span class="num">2</span> <span class="kw">LINES</span>.</pre>
+  </div>
+</div>
+
+<!-- ─── CALL / SUBROUTINE ────────────────────────────────────── -->
+<a class="anchor" id="s-call"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CALL — SUBROUTINE E SOTTOPROGRAMMI</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Programma chiamato (GETSUM.cob)</div>
+        <pre><span class="cmt">*> Compila: cobc -m GETSUM.cob</span>
+<span class="hd">IDENTIFICATION DIVISION.</span>
+<span class="kw">PROGRAM-ID.</span> GETSUM.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">LINKAGE SECTION.</span>
+   <span class="num">01</span> LNum1  <span class="kw">PIC 9</span>.
+   <span class="num">01</span> LNum2  <span class="kw">PIC 9</span>.
+   <span class="num">01</span> LSum   <span class="kw">PIC 99</span>.
+<span class="hd">PROCEDURE DIVISION</span> <span class="kw">USING</span> LNum1 LNum2 LSum.
+   <span class="kw">COMPUTE</span> LSum = LNum1 + LNum2.
+<span class="kw">EXIT PROGRAM</span>.</pre>
+      </div>
+      <div>
+        <div class="sub-title">Programma chiamante</div>
+        <pre><span class="cmt">*> Compila: cobc -x main.cob</span>
+<span class="kw">CALL</span> <span class="str">'GETSUM'</span>
+    <span class="kw">USING</span> Num1, Num2, Sum1.
+
+<span class="cmt">*> BY REFERENCE (default): modifiche visibili</span>
+<span class="kw">CALL</span> <span class="str">'PROC'</span> <span class="kw">USING BY REFERENCE</span> Var1.
+
+<span class="cmt">*> BY CONTENT: copia; modifiche non visibili</span>
+<span class="kw">CALL</span> <span class="str">'PROC'</span> <span class="kw">USING BY CONTENT</span> Var1.
+
+<span class="cmt">*> BY VALUE: passa valore diretto (per C)</span>
+<span class="kw">CALL</span> <span class="str">'PROC'</span> <span class="kw">USING BY VALUE</span> <span class="num">42</span>.
+
+<span class="cmt">*> RETURNING: valore di ritorno</span>
+<span class="kw">CALL</span> <span class="str">'FUNZ'</span> <span class="kw">USING</span> Param
+    <span class="kw">RETURNING</span> Risultato.
+
+<span class="cmt">*> ON EXCEPTION: gestione errore</span>
+<span class="kw">CALL</span> <span class="str">'MODULO'</span> <span class="kw">USING</span> Dati
+    <span class="kw">ON EXCEPTION DISPLAY</span> <span class="str">"Modulo mancante"</span>
+<span class="kw">END-CALL</span>.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CALL STATIC ──────────────────────────────────────────── -->
+<a class="anchor" id="s-call-static"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CALL STATIC vs CALL DINAMICA</div>
+  <div class="section-body">
+    <div class="sub-title">CALL Dinamica (default)</div>
+    <p>Il modulo viene caricato a runtime (dynamic linking). Il nome è risolto al momento dell'esecuzione. Richiede <code>.so</code> / <code>.dll</code> visibile.</p>
+    <pre><span class="kw">CALL</span> <span class="str">"nome-modulo"</span> <span class="kw">USING</span> Arg1 Arg2.
+<span class="cmt">*> Oppure con variabile</span>
+<span class="num">01</span> NomeModulo <span class="kw">PIC X(20)</span> <span class="kw">VALUE</span> <span class="str">"CALCOLA"</span>.
+<span class="kw">CALL</span> NomeModulo <span class="kw">USING</span> Dati.   <span class="cmt">*> Risolto a runtime</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">CALL STATIC</div>
+    <p>Il modulo viene incorporato al momento della link (static linking). Richiede che tutti i moduli siano compilati insieme o linkati con <code>-lnome</code>.</p>
+    <pre><span class="cmt">*> Modo 1: flag compilatore (preferito)</span>
+<span class="dim">cobc -x -fstatic-call main.cob MODULO.cob</span>
+
+<span class="cmt">*> Modo 2: direttiva nel sorgente (GnuCOBOL)</span>
+<span class="hd">&gt;&gt;CALL-CONVENTION</span> <span class="kw">STATIC</span>
+<span class="kw">CALL</span> <span class="str">"CALCOLA"</span> <span class="kw">USING</span> Dati.
+
+<span class="cmt">*> Modo 3: con REPOSITORY (OO/moderni)</span>
+<span class="hd">REPOSITORY.</span>
+    <span class="kw">FUNCTION</span> MiaFunzione
+        <span class="kw">AS</span> <span class="str">"mia-funzione"</span> <span class="kw">IS STATIC</span>.</pre>
+
+    <table>
+      <tr><th>Caratteristica</th><th>Dinamica</th><th>Statica</th></tr>
+      <tr><td>Nome call</td><td>Letterale o variabile</td><td>Solo letterale noto a compile time</td></tr>
+      <tr><td>Linking</td><td>Runtime (dlopen)</td><td>Compile time (ld)</td></tr>
+      <tr><td>Velocità</td><td>Più lenta (risoluzione runtime)</td><td>Più veloce (no overhead)</td></tr>
+      <tr><td>Flessibilità</td><td>Alta (plug-in, moduli dinamici)</td><td>Bassa (binario monolitico)</td></tr>
+      <tr><td>Flag cobc</td><td>default</td><td><code>-fstatic-call</code></td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">CANCEL — Scarica modulo dinamico</div>
+    <pre><span class="kw">CANCEL</span> <span class="str">"nome-modulo"</span>.
+<span class="cmt">*> Forza rilascio dalla memoria e reinizializza</span>
+<span class="cmt">*> le variabili globali del modulo alla prossima CALL</span></pre>
+  </div>
+</div>
+
+<!-- ─── CALL LIBRERIE / SYSCALL ──────────────────────────────── -->
+<a class="anchor" id="s-call-lib"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CALL — FUNZIONI C, LIBRERIE E SYSTEM CALLS</div>
+  <div class="section-body">
+    <div class="sub-title">Chiamata di funzioni C standard</div>
+    <pre><span class="cmt">*> printf / puts</span>
+<span class="num">01</span> MsgBuf <span class="kw">PIC X(80)</span> <span class="kw">VALUE</span> <span class="str">"Ciao mondo!\n\x00"</span>.
+<span class="kw">CALL</span> <span class="str">"puts"</span>   <span class="kw">USING BY REFERENCE</span> MsgBuf.
+<span class="kw">CALL</span> <span class="str">"printf"</span> <span class="kw">USING BY REFERENCE</span> MsgBuf.
+
+<span class="cmt">*> malloc / free</span>
+<span class="num">01</span> BufPtr  <span class="kw">USAGE POINTER</span>.
+<span class="num">01</span> BufSize <span class="kw">USAGE BINARY-LONG</span>.
+<span class="kw">MOVE</span> <span class="num">1024</span> <span class="kw">TO</span> BufSize.
+<span class="kw">CALL</span> <span class="str">"malloc"</span> <span class="kw">USING BY VALUE</span> BufSize
+    <span class="kw">RETURNING</span> BufPtr.
+<span class="kw">CALL</span> <span class="str">"free"</span>   <span class="kw">USING BY VALUE</span> BufPtr.
+
+<span class="cmt">*> strlen</span>
+<span class="num">01</span> StrLen <span class="kw">USAGE BINARY-LONG</span>.
+<span class="kw">CALL</span> <span class="str">"strlen"</span> <span class="kw">USING BY REFERENCE</span> MsgBuf
+    <span class="kw">RETURNING</span> StrLen.
+
+<span class="cmt">*> memcpy</span>
+<span class="num">01</span> SrcBuf <span class="kw">PIC X(100)</span>.
+<span class="num">01</span> DstBuf <span class="kw">PIC X(100)</span>.
+<span class="num">01</span> BufLen <span class="kw">USAGE BINARY-LONG</span> <span class="kw">VALUE</span> <span class="num">100</span>.
+<span class="kw">CALL</span> <span class="str">"memcpy"</span>
+    <span class="kw">USING BY REFERENCE</span> DstBuf
+          <span class="kw">BY REFERENCE</span> SrcBuf
+          <span class="kw">BY VALUE</span>     BufLen.
+
+<span class="cmt">*> getenv</span>
+<span class="num">01</span> EnvPtr    <span class="kw">USAGE POINTER</span>.
+<span class="num">01</span> EnvName   <span class="kw">PIC X(20)</span> <span class="kw">VALUE</span> <span class="str">"HOME\x00"</span>.
+<span class="kw">CALL</span> <span class="str">"getenv"</span> <span class="kw">USING BY REFERENCE</span> EnvName
+    <span class="kw">RETURNING</span> EnvPtr.
+
+<span class="cmt">*> system (shell command)</span>
+<span class="num">01</span> Cmd <span class="kw">PIC X(80)</span> <span class="kw">VALUE</span> <span class="str">"ls -l\x00"</span>.
+<span class="kw">CALL</span> <span class="str">"system"</span> <span class="kw">USING BY REFERENCE</span> Cmd.</pre>
+
+    <div class="sub-title" style="margin-top:10px">GnuCOBOL Built-in C interop</div>
+    <pre><span class="cmt">*> CBL_OC_GETENV / CBL_OC_SETENV (GnuCOBOL native)</span>
+<span class="kw">CALL</span> <span class="str">"CBL_OC_GETENV"</span>
+    <span class="kw">USING BY REFERENCE</span>  EnvName
+          <span class="kw">BY REFERENCE</span>  EnvValue.
+
+<span class="cmt">*> CBL_GC_FORK (solo Unix)</span>
+<span class="kw">CALL</span> <span class="str">"CBL_GC_FORK"</span> <span class="kw">RETURNING</span> PID.
+
+<span class="cmt">*> Accesso a memoria tramite puntatore</span>
+<span class="num">01</span> RawPtr  <span class="kw">USAGE POINTER</span>.
+<span class="num">01</span> ValAdr  <span class="kw">USAGE BINARY-LONG</span> <span class="kw">BASED</span>.
+<span class="kw">SET</span> ADDRESS OF ValAdr <span class="kw">TO</span> RawPtr.
+<span class="kw">DISPLAY</span> ValAdr.  <span class="cmt">*> deref del puntatore</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">System Calls POSIX (via C wrapper)</div>
+    <pre><span class="cmt">*> open / read / write / close</span>
+<span class="num">01</span> FD-Sys   <span class="kw">USAGE BINARY-LONG</span>.
+<span class="num">01</span> Flags    <span class="kw">USAGE BINARY-LONG</span> <span class="kw">VALUE</span> <span class="num">0</span>.    <span class="cmt">*> O_RDONLY=0</span>
+<span class="num">01</span> Mode     <span class="kw">USAGE BINARY-LONG</span> <span class="kw">VALUE</span> <span class="num">0</span>.
+<span class="num">01</span> FilePath <span class="kw">PIC X(40)</span> <span class="kw">VALUE</span> <span class="str">"/etc/hostname\x00"</span>.
+<span class="kw">CALL</span> <span class="str">"open"</span>
+    <span class="kw">USING BY REFERENCE</span> FilePath
+          <span class="kw">BY VALUE</span>     Flags
+          <span class="kw">BY VALUE</span>     Mode
+    <span class="kw">RETURNING</span> FD-Sys.
+
+<span class="num">01</span> Buffer   <span class="kw">PIC X(256)</span>.
+<span class="num">01</span> BufLen   <span class="kw">USAGE BINARY-LONG</span> <span class="kw">VALUE</span> <span class="num">256</span>.
+<span class="num">01</span> BytesRd  <span class="kw">USAGE BINARY-LONG</span>.
+<span class="kw">CALL</span> <span class="str">"read"</span>
+    <span class="kw">USING BY VALUE</span>     FD-Sys
+          <span class="kw">BY REFERENCE</span> Buffer
+          <span class="kw">BY VALUE</span>     BufLen
+    <span class="kw">RETURNING</span> BytesRd.
+<span class="kw">CALL</span> <span class="str">"close"</span> <span class="kw">USING BY VALUE</span> FD-Sys.</pre>
+    <div class="note">Per chiamare funzioni C da COBOL: stringhe devono terminare con <code>\x00</code> (null byte). Compilare con <code>cobc -x prog.cob -lc</code> (di solito implicito).</div>
+  </div>
+</div>
+
+<!-- ─── OO COBOL ──────────────────────────────────────────────── -->
+<a class="anchor" id="s-oo"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OBJECT ORIENTED COBOL</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Definizione Classe (todolist.cob)</div>
+        <pre><span class="hd">CLASS-ID.</span> todolist.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">CLASS-STORAGE SECTION.</span>
+   <span class="num">01</span> ListName <span class="kw">PIC X(20)</span>.
+<span class="hd">PROCEDURE DIVISION.</span>
+<span class="lbl">FACTORY.</span>
+   <span class="kw">METHOD-ID.</span> new.
+   <span class="hd">DATA DIVISION.</span>
+   <span class="kw">LINKAGE SECTION.</span>
+       <span class="num">01</span> LName <span class="kw">PIC X(20)</span>.
+   <span class="hd">PROCEDURE DIVISION</span> <span class="kw">USING</span> LName
+       <span class="kw">RETURNING</span> <span class="kw">SELF</span>.
+       <span class="kw">MOVE</span> LName <span class="kw">TO</span> ListName.
+       <span class="kw">INVOKE SUPER</span> <span class="str">"new"</span>
+           <span class="kw">RETURNING SELF</span>.
+   <span class="kw">END METHOD</span> new.
+<span class="lbl">END FACTORY.</span>
+<span class="kw">END CLASS</span> todolist.</pre>
+      </div>
+      <div>
+        <div class="sub-title">Uso della Classe</div>
+        <pre><span class="hd">REPOSITORY.</span>
+    <span class="kw">CLASS</span> TodoCls <span class="kw">AS</span> <span class="str">"todolist"</span>.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">WORKING-STORAGE SECTION.</span>
+<span class="num">01</span> WkTodo <span class="kw">USAGE OBJECT REFERENCE</span> TodoCls.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+<span class="cmt">*> Crea istanza</span>
+<span class="kw">INVOKE</span> TodoCls <span class="str">"new"</span>
+    <span class="kw">USING BY CONTENT</span> <span class="str">"La mia lista"</span>
+    <span class="kw">RETURNING</span> WkTodo.
+<span class="cmt">*> Chiama metodo</span>
+<span class="kw">INVOKE</span> WkTodo <span class="str">"PrintToDos"</span>.
+<span class="cmt">*> Distruggi oggetto</span>
+<span class="kw">INVOKE</span> WkTodo <span class="str">"finalize"</span>.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── C → COBOL TIPI ───────────────────────────────────────── -->
+<a class="anchor" id="s-ctypes"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CONVERSIONE TIPI C → COBOL</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Tipo C</th><th>COBOL (USAGE)</th><th>COBOL (PIC)</th><th>Byte</th></tr>
+      <tr><td><code>int8_t</code></td><td><code>USAGE BINARY-CHAR</code></td><td><code>PIC S9(3)</code></td><td>1</td></tr>
+      <tr><td><code>uint8_t</code></td><td><code>USAGE BINARY-CHAR UNSIGNED</code></td><td><code>PIC 9(3)</code></td><td>1</td></tr>
+      <tr><td><code>int16_t</code></td><td><code>USAGE BINARY-SHORT</code></td><td><code>PIC S9(5)</code></td><td>2</td></tr>
+      <tr><td><code>uint16_t</code></td><td><code>USAGE BINARY-SHORT UNSIGNED</code></td><td><code>PIC 9(5)</code></td><td>2</td></tr>
+      <tr><td><code>int32_t</code></td><td><code>USAGE BINARY-LONG</code></td><td><code>PIC S9(9)</code></td><td>4</td></tr>
+      <tr><td><code>uint32_t</code></td><td><code>USAGE BINARY-LONG UNSIGNED</code></td><td><code>PIC 9(9)</code></td><td>4</td></tr>
+      <tr><td><code>int64_t</code></td><td><code>USAGE BINARY-DOUBLE</code></td><td><code>PIC S9(18)</code></td><td>8</td></tr>
+      <tr><td><code>uint64_t</code></td><td><code>USAGE BINARY-DOUBLE UNSIGNED</code></td><td><code>PIC 9(18)</code></td><td>8</td></tr>
+      <tr><td><code>float</code></td><td><code>USAGE FLOAT-SHORT</code> o <code>COMP-1</code></td><td>N/A (no PIC)</td><td>4</td></tr>
+      <tr><td><code>double</code></td><td><code>USAGE FLOAT-LONG</code> o <code>COMP-2</code></td><td>N/A</td><td>8</td></tr>
+      <tr><td><code>long double</code></td><td><code>USAGE FLOAT-EXTENDED</code></td><td>N/A</td><td>16</td></tr>
+      <tr><td><code>char[n]</code></td><td>—</td><td><code>PIC X(n)</code></td><td>n</td></tr>
+      <tr><td><code>char*</code> (null-term)</td><td><code>USAGE POINTER</code></td><td><code>PIC X(n)</code> + <code>\x00</code></td><td>ptr size</td></tr>
+      <tr><td><code>void*</code></td><td><code>USAGE POINTER</code></td><td>—</td><td>4/8</td></tr>
+      <tr><td><code>size_t</code></td><td><code>USAGE BINARY-LONG UNSIGNED</code></td><td><code>PIC 9(10)</code></td><td>4/8</td></tr>
+      <tr><td><code>bool</code> (C99)</td><td><code>PIC 9(1)</code> o <code>PIC 1 USAGE BIT</code></td><td><code>PIC 9</code></td><td>1</td></tr>
+    </table>
+    <pre><span class="cmt">*> Esempio pratico</span>
+<span class="num">01</span> CIntVal    <span class="kw">USAGE BINARY-LONG</span>.         <span class="cmt">*> int32_t</span>
+<span class="num">01</span> CUIntVal   <span class="kw">USAGE BINARY-LONG UNSIGNED</span>. <span class="cmt">*> uint32_t</span>
+<span class="num">01</span> CFloat     <span class="kw">USAGE FLOAT-SHORT</span>.          <span class="cmt">*> float</span>
+<span class="num">01</span> CDouble    <span class="kw">USAGE FLOAT-LONG</span>.           <span class="cmt">*> double</span>
+<span class="num">01</span> CString    <span class="kw">PIC X(64)</span>.                  <span class="cmt">*> char[64]</span>
+<span class="num">01</span> CPtr       <span class="kw">USAGE POINTER</span>.              <span class="cmt">*> void*</span></pre>
+  </div>
+</div>
+
+<!-- ─── struct / enum / pointer ─────────────────────────────── -->
+<a class="anchor" id="s-cstruct"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C STRUCT, ENUM, PUNTATORI → COBOL</div>
+  <div class="section-body">
+    <div class="sub-title">struct C → Group Item COBOL</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="cmt">// C</span>
+typedef struct {
+    int32_t  id;
+    char     nome[32];
+    float    saldo;
+    uint8_t  flag;
+} Cliente;</pre>
+      </div>
+      <div>
+        <pre><span class="cmt">*> COBOL equivalente</span>
+<span class="num">01</span> Cliente.
+   <span class="num">02</span> ID      <span class="kw">USAGE BINARY-LONG</span>.
+   <span class="num">02</span> Nome    <span class="kw">PIC X(32)</span>.
+   <span class="num">02</span> Saldo   <span class="kw">USAGE FLOAT-SHORT</span>.
+   <span class="num">02</span> Flag    <span class="kw">USAGE BINARY-CHAR UNSIGNED</span>.</pre>
+      </div>
+    </div>
+
+    <div class="sub-title" style="margin-top:10px">union C → REDEFINES</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="cmt">// C</span>
+union Dato {
+    int32_t  intero;
+    float    reale;
+    char     bytes[4];
+};</pre>
+      </div>
+      <div>
+        <pre><span class="cmt">*> COBOL</span>
+<span class="num">01</span> DatoRaw   <span class="kw">PIC X(4)</span>.
+<span class="num">01</span> DatoInt   <span class="kw">REDEFINES</span> DatoRaw
+               <span class="kw">USAGE BINARY-LONG</span>.
+<span class="num">01</span> DatoFloat <span class="kw">REDEFINES</span> DatoRaw
+               <span class="kw">USAGE FLOAT-SHORT</span>.</pre>
+      </div>
+    </div>
+
+    <div class="sub-title" style="margin-top:10px">enum C → Level 88</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="cmt">// C</span>
+typedef enum {
+    APERTO = 0,
+    CHIUSO = 1,
+    ERRORE = 2
+} Stato;</pre>
+      </div>
+      <div>
+        <pre><span class="cmt">*> COBOL</span>
+<span class="num">01</span> StatoCod <span class="kw">USAGE BINARY-LONG</span> <span class="kw">VALUE</span> <span class="num">0</span>.
+   <span class="num">88</span> APERTO   <span class="kw">VALUE</span> <span class="num">0</span>.
+   <span class="num">88</span> CHIUSO   <span class="kw">VALUE</span> <span class="num">1</span>.
+   <span class="num">88</span> ERRORE   <span class="kw">VALUE</span> <span class="num">2</span>.
+<span class="cmt">*> Uso: SET APERTO TO TRUE.</span>
+<span class="cmt">*>      IF CHIUSO DISPLAY "Chiuso".</span></pre>
+      </div>
+    </div>
+
+    <div class="sub-title" style="margin-top:10px">Puntatori</div>
+    <pre><span class="num">01</span> MioPtr    <span class="kw">USAGE POINTER</span>.
+<span class="num">01</span> IntTarget <span class="kw">USAGE BINARY-LONG BASED</span>.  <span class="cmt">*> BASED = allocato via puntatore</span>
+<span class="num">01</span> FunzPtr   <span class="kw">USAGE FUNCTION-POINTER</span>.
+
+<span class="cmt">*> Ottenere l'indirizzo di una variabile</span>
+<span class="kw">SET</span> MioPtr <span class="kw">TO ADDRESS OF</span> IntTarget.
+<span class="cmt">*> Usare il puntatore (deref)</span>
+<span class="kw">SET ADDRESS OF</span> IntTarget <span class="kw">TO</span> MioPtr.
+<span class="kw">DISPLAY</span> IntTarget.
+<span class="cmt">*> NULL check</span>
+<span class="kw">IF</span> MioPtr = <span class="kw">NULL</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Puntatore nullo"</span>
+<span class="kw">END-IF</span>.
+<span class="cmt">*> Puntatore a funzione (callback)</span>
+<span class="kw">SET</span> FunzPtr <span class="kw">TO ENTRY</span> <span class="str">"MiaFunzione"</span>.
+<span class="kw">CALL</span> FunzPtr <span class="kw">USING</span> Parametro.</pre>
+  </div>
+</div>
+
+<!-- ─── C ARRAY / MATRICI / STRINGHE ─────────────────────────── -->
+<a class="anchor" id="s-carrays"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C ARRAY, MATRICI, STRINGHE → COBOL</div>
+  <div class="section-body">
+    <div class="sub-title">Array C → Tabella COBOL</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="cmt">// C</span>
+int32_t valori[10];
+valori[0] = 42;
+valori[9] = 100;</pre>
+      </div>
+      <div>
+        <pre><span class="cmt">*> COBOL (subscript parte da 1!)</span>
+<span class="num">01</span> TabellaValori.
+   <span class="num">02</span> Valore <span class="kw">USAGE BINARY-LONG
+           OCCURS 10 TIMES</span>.
+<span class="kw">MOVE</span>  <span class="num">42</span>  <span class="kw">TO</span> Valore(<span class="num">1</span>).
+<span class="kw">MOVE</span> <span class="num">100</span>  <span class="kw">TO</span> Valore(<span class="num">10</span>).</pre>
+      </div>
+    </div>
+
+    <div class="sub-title" style="margin-top:10px">Matrice C → Tabella multidimensionale</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="cmt">// C</span>
+int32_t matrice[3][4];
+matrice[1][2] = 7;</pre>
+      </div>
+      <div>
+        <pre><span class="cmt">*> COBOL</span>
+<span class="num">01</span> Matrice.
+   <span class="num">02</span> Riga <span class="kw">OCCURS 3 TIMES INDEXED BY</span> I.
+       <span class="num">03</span> Cella <span class="kw">USAGE BINARY-LONG
+               OCCURS 4 TIMES INDEXED BY</span> J.
+<span class="kw">SET</span> I <span class="kw">TO</span> <span class="num">2</span>. <span class="kw">SET</span> J <span class="kw">TO</span> <span class="num">3</span>.
+<span class="kw">MOVE</span> <span class="num">7</span> <span class="kw">TO</span> Cella(I, J).</pre>
+      </div>
+    </div>
+
+    <div class="sub-title" style="margin-top:10px">Stringhe C (null-terminated) ↔ COBOL</div>
+    <pre><span class="cmt">*> Stringa COBOL → C null-terminated</span>
+<span class="num">01</span> CobolStr  <span class="kw">PIC X(30)</span> <span class="kw">VALUE</span> <span class="str">"Ciao mondo"</span>.
+<span class="num">01</span> CStr      <span class="kw">PIC X(31)</span>.   <span class="cmt">*> +1 per \0</span>
+<span class="kw">MOVE SPACES TO</span> CStr.
+<span class="kw">MOVE</span> CobolStr <span class="kw">TO</span> CStr.
+<span class="cmt">*> Scrivere manualmente il terminatore null</span>
+<span class="kw">MOVE</span> X<span class="str">"00"</span> <span class="kw">TO</span> CStr(<span class="kw">FUNCTION LENGTH</span>(
+    <span class="kw">FUNCTION TRIM</span>(CobolStr)) + <span class="num">1</span> : <span class="num">1</span>).
+
+<span class="cmt">*> In alternativa con INSPECT</span>
+<span class="kw">INSPECT</span> CStr <span class="kw">REPLACING TRAILING SPACES BY</span> LOW-VALUES.
+
+<span class="cmt">*> Stringa C → COBOL (pulizia null e padding)</span>
+<span class="kw">INSPECT</span> CStr <span class="kw">REPLACING ALL</span> X<span class="str">"00"</span> <span class="kw">BY SPACE</span>.
+
+<span class="cmt">*> Reference modification (substring)</span>
+<span class="cmt">*> variabile(start : lunghezza)</span>
+<span class="kw">DISPLAY</span> CobolStr(<span class="num">1</span> : <span class="num">4</span>).    <span class="cmt">*> "Ciao"</span>
+<span class="kw">MOVE</span> CobolStr(<span class="num">6</span> : <span class="num">5</span>) <span class="kw">TO</span> Parte2.  <span class="cmt">*> "mondo"</span></pre>
+    <div class="note">Le stringhe COBOL sono padded con spazi a destra; quelle C con '\0'. Quando si chiama una funzione C da COBOL, ricordarsi di aggiungere <code>X"00"</code> alla fine della stringa.</div>
+  </div>
+</div>
+
+<!-- ─── SCREEN SECTION ───────────────────────────────────────── -->
+<a class="anchor" id="s-screen"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SCREEN SECTION — TUI INTERATTIVO</div>
+  <div class="section-body">
+    <p>La SCREEN SECTION permette di costruire interfacce testuali interattive (TUI) tipo terminal. Richiede libreria curses/PDCurses. Compilare con <code>cobc -x -lncurses prog.cob</code>.</p>
+
+    <div class="sub-title">Attributi Schermo (Screen Clauses)</div>
+    <table>
+      <tr><th>Clausola</th><th>Effetto</th></tr>
+      <tr><td><code>BLANK SCREEN</code></td><td>Cancella tutto lo schermo</td></tr>
+      <tr><td><code>BLANK LINE</code></td><td>Cancella la riga corrente</td></tr>
+      <tr><td><code>LINE n</code></td><td>Posizione riga (1-based)</td></tr>
+      <tr><td><code>COLUMN n</code></td><td>Posizione colonna (1-based)</td></tr>
+      <tr><td><code>LINE PLUS n</code></td><td>Riga relativa (+n dalla corrente)</td></tr>
+      <tr><td><code>COLUMN PLUS n</code></td><td>Colonna relativa</td></tr>
+      <tr><td><code>VALUE "testo"</code></td><td>Testo fisso sullo schermo</td></tr>
+      <tr><td><code>FROM variabile</code></td><td>Output: legge da variabile working-storage</td></tr>
+      <tr><td><code>TO variabile</code></td><td>Input: scrive in variabile working-storage</td></tr>
+      <tr><td><code>USING variabile</code></td><td>Input+Output (FROM+TO insieme)</td></tr>
+      <tr><td><code>PIC X(n)</code></td><td>Formato campo input</td></tr>
+      <tr><td><code>FOREGROUND-COLOR n</code></td><td>Colore testo (0-7: nero,rosso,verde,giallo,blu,magenta,ciano,bianco)</td></tr>
+      <tr><td><code>BACKGROUND-COLOR n</code></td><td>Colore sfondo</td></tr>
+      <tr><td><code>HIGHLIGHT</code></td><td>Testo evidenziato/grassetto</td></tr>
+      <tr><td><code>LOWLIGHT</code></td><td>Testo dimmerato</td></tr>
+      <tr><td><code>REVERSE-VIDEO</code></td><td>Inversione colori</td></tr>
+      <tr><td><code>UNDERLINE</code></td><td>Sottolineato</td></tr>
+      <tr><td><code>BLINK</code></td><td>Lampeggiante</td></tr>
+      <tr><td><code>BELL</code></td><td>Segnale acustico</td></tr>
+      <tr><td><code>SECURE</code></td><td>Input nascosto (password)</td></tr>
+      <tr><td><code>REQUIRED</code></td><td>Campo obbligatorio</td></tr>
+      <tr><td><code>FULL</code></td><td>Deve riempire tutto il campo</td></tr>
+      <tr><td><code>AUTO</code></td><td>Avanza automaticamente al campo successivo</td></tr>
+      <tr><td><code>NO ECHO</code></td><td>Non mostra l'input digitato</td></tr>
+      <tr><td><code>ERASE EOL</code></td><td>Cancella fino a fine riga</td></tr>
+      <tr><td><code>ERASE EOS</code></td><td>Cancella fino a fine schermo</td></tr>
+      <tr><td><code>SCROLL DOWN</code></td><td>Scorrimento verso il basso</td></tr>
+      <tr><td><code>SIZE n</code></td><td>Dimensione campo (alternativa a PIC)</td></tr>
+      <tr><td><code>UPPER</code></td><td>Converte input in maiuscolo</td></tr>
+      <tr><td><code>LOWER</code></td><td>Converte input in minuscolo</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Costanti colori</div>
+    <table>
+      <tr><th>Num</th><th>Colore</th><th>Num</th><th>Colore</th></tr>
+      <tr><td>0</td><td>Nero (BLACK)</td><td>4</td><td>Blu (BLUE)</td></tr>
+      <tr><td>1</td><td>Rosso (RED)</td><td>5</td><td>Magenta (MAGENTA)</td></tr>
+      <tr><td>2</td><td>Verde (GREEN)</td><td>6</td><td>Ciano (CYAN)</td></tr>
+      <tr><td>3</td><td>Giallo (YELLOW)</td><td>7</td><td>Bianco (WHITE)</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Esempio completo SCREEN SECTION</div>
+    <pre><span class="hd">DATA DIVISION.</span>
+<span class="kw">WORKING-STORAGE SECTION.</span>
+   <span class="num">01</span> WS-Nome     <span class="kw">PIC X(30)</span>.
+   <span class="num">01</span> WS-Eta      <span class="kw">PIC 99</span>.
+   <span class="num">01</span> WS-Password <span class="kw">PIC X(20)</span>.
+   <span class="num">01</span> WS-Scelta   <span class="kw">PIC 9</span>.
+
+<span class="kw">SCREEN SECTION.</span>
+<span class="num">01</span> SchermoPrincipale.
+   <span class="cmt">*> Sfondo e titolo</span>
+   <span class="num">02</span> <span class="kw">BLANK SCREEN
+         BACKGROUND-COLOR</span> <span class="num">4</span>    <span class="cmt">*> sfondo blu</span>
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">7</span>.   <span class="cmt">*> testo bianco</span>
+   <span class="cmt">*> Titolo centrato riga 1</span>
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">1</span> <span class="kw">COLUMN</span> <span class="num">30</span>
+         <span class="kw">VALUE</span> <span class="str">"=== GESTIONE CLIENTI ==="</span>
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">3</span>     <span class="cmt">*> giallo</span>
+         <span class="kw">HIGHLIGHT</span>.
+   <span class="cmt">*> Label</span>
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">4</span> <span class="kw">COLUMN</span> <span class="num">5</span>
+         <span class="kw">VALUE</span> <span class="str">"Nome: "</span>
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">7</span>.
+   <span class="cmt">*> Campo input</span>
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">4</span> <span class="kw">COLUMN</span> <span class="num">12</span>
+         <span class="kw">PIC X(30)</span>
+         <span class="kw">USING</span> WS-Nome
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">6</span>     <span class="cmt">*> ciano</span>
+         <span class="kw">BACKGROUND-COLOR</span> <span class="num">0</span>     <span class="cmt">*> nero</span>
+         <span class="kw">REQUIRED AUTO</span>.
+   <span class="cmt">*> Età</span>
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">5</span> <span class="kw">COLUMN</span> <span class="num">5</span>
+         <span class="kw">VALUE</span> <span class="str">"Eta:  "</span>.
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">5</span> <span class="kw">COLUMN</span> <span class="num">12</span>
+         <span class="kw">PIC 99</span> <span class="kw">USING</span> WS-Eta
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">6</span>
+         <span class="kw">AUTO</span>.
+   <span class="cmt">*> Password con oscuramento</span>
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">6</span> <span class="kw">COLUMN</span> <span class="num">5</span>
+         <span class="kw">VALUE</span> <span class="str">"Pass: "</span>.
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">6</span> <span class="kw">COLUMN</span> <span class="num">12</span>
+         <span class="kw">PIC X(20)</span> <span class="kw">TO</span> WS-Password
+         <span class="kw">SECURE</span>
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">6</span>.
+   <span class="cmt">*> Riga separatore</span>
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">8</span> <span class="kw">COLUMN</span> <span class="num">1</span>
+         <span class="kw">VALUE ALL</span> <span class="str">"-"</span>
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">5</span>.
+   <span class="cmt">*> Messaggio stato</span>
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">22</span> <span class="kw">COLUMN</span> <span class="num">1</span>
+         <span class="kw">VALUE</span> <span class="str">"F1=Aiuto  F3=Esci  INVIO=Conferma"</span>
+         <span class="kw">REVERSE-VIDEO</span>.
+
+<span class="cmt">*> Schermo di sola visualizzazione</span>
+<span class="num">01</span> SchermoOutput.
+   <span class="num">02</span> <span class="kw">BLANK SCREEN</span>.
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">5</span> <span class="kw">COLUMN</span> <span class="num">10</span>
+         <span class="kw">VALUE</span> <span class="str">"Risultato: "</span>.
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">5</span> <span class="kw">COLUMN</span> <span class="num">22</span>
+         <span class="kw">PIC X(40)</span> <span class="kw">FROM</span> WS-Nome
+         <span class="kw">HIGHLIGHT</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+   <span class="cmt">*> Visualizza e gestisce input</span>
+   <span class="kw">DISPLAY</span> SchermoPrincipale.
+   <span class="kw">ACCEPT</span>  SchermoPrincipale.
+   <span class="cmt">*> Solo visualizzazione</span>
+   <span class="kw">DISPLAY</span> SchermoOutput.
+   <span class="cmt">*> Posizionamento diretto (senza SCREEN SECTION)</span>
+   <span class="kw">DISPLAY</span> <span class="str">"Testo"</span> <span class="kw">AT LINE</span> <span class="num">10</span> <span class="kw">COLUMN</span> <span class="num">5</span>
+       <span class="kw">FOREGROUND-COLOR</span> <span class="num">2</span>.
+   <span class="cmt">*> ACCEPT con posizionamento</span>
+   <span class="kw">ACCEPT</span> WS-Scelta <span class="kw">AT LINE</span> <span class="num">10</span> <span class="kw">COLUMN</span> <span class="num">20</span>.</pre>
+
+    <div class="note">SCREEN SECTION funziona con <code>DISPLAY nomeschermo</code> per visualizzare e <code>ACCEPT nomeschermo</code> per acquisire input. Le clausole FROM (solo output), TO (solo input), USING (input+output) determinano il flusso dati.</div>
+  </div>
+</div>
+
+<!-- ─── ACCEPT/DISPLAY AVANZATO ─────────────────────────────── -->
+<a class="anchor" id="s-accept-display"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ACCEPT / DISPLAY AVANZATO</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">DISPLAY</div>
+        <pre><span class="kw">DISPLAY</span> <span class="str">"Testo"</span>.
+<span class="kw">DISPLAY</span> Var1 <span class="str">" "</span> Var2.
+<span class="kw">DISPLAY</span> <span class="str">"Msg"</span> <span class="kw">WITH NO ADVANCING</span>.
+<span class="kw">DISPLAY</span> <span class="str">"Msg"</span> <span class="kw">UPON</span> CONSOLE.
+<span class="kw">DISPLAY</span> <span class="str">"Err"</span> <span class="kw">UPON</span> STDERR.
+<span class="cmt">*> Con posizionamento (curses)</span>
+<span class="kw">DISPLAY</span> <span class="str">"Testo"</span>
+    <span class="kw">AT</span> <span class="num">0510</span>    <span class="cmt">*> riga 05, col 10</span>
+    <span class="kw">FOREGROUND-COLOR</span> <span class="num">2</span>
+    <span class="kw">BACKGROUND-COLOR</span> <span class="num">0</span>.</pre>
+      </div>
+      <div>
+        <div class="sub-title">ACCEPT</div>
+        <pre><span class="kw">ACCEPT</span> Variabile.
+<span class="kw">ACCEPT</span> Variabile <span class="kw">FROM DATE</span>.    <span class="cmt">*> YYMMDD</span>
+<span class="kw">ACCEPT</span> Variabile <span class="kw">FROM DATE YYYYMMDD</span>.
+<span class="kw">ACCEPT</span> Variabile <span class="kw">FROM TIME</span>.    <span class="cmt">*> HHMMSScc</span>
+<span class="kw">ACCEPT</span> Variabile <span class="kw">FROM DAY</span>.     <span class="cmt">*> YYDDD</span>
+<span class="kw">ACCEPT</span> Variabile <span class="kw">FROM DAY-OF-WEEK</span>. <span class="cmt">*> 1=Lun</span>
+<span class="kw">ACCEPT</span> Variabile <span class="kw">FROM COMMAND-LINE</span>.
+<span class="kw">ACCEPT</span> Variabile <span class="kw">FROM ENVIRONMENT</span> <span class="str">"HOME"</span>.
+<span class="cmt">*> Con posizionamento</span>
+<span class="kw">ACCEPT</span> Variabile
+    <span class="kw">AT LINE</span> <span class="num">5</span> <span class="kw">COLUMN</span> <span class="num">10</span>.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── COMPILAZIONE ─────────────────────────────────────────── -->
+<a class="anchor" id="s-compile"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMPILARE CON cobc (GnuCOBOL)</div>
+  <div class="section-body">
+    <div class="sub-title">Sintassi cobc</div>
+    <pre><span class="dim">cobc [opzioni] file.cob [file2.cob ...] [-l libreria]</span></pre>
+
+    <table>
+      <tr><th>Flag</th><th>Effetto</th></tr>
+      <tr><td><code>-x</code></td><td>Compila in eseguibile autonomo</td></tr>
+      <tr><td><code>-m</code></td><td>Compila in modulo (.so/.dll) dinamico</td></tr>
+      <tr><td><code>-o nome</code></td><td>Specifica nome file output</td></tr>
+      <tr><td><code>-free</code></td><td>Source format free (senza vincoli di colonna)</td></tr>
+      <tr><td><code>-fixed</code></td><td>Source format fixed (default)</td></tr>
+      <tr><td><code>-std=cobol2014</code></td><td>Standard COBOL 2014</td></tr>
+      <tr><td><code>-std=ibm</code></td><td>Compatibilità IBM mainframe</td></tr>
+      <tr><td><code>-std=mf</code></td><td>Compatibilità Micro Focus</td></tr>
+      <tr><td><code>-fstatic-call</code></td><td>Forza tutte le CALL a essere statiche</td></tr>
+      <tr><td><code>-fdebugging-line</code></td><td>Abilita linee di debug (D in col.7)</td></tr>
+      <tr><td><code>-debug</code></td><td>Abilita runtime checks complete</td></tr>
+      <tr><td><code>-g</code></td><td>Simboli di debug (per gdb)</td></tr>
+      <tr><td><code>-O / -O2</code></td><td>Ottimizzazione</td></tr>
+      <tr><td><code>-Wall</code></td><td>Tutti i warning</td></tr>
+      <tr><td><code>-I dir</code></td><td>Directory per COPY (copybooks)</td></tr>
+      <tr><td><code>-L dir</code></td><td>Directory librerie</td></tr>
+      <tr><td><code>-l nome</code></td><td>Linka libreria</td></tr>
+      <tr><td><code>-v</code></td><td>Verbose (mostra comandi eseguiti)</td></tr>
+      <tr><td><code>-save-temps</code></td><td>Mantieni file intermedi (.c generato)</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Programma singolo</div>
+    <pre><span class="cmt"># Compila ed esegui</span>
+<span class="dim">cobc -x hello.cob</span>
+<span class="dim">./hello</span>
+
+<span class="cmt"># Free format esplicito</span>
+<span class="dim">cobc -x -free hello.cob</span>
+
+<span class="cmt"># Con output rinominato</span>
+<span class="dim">cobc -x -o programma hello.cob</span>
+
+<span class="cmt"># Solo il C generato (debug compilazione)</span>
+<span class="dim">cobc -C hello.cob</span>
+<span class="dim">cat hello.c</span></pre>
+  </div>
+</div>
+
+<!-- ─── MULTI-SORGENTE ───────────────────────────────────────── -->
+<a class="anchor" id="s-multi"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PROGETTI MULTI-SORGENTE</div>
+  <div class="section-body">
+    <div class="sub-title">Metodo 1: Compilazione insieme</div>
+    <pre><span class="cmt"># Tutto in un colpo (statico)</span>
+<span class="dim">cobc -x main.cob GETSUM.cob UTILS.cob</span></pre>
+
+    <div class="sub-title" style="margin-top:8px">Metodo 2: Moduli dinamici (.so)</div>
+    <pre><span class="cmt"># Compila i moduli come shared library</span>
+<span class="dim">cobc -m GETSUM.cob         # → GETSUM.so</span>
+<span class="dim">cobc -m UTILS.cob          # → UTILS.so</span>
+<span class="cmt"># Compila il main (le CALL verranno risolte a runtime)</span>
+<span class="dim">cobc -x main.cob           # → main</span>
+<span class="dim">./main                     # cerca GETSUM.so, UTILS.so in COB_LIBRARY_PATH</span></pre>
+
+    <div class="sub-title" style="margin-top:8px">Metodo 3: Moduli statici (.o)</div>
+    <pre><span class="cmt"># Compila oggetti C</span>
+<span class="dim">cobc -C GETSUM.cob         # genera GETSUM.c</span>
+<span class="dim">gcc -c GETSUM.c -o GETSUM.o $(cob-config --cflags)</span>
+<span class="cmt"># Link finale</span>
+<span class="dim">cobc -x -fstatic-call main.cob GETSUM.o</span></pre>
+
+    <div class="sub-title" style="margin-top:8px">Variabili d'ambiente GnuCOBOL</div>
+    <table>
+      <tr><th>Variabile</th><th>Scopo</th></tr>
+      <tr><td><code>COB_LIBRARY_PATH</code></td><td>Percorsi per moduli .so a runtime</td></tr>
+      <tr><td><code>COB_COPY_DIR</code></td><td>Directory per COPY books</td></tr>
+      <tr><td><code>COB_CONFIG_DIR</code></td><td>Directory configurazione compilatore</td></tr>
+      <tr><td><code>COB_SCREEN_EXCEPTIONS</code></td><td>Abilita gestione eccezioni schermo</td></tr>
+      <tr><td><code>COB_EXCEPTION_PROCEDURE</code></td><td>Procedura gestore eccezioni</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:8px">COPY books (include)</div>
+    <pre><span class="cmt">*> COPY include un file .cpy o .cob come testo</span>
+<span class="kw">COPY</span> STDDEF.          <span class="cmt">*> cerca STDDEF.cpy in COB_COPY_DIR</span>
+<span class="kw">COPY</span> <span class="str">"include/common.cpy"</span> <span class="kw">REPLACING</span>
+    ==PREFISSO== <span class="kw">BY</span> ==WS==.   <span class="cmt">*> sostituzione testo</span></pre>
+  </div>
+</div>
+
+<!-- ─── LIBRERIE ESTERNE ─────────────────────────────────────── -->
+<a class="anchor" id="s-libs"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMPILAZIONE CON LIBRERIE ESTERNE</div>
+  <div class="section-body">
+    <div class="sub-title">Librerie C statiche (.a)</div>
+    <pre><span class="cmt"># Compilare con libmath, libncurses, ecc.</span>
+<span class="dim">cobc -x prog.cob -lm -lncurses</span>
+<span class="cmt"># Libreria custom statica</span>
+<span class="dim">cobc -x prog.cob -L/usr/local/lib -lmialib</span></pre>
+
+    <div class="sub-title" style="margin-top:8px">Librerie C dinamiche (.so / .dll)</div>
+    <pre><span class="cmt"># Linking con libreria dinamica</span>
+<span class="dim">cobc -x prog.cob -ldl        # libdl per dlopen</span>
+<span class="dim">export LD_LIBRARY_PATH=/path/to/libs:$LD_LIBRARY_PATH</span>
+<span class="dim">./prog</span></pre>
+
+    <div class="sub-title" style="margin-top:8px">Wrapper per librerie C esterne</div>
+    <pre><span class="cmt">*> Per usare funzioni da libm (math.h)</span>
+<span class="num">01</span> Angolo  <span class="kw">USAGE FLOAT-LONG</span>.
+<span class="num">01</span> Coseno  <span class="kw">USAGE FLOAT-LONG</span>.
+<span class="kw">MOVE</span> <span class="num">1.5707963</span> <span class="kw">TO</span> Angolo.
+<span class="kw">CALL</span> <span class="str">"cos"</span>   <span class="kw">USING BY VALUE</span> Angolo   <span class="kw">RETURNING</span> Coseno.
+<span class="kw">CALL</span> <span class="str">"sin"</span>   <span class="kw">USING BY VALUE</span> Angolo   <span class="kw">RETURNING</span> Risultato.
+<span class="kw">CALL</span> <span class="str">"sqrt"</span>  <span class="kw">USING BY VALUE</span> Valore   <span class="kw">RETURNING</span> Radice.
+<span class="kw">CALL</span> <span class="str">"pow"</span>   <span class="kw">USING BY VALUE</span> Base Esp <span class="kw">RETURNING</span> Pot.
+<span class="kw">CALL</span> <span class="str">"fabs"</span>  <span class="kw">USING BY VALUE</span> Num      <span class="kw">RETURNING</span> Abs.
+<span class="kw">CALL</span> <span class="str">"floor"</span> <span class="kw">USING BY VALUE</span> Num      <span class="kw">RETURNING</span> Floor.
+<span class="kw">CALL</span> <span class="str">"ceil"</span>  <span class="kw">USING BY VALUE</span> Num      <span class="kw">RETURNING</span> Ceil.
+
+<span class="cmt">*> Compilare: cobc -x prog.cob -lm</span></pre>
+
+    <div class="sub-title" style="margin-top:8px">Makefile di esempio</div>
+    <pre><span class="dim">COBC    = cobc
+COBFLAGS= -x -free -Wall -debug
+LIBS    = -lncurses -lm
+
+all: mioprog
+
+mioprog: main.cob modulo1.cob modulo2.cob
+    $(COBC) $(COBFLAGS) -o $@ $^ $(LIBS)
+
+modulo1.so: modulo1.cob
+    $(COBC) -m -free modulo1.cob
+
+clean:
+    rm -f mioprog *.so *.o *.c</span></pre>
+  </div>
+</div>
+
+<!-- ─── FUNZIONI INTRINSECHE ─────────────────────────────────── -->
+<a class="anchor" id="s-intrinsic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FUNZIONI INTRINSECHE (FUNCTION)</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Matematiche</div>
+        <table>
+          <tr><th>Funzione</th><th>Descrizione</th></tr>
+          <tr><td><code>ABS(n)</code></td><td>Valore assoluto</td></tr>
+          <tr><td><code>SQRT(n)</code></td><td>Radice quadrata</td></tr>
+          <tr><td><code>INTEGER(n)</code></td><td>Troncamento a intero</td></tr>
+          <tr><td><code>INTEGER-PART(n)</code></td><td>Parte intera</td></tr>
+          <tr><td><code>FRACTION-PART(n)</code></td><td>Parte decimale</td></tr>
+          <tr><td><code>MOD(n,d)</code></td><td>Modulo</td></tr>
+          <tr><td><code>REM(n,d)</code></td><td>Resto</td></tr>
+          <tr><td><code>MAX(a,b,...)</code></td><td>Massimo</td></tr>
+          <tr><td><code>MIN(a,b,...)</code></td><td>Minimo</td></tr>
+          <tr><td><code>MEAN(a,b,...)</code></td><td>Media</td></tr>
+          <tr><td><code>MEDIAN(a,b,...)</code></td><td>Mediana</td></tr>
+          <tr><td><code>SUM(a,b,...)</code></td><td>Somma</td></tr>
+          <tr><td><code>VARIANCE(a,...)</code></td><td>Varianza</td></tr>
+          <tr><td><code>STANDARD-DEVIATION</code></td><td>Dev. standard</td></tr>
+          <tr><td><code>EXP(n)</code></td><td>e^n</td></tr>
+          <tr><td><code>LOG(n)</code></td><td>log naturale</td></tr>
+          <tr><td><code>LOG10(n)</code></td><td>log base 10</td></tr>
+          <tr><td><code>SIN(n)</code></td><td>Seno (radianti)</td></tr>
+          <tr><td><code>COS(n)</code></td><td>Coseno</td></tr>
+          <tr><td><code>TAN(n)</code></td><td>Tangente</td></tr>
+          <tr><td><code>ASIN(n)</code></td><td>Arcoseno</td></tr>
+          <tr><td><code>ACOS(n)</code></td><td>Arcocoseno</td></tr>
+          <tr><td><code>ATAN(n)</code></td><td>Arcotangente</td></tr>
+          <tr><td><code>PI</code></td><td>Valore π</td></tr>
+          <tr><td><code>RANDOM([seed])</code></td><td>Numero casuale 0-1</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="sub-title">Data e Ora</div>
+        <table>
+          <tr><th>Funzione</th><th>Descrizione</th></tr>
+          <tr><td><code>CURRENT-DATE</code></td><td>Data+ora corrente (21 char)</td></tr>
+          <tr><td><code>WHEN-COMPILED</code></td><td>Data compilazione (21 char)</td></tr>
+          <tr><td><code>DATE-OF-INTEGER(n)</code></td><td>Numero giorno → YYYYMMDD</td></tr>
+          <tr><td><code>INTEGER-OF-DATE(d)</code></td><td>YYYYMMDD → numero giorno</td></tr>
+          <tr><td><code>DAY-OF-INTEGER(n)</code></td><td>Numero giorno → YYYYDDD</td></tr>
+          <tr><td><code>INTEGER-OF-DAY(d)</code></td><td>YYYYDDD → numero giorno</td></tr>
+        </table>
+
+        <div class="sub-title" style="margin-top:10px">Stringhe</div>
+        <table>
+          <tr><th>Funzione</th><th>Descrizione</th></tr>
+          <tr><td><code>LENGTH(s)</code></td><td>Lunghezza stringa</td></tr>
+          <tr><td><code>UPPER-CASE(s)</code></td><td>Maiuscolo</td></tr>
+          <tr><td><code>LOWER-CASE(s)</code></td><td>Minuscolo</td></tr>
+          <tr><td><code>REVERSE(s)</code></td><td>Inversa</td></tr>
+          <tr><td><code>TRIM(s)</code></td><td>Rimuove spazi</td></tr>
+          <tr><td><code>NUMVAL(s)</code></td><td>Stringa → numero</td></tr>
+          <tr><td><code>CHAR(n)</code></td><td>Numero → char</td></tr>
+          <tr><td><code>ORD(c)</code></td><td>Char → numero</td></tr>
+          <tr><td><code>ORD-MAX</code></td><td>Max ordinale del set</td></tr>
+          <tr><td><code>ORD-MIN</code></td><td>Min ordinale del set</td></tr>
+        </table>
+
+        <pre><span class="cmt">*> Uso FUNCTION</span>
+<span class="kw">COMPUTE</span> R = <span class="kw">FUNCTION SQRT</span>(<span class="num">9</span>).
+<span class="kw">MOVE FUNCTION CURRENT-DATE TO</span> DataOra.
+<span class="kw">DISPLAY FUNCTION UPPER-CASE</span>(Nome).
+<span class="kw">COMPUTE</span> X = <span class="kw">FUNCTION PI</span>.
+<span class="cmt">*> FUNCTION come statement di USE</span>
+<span class="hd">ENVIRONMENT DIVISION.</span>
+<span class="hd">CONFIGURATION SECTION.</span>
+<span class="hd">REPOSITORY.</span>
+    <span class="kw">FUNCTION ALL INTRINSIC</span>.
+<span class="cmt">*> → poi si può usare senza "FUNCTION":</span>
+<span class="kw">COMPUTE</span> X = SQRT(<span class="num">2</span>).</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--accent)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
