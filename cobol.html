@@ -1747,11 +1747,11 @@ matrice[1][2] = 7;</pre>
    <span class="num">01</span> WS-Scelta   <span class="kw">PIC 9</span>.
 
 <span class="kw">SCREEN SECTION.</span>
-<span class="num">01</span> SchermoPrincipale.
+<span class="num">01</span> SchermoPrincipale
+   <span class="kw">BACKGROUND-COLOR</span> <span class="num">4</span>    <span class="cmt">*> sfondo blu</span>
+   <span class="kw">FOREGROUND-COLOR</span> <span class="num">7</span>.   <span class="cmt">*> testo bianco</span>
    <span class="cmt">*> Sfondo e titolo</span>
-   <span class="num">02</span> <span class="kw">BLANK SCREEN
-         BACKGROUND-COLOR</span> <span class="num">4</span>    <span class="cmt">*> sfondo blu</span>
-         <span class="kw">FOREGROUND-COLOR</span> <span class="num">7</span>.   <span class="cmt">*> testo bianco</span>
+   <span class="num">02</span> <span class="kw">BLANK SCREEN</span>.
    <span class="cmt">*> Titolo centrato riga 1</span>
    <span class="num">02</span> <span class="kw">LINE</span> <span class="num">1</span> <span class="kw">COLUMN</span> <span class="num">30</span>
          <span class="kw">VALUE</span> <span class="str">"=== GESTIONE CLIENTI ==="</span>
@@ -1784,6 +1784,7 @@ matrice[1][2] = 7;</pre>
          <span class="kw">FOREGROUND-COLOR</span> <span class="num">6</span>.
    <span class="cmt">*> Riga separatore</span>
    <span class="num">02</span> <span class="kw">LINE</span> <span class="num">8</span> <span class="kw">COLUMN</span> <span class="num">1</span>
+         <span class="kw">PIC X(80)</span>
          <span class="kw">VALUE ALL</span> <span class="str">"-"</span>
          <span class="kw">FOREGROUND-COLOR</span> <span class="num">5</span>.
    <span class="cmt">*> Messaggio stato</span>
