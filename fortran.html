@@ -105,40 +105,42 @@
 
   /* ─── SIDEBAR ────────────────────────────────── */
   #sidebar {
-    width: 230px;
-    min-width: 230px;
+    width: 240px;
+    min-width: 240px;
     background: var(--panel);
     border-right: 1px solid var(--border);
-    height: calc(100vh - 72px);
+    height: calc(100vh - 70px);
     overflow-y: auto;
     position: sticky;
-    top: 72px;
-    padding: 10px 0;
+    top: 70px;
+    padding: 12px 0;
     scrollbar-width: thin;
     scrollbar-color: var(--glow) var(--bg);
   }
 
-  #sidebar::-webkit-scrollbar { width:4px; }
+  #sidebar::-webkit-scrollbar { width:5px; }
   #sidebar::-webkit-scrollbar-track { background: var(--bg); }
-  #sidebar::-webkit-scrollbar-thumb { background: var(--glow); border-radius:2px; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--glow); border-radius:3px; }
 
   .nav-head {
     font-family: 'VT323', monospace;
     font-size: 1rem;
     color: var(--accent2);
-    padding: 6px 12px 4px;
+    padding: 6px 14px 4px;
     letter-spacing: 2px;
     text-shadow: 0 0 8px var(--glow);
     border-bottom: 1px solid var(--border);
     margin-bottom: 4px;
   }
 
+  .nav-section { margin-bottom: 2px; }
+
   .nav-section-title {
     color: var(--kw);
-    font-size: 9.5px;
+    font-size: 10px;
     letter-spacing: 1.5px;
-    padding: 6px 12px 2px;
-    opacity: 0.65;
+    padding: 6px 14px 2px;
+    opacity: 0.7;
     text-transform: uppercase;
   }
 
@@ -146,9 +148,9 @@
     display: block;
     color: var(--text);
     text-decoration: none;
-    padding: 3px 10px 3px 18px;
-    font-size: 11px;
-    transition: all 0.1s;
+    padding: 3px 14px 3px 20px;
+    font-size: 11.5px;
+    transition: all 0.12s;
     border-left: 2px solid transparent;
   }
 
@@ -164,18 +166,18 @@
   /* ─── MAIN ───────────────────────────────────── */
   #main {
     flex:1;
-    padding: 20px 26px 60px;
+    padding: 20px 28px 60px;
     overflow-x: hidden;
-    max-width: calc(100vw - 230px);
+    max-width: calc(100vw - 240px);
   }
 
   /* ─── SECTION ────────────────────────────────── */
   .section {
-    margin-bottom: 26px;
+    margin-bottom: 28px;
     border: 1px solid var(--border);
     border-radius: 2px;
     background: var(--panel2);
-    box-shadow: 0 0 16px rgba(120,50,0,0.4);
+    box-shadow: 0 0 18px rgba(120,50,0,0.5);
     overflow: hidden;
   }
 
@@ -191,7 +193,7 @@
     display:flex; align-items:center; gap:8px;
   }
 
-  .section-header .icon { opacity:0.75; font-size:0.9rem; }
+  .section-header .icon { opacity:0.7; font-size:0.95rem; }
 
   .section-body { padding: 12px 14px; }
 
@@ -200,13 +202,13 @@
 
   .sub-title {
     color: var(--lbl);
-    font-size: 11.5px;
+    font-size: 12px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     margin-top: 12px;
     padding-bottom: 2px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px dashed var(--hr);
   }
 
   /* ─── GRID ───────────────────────────────────── */
@@ -215,26 +217,40 @@
 
   @media(max-width:900px) {
     .grid2,.grid3 { grid-template-columns:1fr; }
+    #sidebar { display:none; }
+    #main { max-width:100vw; padding:14px; }
   }
 
   /* ─── CODE / PRE ─────────────────────────────── */
   pre {
-    background: var(--bg);
+    background: rgba(0,0,0,0.4);
     border: 1px solid var(--border);
-    border-radius:2px;
+    border-left: 3px solid var(--glow);
+    border-radius: 1px;
     padding: 10px 12px;
     overflow-x: auto;
     line-height: 1.5;
     font-size: 12px;
     color: var(--text2);
     white-space: pre;
+    margin: 6px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow) var(--bg);
+  }
+
+  pre::-webkit-scrollbar { height:4px; }
+  pre::-webkit-scrollbar-track { background:var(--bg); }
+  pre::-webkit-scrollbar-thumb { background:var(--glow); }
+
+  pre, code {
+    font-family: 'Share Tech Mono', monospace;
   }
 
   code {
     background: rgba(80,40,0,0.4);
     border: 1px solid var(--border);
     padding: 1px 5px;
-    border-radius: 2px;
+    border-radius: 1px;
     font-size: 11.5px;
     color: var(--accent2);
   }
@@ -242,10 +258,10 @@
   .kw  { color: var(--kw); }
   .str { color: var(--str); }
   .num { color: var(--num); }
-  .cmt { color: var(--cmt); }
+  .cmt { color: var(--cmt); font-style: italic; }
   .lbl { color: var(--lbl); }
-  .hd  { color: var(--hd); }
-  .dim { color: #887060; }
+  .hd  { color: var(--hd); font-weight:bold; }
+  .dim { color: var(--dim); }
   .bright { color: var(--bright); }
   .acc { color: var(--accent); }
   .grn { color: #99cc66; }
@@ -254,34 +270,35 @@
   table {
     width:100%;
     border-collapse:collapse;
-    font-size:11.5px;
-    margin-top:4px;
+    font-size:12px;
+    margin: 6px 0;
   }
 
   th {
-    background: rgba(100,50,0,0.5);
+    background: rgba(100,50,0,0.45);
     color: var(--accent2);
     padding: 5px 8px;
     text-align:left;
-    border: 1px solid var(--border2);
+    border: 1px solid var(--border);
     letter-spacing:1px;
     font-size:11px;
   }
 
   td {
     padding: 4px 8px;
-    border: 1px solid var(--border);
-    color: var(--text);
+    border: 1px solid var(--hr);
+    color: var(--text2);
     vertical-align:top;
   }
 
   tr:nth-child(even) td { background: rgba(60,30,0,0.3); }
+  tr:hover td { background: rgba(100,50,0,0.15); }
 
-  td code {
-    background: transparent;
-    border: none;
-    padding:0;
-    color: var(--accent2);
+  td code, th code {
+    color: var(--str);
+    background: rgba(0,0,0,0.25);
+    padding: 1px 4px;
+    border-radius: 1px;
   }
 
   /* ─── VERSION BADGE ──────────────────────────── */
@@ -303,32 +320,29 @@
   .v08  { background:#1a001a; color:#aa33aa; border:1px solid #3a003a; }
   .v18  { background:#2a0000; color:#cc3333; border:1px solid #4a0000; }
 
-  /* ─── NOTE BOX ───────────────────────────────── */
+  /* ─── INLINE ──────────────────────────────────── */
+  p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
+
   .note {
     background: rgba(100,50,0,0.2);
-    border-left: 3px solid var(--glow);
-    padding: 7px 10px;
-    margin: 8px 0;
+    border-left: 3px solid var(--lbl);
+    padding: 6px 10px;
+    margin: 6px 0;
     font-size:11.5px;
-    color: var(--text2);
+    color: var(--text);
   }
 
   .warn {
     background: rgba(120,30,0,0.25);
     border-left: 3px solid #cc4400;
-    padding: 7px 10px;
-    margin: 8px 0;
+    padding: 6px 10px;
+    margin: 6px 0;
     font-size:11.5px;
     color: #ff9966;
   }
 
   /* ─── ANCHOR OFFSET ──────────────────────────── */
-  .anchor {
-    display:block;
-    position:relative;
-    top: -80px;
-    visibility:hidden;
-  }
+  .anchor { display:block; height:70px; margin-top:-70px; visibility:hidden; }
 
   /* ─── CURSOR BLINK ───────────────────────────── */
   @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
@@ -347,9 +361,7 @@
 <div id="header">
   <h1>&gt; FORTRAN REFERENCE MANUAL <span class="cursor"></span></h1>
   <div class="subtitle">
-    FORTRAN 66/77/90/95/2003/2008/2018 &nbsp;|&nbsp;
-    <span>COMPILED WITH GFORTRAN</span> &nbsp;|&nbsp;
-    TERMINAL v2.0 &nbsp;|&nbsp; <span>AMBER MODE ACTIVE</span>
+    FORTRAN 66/77/90/95/2003/2008/2018 — <span>COMPLETE CHEATSHEET</span> — COMPILED WITH GFORTRAN — AMBER MODE
   </div>
 </div>
 
@@ -359,48 +371,63 @@
 <nav id="sidebar">
   <div class="nav-head">◈ INDICE</div>
 
-  <div class="nav-section-title">STORIA</div>
-  <a href="#s-versions">Versioni Fortran</a>
+  <div class="nav-section">
+    <div class="nav-section-title">Storia</div>
+    <a href="#s-versions">Versioni Fortran</a>
+  </div>
 
-  <div class="nav-section-title">FONDAMENTA</div>
-  <a href="#s-basics">Struttura Base</a>
-  <a href="#s-input">User Input</a>
-  <a href="#s-types">Variabili / Tipi</a>
-  <a href="#s-kind">KIND / Precisione</a>
-  <a href="#s-print">Output Formattato</a>
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenta</div>
+    <a href="#s-basics">Struttura Base</a>
+    <a href="#s-input">User Input</a>
+    <a href="#s-types">Variabili / Tipi</a>
+    <a href="#s-kind">KIND / Precisione</a>
+    <a href="#s-print">Output Formattato</a>
+  </div>
 
-  <div class="nav-section-title">OPERATORI</div>
-  <a href="#s-math">Operatori Matematici</a>
-  <a href="#s-random">Numeri Casuali</a>
-  <a href="#s-mathfn">Funzioni Matematiche</a>
+  <div class="nav-section">
+    <div class="nav-section-title">Operatori</div>
+    <a href="#s-math">Operatori Matematici</a>
+    <a href="#s-random">Numeri Casuali</a>
+    <a href="#s-mathfn">Funzioni Matematiche</a>
+  </div>
 
-  <div class="nav-section-title">CONTROLLO FLUSSO</div>
-  <a href="#s-cond">Condizionali</a>
-  <a href="#s-ifelse">If / Else If / Else</a>
-  <a href="#s-select">Select Case</a>
-  <a href="#s-loops">Cicli DO</a>
-  <a href="#s-while">While / Cycle / Exit</a>
+  <div class="nav-section">
+    <div class="nav-section-title">Controllo Flusso</div>
+    <a href="#s-cond">Condizionali</a>
+    <a href="#s-ifelse">If / Else If / Else</a>
+    <a href="#s-select">Select Case</a>
+    <a href="#s-loops">Cicli DO</a>
+    <a href="#s-while">While / Cycle / Exit</a>
+  </div>
 
-  <div class="nav-section-title">DATI</div>
-  <a href="#s-arrays">Array</a>
-  <a href="#s-format">Format Statement</a>
-  <a href="#s-strings">Stringhe</a>
-  <a href="#s-struct">Strutture (TYPE)</a>
+  <div class="nav-section">
+    <div class="nav-section-title">Dati</div>
+    <a href="#s-arrays">Array</a>
+    <a href="#s-format">Format Statement</a>
+    <a href="#s-strings">Stringhe</a>
+    <a href="#s-struct">Strutture (TYPE)</a>
+  </div>
 
-  <div class="nav-section-title">PROCEDURE</div>
-  <a href="#s-funcs">Funzioni</a>
-  <a href="#s-optional">Argomenti Opzionali</a>
-  <a href="#s-recursive">Funzioni Ricorsive</a>
-  <a href="#s-sub">Subroutine</a>
+  <div class="nav-section">
+    <div class="nav-section-title">Procedure</div>
+    <a href="#s-funcs">Funzioni</a>
+    <a href="#s-optional">Argomenti Opzionali</a>
+    <a href="#s-recursive">Funzioni Ricorsive</a>
+    <a href="#s-sub">Subroutine</a>
+  </div>
 
-  <div class="nav-section-title">AVANZATO</div>
-  <a href="#s-modules">Moduli / Overloading</a>
-  <a href="#s-pointers">Puntatori</a>
-  <a href="#s-fileio">File I/O</a>
-  <a href="#s-oop">Moduli / Classi / OOP</a>
-  <a href="#s-coarrays">Coarray (Parallelo)</a>
-  <a href="#s-preprocessor">Preprocessore</a>
-  <a href="#s-compile">Compilazione</a>
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-modules">Moduli / Overloading</a>
+    <a href="#s-pointers">Puntatori</a>
+    <a href="#s-fileio">File I/O</a>
+    <a href="#s-oop">OOP / Classi</a>
+    <a href="#s-oop-adv">OOP Avanzata</a>
+    <a href="#s-coarrays">Coarray (Parallelo)</a>
+    <a href="#s-preprocessor">Preprocessore</a>
+    <a href="#s-compile">Compilazione</a>
+  </div>
 </nav>
 
 <!-- ─── MAIN ────────────────────────────────────────────────────── -->
@@ -2157,6 +2184,370 @@ c = circle_t(shape_t(0.,0.), 5.0)
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OOP AVANZATA — INCAPSULAMENTO / EREDITARIETÀ / POLIMORFISMO   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-oop-adv"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OOP AVANZATA — PATTERN E BEST PRACTICE <span class="ver v03">F2003+</span></div>
+  <div class="section-body">
+
+    <div class="sub-title">Incapsulamento (PRIVATE / PUBLIC / PROTECTED)</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="kw">module</span> account_mod
+  <span class="kw">implicit none</span>
+  <span class="kw">private</span>   <span class="cmt">! tutto privato di default</span>
+
+  <span class="kw">type</span>, <span class="kw">public</span> :: account_t
+    <span class="kw">private</span>                  <span class="cmt">! campi inaccessibili</span>
+    <span class="kw">character</span>(len=50) :: owner
+    <span class="kw">real</span>              :: balance = 0.0
+    <span class="kw">integer</span>           :: n_ops   = 0
+  <span class="kw">contains</span>
+    <span class="kw">procedure</span> :: get_balance
+    <span class="kw">procedure</span> :: get_owner
+    <span class="kw">procedure</span> :: deposit
+    <span class="kw">procedure</span> :: withdraw
+    <span class="kw">procedure</span> :: display
+    <span class="kw">procedure</span> :: init
+  <span class="kw">end type</span>
+
+<span class="kw">contains</span>
+  <span class="kw">subroutine</span> init(this, owner, balance)
+    <span class="kw">class</span>(account_t), <span class="kw">intent</span>(inout) :: this
+    <span class="kw">character</span>(*), <span class="kw">intent</span>(in)       :: owner
+    <span class="kw">real</span>, <span class="kw">intent</span>(in), <span class="kw">optional</span>     :: balance
+    this%owner = owner
+    <span class="kw">if</span> (present(balance)) this%balance = balance
+  <span class="kw">end subroutine</span></pre>
+      </div>
+      <div>
+        <pre><span class="cmt">  ! Getter (accesso controllato)</span>
+  <span class="kw">pure real function</span> get_balance(this)
+    <span class="kw">class</span>(account_t), <span class="kw">intent</span>(in) :: this
+    get_balance = this%balance
+  <span class="kw">end function</span>
+
+  <span class="kw">pure function</span> get_owner(this) result(s)
+    <span class="kw">class</span>(account_t), <span class="kw">intent</span>(in) :: this
+    <span class="kw">character</span>(len=50) :: s
+    s = this%owner
+  <span class="kw">end function</span>
+
+  <span class="cmt">! Setter con validazione</span>
+  <span class="kw">subroutine</span> deposit(this, amount)
+    <span class="kw">class</span>(account_t), <span class="kw">intent</span>(inout) :: this
+    <span class="kw">real</span>, <span class="kw">intent</span>(in) :: amount
+    <span class="kw">if</span> (amount &lt;= 0.0) <span class="kw">then</span>
+      <span class="kw">print</span> *, <span class="str">"Errore: importo non valido"</span>
+      <span class="kw">return</span>
+    <span class="kw">end if</span>
+    this%balance = this%balance + amount
+    this%n_ops = this%n_ops + 1
+  <span class="kw">end subroutine</span>
+<span class="kw">end module</span> account_mod</pre>
+      </div>
+    </div>
+    <div class="note">⬛ <strong>Regola chiave:</strong> <code>PRIVATE</code> nel blocco <code>type</code> rende i componenti inaccessibili dall'esterno del modulo. I metodi <code>type-bound</code> restano accessibili. Usare getter/setter per controllare l'accesso.</div>
+
+    <div class="sub-title">Ereditarietà — EXTENDS e Override</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="kw">module</span> vehicle_mod
+  <span class="kw">implicit none</span>
+  <span class="kw">private</span>
+
+  <span class="cmt">! Tipo base (padre)</span>
+  <span class="kw">type</span>, <span class="kw">public</span> :: vehicle_t
+    <span class="kw">character</span>(len=30) :: brand
+    <span class="kw">integer</span>           :: year
+    <span class="kw">real</span>              :: speed = 0.0
+  <span class="kw">contains</span>
+    <span class="kw">procedure</span> :: describe => vehicle_describe
+    <span class="kw">procedure</span> :: accelerate
+  <span class="kw">end type</span>
+
+  <span class="cmt">! Tipo derivato (figlio)</span>
+  <span class="kw">type</span>, <span class="kw">public</span>, <span class="kw">extends</span>(vehicle_t) :: car_t
+    <span class="kw">integer</span> :: n_doors = 4
+    <span class="kw">logical</span> :: electric = .false.
+  <span class="kw">contains</span>
+    <span class="kw">procedure</span> :: describe => car_describe  <span class="cmt">! override</span>
+  <span class="kw">end type</span>
+
+  <span class="cmt">! Secondo livello di ereditarietà</span>
+  <span class="kw">type</span>, <span class="kw">public</span>, <span class="kw">extends</span>(car_t) :: suv_t
+    <span class="kw">logical</span> :: awd = .true.
+  <span class="kw">contains</span>
+    <span class="kw">procedure</span> :: describe => suv_describe
+  <span class="kw">end type</span></pre>
+      </div>
+      <div>
+        <pre><span class="kw">contains</span>
+  <span class="kw">subroutine</span> vehicle_describe(this)
+    <span class="kw">class</span>(vehicle_t), <span class="kw">intent</span>(in) :: this
+    <span class="kw">print</span> <span class="str">"(a,a,a,i4)"</span>, <span class="str">"Veicolo: "</span>, &amp;
+      trim(this%brand), <span class="str">" Anno:"</span>, this%year
+  <span class="kw">end subroutine</span>
+
+  <span class="kw">subroutine</span> accelerate(this, delta)
+    <span class="kw">class</span>(vehicle_t), <span class="kw">intent</span>(inout) :: this
+    <span class="kw">real</span>, <span class="kw">intent</span>(in) :: delta
+    this%speed = this%speed + delta
+  <span class="kw">end subroutine</span>
+
+  <span class="kw">subroutine</span> car_describe(this)
+    <span class="kw">class</span>(car_t), <span class="kw">intent</span>(in) :: this
+    <span class="cmt">! Accesso a campi ereditati</span>
+    <span class="kw">print</span> <span class="str">"(a,a,a,i1,a,l1)"</span>, &amp;
+      trim(this%brand), <span class="str">": "</span>, &amp;
+      <span class="str">"Porte="</span>, this%n_doors, &amp;
+      <span class="str">" Elettrica="</span>, this%electric
+  <span class="kw">end subroutine</span>
+
+  <span class="kw">subroutine</span> suv_describe(this)
+    <span class="kw">class</span>(suv_t), <span class="kw">intent</span>(in) :: this
+    <span class="kw">print</span> <span class="str">"(a,a,a,l1)"</span>, trim(this%brand), &amp;
+      <span class="str">": SUV, AWD="</span>, this%awd
+  <span class="kw">end subroutine</span>
+<span class="kw">end module</span> vehicle_mod
+
+<span class="cmt">! Uso:</span>
+<span class="kw">type</span>(car_t) :: c
+c = car_t(<span class="str">"Tesla"</span>, 2024, 0.0, 4, .true.)
+<span class="kw">call</span> c%describe()     <span class="cmt">! car_describe</span>
+<span class="kw">call</span> c%accelerate(60.0) <span class="cmt">! ereditato</span></pre>
+      </div>
+    </div>
+
+    <div class="sub-title">Polimorfismo — CLASS, ABSTRACT, DEFERRED</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="kw">module</span> animal_mod
+  <span class="kw">implicit none</span>
+  <span class="kw">private</span>
+
+  <span class="cmt">! Tipo ASTRATTO: non instanziabile</span>
+  <span class="kw">type</span>, <span class="kw">abstract</span>, <span class="kw">public</span> :: animal_t
+    <span class="kw">character</span>(len=20) :: name
+    <span class="kw">integer</span>           :: age = 0
+  <span class="kw">contains</span>
+    <span class="cmt">! Metodo DEFERRED: DEVE essere implementato</span>
+    <span class="kw">procedure</span>(speak_if), <span class="kw">deferred</span> :: speak
+    <span class="kw">procedure</span>(move_if),  <span class="kw">deferred</span> :: move
+    <span class="cmt">! Metodo concreto: ereditabile</span>
+    <span class="kw">procedure</span> :: info
+  <span class="kw">end type</span>
+
+  <span class="cmt">! Interfacce astratte (contratto)</span>
+  <span class="kw">abstract interface</span>
+    <span class="kw">subroutine</span> speak_if(this)
+      <span class="kw">import</span> :: animal_t
+      <span class="kw">class</span>(animal_t), <span class="kw">intent</span>(in) :: this
+    <span class="kw">end subroutine</span>
+    <span class="kw">function</span> move_if(this, dist) result(t)
+      <span class="kw">import</span> :: animal_t
+      <span class="kw">class</span>(animal_t), <span class="kw">intent</span>(in) :: this
+      <span class="kw">real</span>, <span class="kw">intent</span>(in) :: dist
+      <span class="kw">real</span> :: t
+    <span class="kw">end function</span>
+  <span class="kw">end interface</span></pre>
+      </div>
+      <div>
+        <pre><span class="cmt">  ! Implementazione concreta: dog_t</span>
+  <span class="kw">type</span>, <span class="kw">public</span>, <span class="kw">extends</span>(animal_t) :: dog_t
+    <span class="kw">real</span> :: speed = 15.0  <span class="cmt">! km/h</span>
+  <span class="kw">contains</span>
+    <span class="kw">procedure</span> :: speak => dog_speak
+    <span class="kw">procedure</span> :: move  => dog_move
+  <span class="kw">end type</span>
+
+  <span class="cmt">! Implementazione concreta: fish_t</span>
+  <span class="kw">type</span>, <span class="kw">public</span>, <span class="kw">extends</span>(animal_t) :: fish_t
+    <span class="kw">real</span> :: speed = 5.0
+  <span class="kw">contains</span>
+    <span class="kw">procedure</span> :: speak => fish_speak
+    <span class="kw">procedure</span> :: move  => fish_move
+  <span class="kw">end type</span>
+
+<span class="kw">contains</span>
+  <span class="kw">subroutine</span> info(this)
+    <span class="kw">class</span>(animal_t), <span class="kw">intent</span>(in) :: this
+    <span class="kw">print</span> *, trim(this%name), <span class="str">", età:"</span>, this%age
+  <span class="kw">end subroutine</span>
+
+  <span class="kw">subroutine</span> dog_speak(this)
+    <span class="kw">class</span>(dog_t), <span class="kw">intent</span>(in) :: this
+    <span class="kw">print</span> *, trim(this%name), <span class="str">": Bau!"</span>
+  <span class="kw">end subroutine</span>
+
+  <span class="kw">real function</span> dog_move(this, dist)
+    <span class="kw">class</span>(dog_t), <span class="kw">intent</span>(in) :: this
+    <span class="kw">real</span>, <span class="kw">intent</span>(in) :: dist
+    dog_move = dist / this%speed
+  <span class="kw">end function</span>
+
+  <span class="cmt">! ... fish_speak, fish_move analoghi</span>
+<span class="kw">end module</span> animal_mod</pre>
+      </div>
+    </div>
+
+    <div class="sub-title">Dispatch Dinamico — Array Polimorfici e SELECT TYPE</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="cmt">! Subroutine polimorfica: accetta qualsiasi</span>
+<span class="cmt">! sottotipo di animal_t</span>
+<span class="kw">subroutine</span> make_noise(a)
+  <span class="kw">class</span>(animal_t), <span class="kw">intent</span>(in) :: a
+  <span class="kw">call</span> a%speak()   <span class="cmt">! dispatch dinamico!</span>
+<span class="kw">end subroutine</span>
+
+<span class="cmt">! Container polimorfico con CLASS</span>
+<span class="kw">type</span> :: animal_box
+  <span class="kw">class</span>(animal_t), <span class="kw">allocatable</span> :: item
+<span class="kw">end type</span>
+
+<span class="cmt">! Array di box polimorfici</span>
+<span class="kw">type</span>(animal_box) :: zoo(10)
+
+<span class="kw">allocate</span>(dog_t  :: zoo(1)%item)
+<span class="kw">allocate</span>(fish_t :: zoo(2)%item)
+
+<span class="cmt">! Iterazione polimorfica</span>
+<span class="kw">do</span> i = 1, 2
+  <span class="kw">call</span> zoo(i)%item%speak()  <span class="cmt">! chiama impl. corretta</span>
+<span class="kw">end do</span></pre>
+      </div>
+      <div>
+        <pre><span class="cmt">! SELECT TYPE: dispatch esplicito</span>
+<span class="kw">subroutine</span> process(a)
+  <span class="kw">class</span>(animal_t), <span class="kw">intent</span>(in) :: a
+
+  <span class="kw">select type</span>(a)
+  <span class="kw">type is</span> (dog_t)
+    <span class="kw">print</span> *, <span class="str">"Cane, velocità:"</span>, a%speed
+  <span class="kw">type is</span> (fish_t)
+    <span class="kw">print</span> *, <span class="str">"Pesce, velocità:"</span>, a%speed
+  <span class="kw">class is</span> (animal_t)
+    <span class="kw">print</span> *, <span class="str">"Animale generico"</span>
+  <span class="kw">class default</span>
+    <span class="kw">print</span> *, <span class="str">"Tipo sconosciuto"</span>
+  <span class="kw">end select</span>
+<span class="kw">end subroutine</span>
+
+<span class="cmt">! Funzioni di introspezione tipo</span>
+<span class="kw">if</span> (same_type_as(a, b))    ...  <span class="cmt">! tipo identico?</span>
+<span class="kw">if</span> (extends_type_of(a, b)) ...  <span class="cmt">! a estende b?</span></pre>
+      </div>
+    </div>
+
+    <div class="sub-title">FINAL — Distruttore (F2003+)</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="kw">type</span> :: resource_t
+  <span class="kw">real</span>, <span class="kw">allocatable</span> :: data(:)
+  <span class="kw">integer</span> :: handle = -1
+<span class="kw">contains</span>
+  <span class="kw">final</span> :: resource_destroy
+<span class="kw">end type</span>
+
+<span class="kw">subroutine</span> resource_destroy(this)
+  <span class="kw">type</span>(resource_t), <span class="kw">intent</span>(inout) :: this
+  <span class="kw">if</span> (allocated(this%data)) <span class="kw">then</span>
+    <span class="kw">deallocate</span>(this%data)
+  <span class="kw">end if</span>
+  <span class="kw">if</span> (this%handle > 0) <span class="kw">then</span>
+    <span class="kw">print</span> *, <span class="str">"Rilascio handle"</span>, this%handle
+    this%handle = -1
+  <span class="kw">end if</span>
+<span class="kw">end subroutine</span></pre>
+      </div>
+      <div>
+        <pre><span class="cmt">! Il FINAL viene chiamato automaticamente</span>
+<span class="cmt">! quando l'oggetto esce dallo scope</span>
+
+<span class="kw">subroutine</span> demo_final()
+  <span class="kw">type</span>(resource_t) :: r
+
+  <span class="kw">allocate</span>(r%data(1000))
+  r%handle = 42
+  <span class="cmt">! ... usa r ...</span>
+
+<span class="kw">end subroutine</span>  <span class="cmt">! ← resource_destroy() invocato</span>
+
+<span class="cmt">! Nota: FINAL accetta SOLO type(), non class()</span>
+<span class="cmt">! Ogni tipo nella gerarchia può avere il suo FINAL</span>
+<span class="cmt">! I FINAL sono chiamati dal tipo più derivato</span>
+<span class="cmt">! al tipo base (ordine inverso di costruzione)</span></pre>
+      </div>
+    </div>
+
+    <div class="sub-title">Pattern: Costruttore Custom con INTERFACE</div>
+    <pre><span class="kw">module</span> point_mod
+  <span class="kw">implicit none</span>
+  <span class="kw">private</span>
+
+  <span class="kw">type</span>, <span class="kw">public</span> :: point_t
+    <span class="kw">private</span>
+    <span class="kw">real</span> :: x = 0.0, y = 0.0
+  <span class="kw">contains</span>
+    <span class="kw">procedure</span> :: get_x, get_y, distance, show
+  <span class="kw">end type</span>
+
+  <span class="cmt">! "Costruttore" con stesso nome del tipo</span>
+  <span class="kw">interface</span> point_t
+    <span class="kw">procedure</span> :: point_new, point_from_polar
+  <span class="kw">end interface</span>
+
+<span class="kw">contains</span>
+  <span class="kw">function</span> point_new(x, y) result(p)
+    <span class="kw">real</span>, <span class="kw">intent</span>(in) :: x, y
+    <span class="kw">type</span>(point_t) :: p
+    p%x = x; p%y = y
+  <span class="kw">end function</span>
+
+  <span class="kw">function</span> point_from_polar(r, theta) result(p)
+    <span class="kw">real</span>, <span class="kw">intent</span>(in) :: r, theta
+    <span class="kw">type</span>(point_t) :: p
+    p%x = r * cos(theta)
+    p%y = r * sin(theta)
+  <span class="kw">end function</span>
+
+  <span class="kw">pure real function</span> distance(this, other)
+    <span class="kw">class</span>(point_t), <span class="kw">intent</span>(in) :: this, other
+    distance = sqrt((this%x - other%x)**2 + (this%y - other%y)**2)
+  <span class="kw">end function</span>
+
+  <span class="cmt">! ... get_x, get_y, show ...</span>
+<span class="kw">end module</span>
+
+<span class="cmt">! Uso: overloading del "costruttore"</span>
+<span class="kw">type</span>(point_t) :: p1, p2
+p1 = point_t(3.0, 4.0)            <span class="cmt">! da cartesiane</span>
+p2 = point_t(5.0, 0.7854)         <span class="cmt">! da polari (r, θ)</span>
+<span class="kw">print</span> *, p1%distance(p2)</pre>
+
+    <div class="sub-title">Riepilogo OOP Fortran</div>
+    <table>
+      <tr><th>Concetto OOP</th><th>Fortran 2003+</th><th>Note</th></tr>
+      <tr><td>Classe</td><td><code>type :: nome_t</code></td><td>Tipo derivato con <code>contains</code></td></tr>
+      <tr><td>Oggetto</td><td><code>type(nome_t) :: obj</code></td><td>Istanza del tipo</td></tr>
+      <tr><td>Metodo</td><td><code>procedure :: metodo</code></td><td>Type-bound procedure</td></tr>
+      <tr><td>Costruttore</td><td><code>interface nome_t</code></td><td>Overloading del nome tipo</td></tr>
+      <tr><td>Distruttore</td><td><code>final :: cleanup</code></td><td>Chiamato a fine scope</td></tr>
+      <tr><td>Incapsulamento</td><td><code>private</code> nel tipo</td><td>Getter/setter per accesso</td></tr>
+      <tr><td>Ereditarietà</td><td><code>extends(padre_t)</code></td><td>Ereditarietà singola</td></tr>
+      <tr><td>Classe astratta</td><td><code>type, abstract ::</code></td><td>Non instanziabile</td></tr>
+      <tr><td>Metodo virtuale</td><td><code>deferred :: metodo</code></td><td>Deve essere implementato</td></tr>
+      <tr><td>Polimorfismo</td><td><code>class(tipo_t)</code></td><td>Dispatch dinamico</td></tr>
+      <tr><td>Introspezione</td><td><code>select type / same_type_as</code></td><td>RTTI</td></tr>
+      <tr><td>Operatori custom</td><td><code>interface operator(+)</code></td><td>Overloading operatori</td></tr>
+    </table>
+    <div class="warn">⬛ <strong>Limitazioni OOP Fortran:</strong> solo ereditarietà singola. Nessun garbage collector (gestire manualmente ALLOCATABLE e FINAL). I FINAL non vengono chiamati su variabili POINTER, solo su ALLOCATABLE e locali.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- COARRAY (PARALLELO)                                             -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <a class="anchor" id="s-coarrays"></a>
@@ -2349,14 +2740,13 @@ const navLinks = document.querySelectorAll('#sidebar a');
 window.addEventListener('scroll', () => {
   let current = '';
   anchors.forEach(s => {
-    if (window.scrollY >= s.offsetTop - 90) current = s.id;
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
   });
   navLinks.forEach(a => {
-    const active = a.getAttribute('href') === '#' + current;
-    a.style.borderLeftColor = active ? 'var(--accent)' : 'transparent';
-    a.style.color = active ? 'var(--bright)' : '';
-    if (active) a.style.background = 'rgba(184,92,0,0.15)';
-    else a.style.background = '';
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--accent)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
   });
 });
 </script>
