@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>x86/x86_64 Assembly CHEATSHEET</title>
+<link rel="icon" type="image/png" href="./res/icons/icon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+  :root {
+    --bg:        #0a0806;
+    --bg2:       #0e0b08;
+    --panel:     #12100c;
+    --panel2:    #161310;
+    --border:    #221c14;
+    --border2:   #3a3020;
+    --glow:      #ff6600;
+    --glow2:     #ff8833;
+    --glow-dim:  #3b1a00;
+    --dim:       #4a3520;
+    --text:      #b8a898;
+    --text2:     #d0c4b4;
+    --bright:    #ffe0b0;
+    --accent:    #cc5500;
+    --accent2:   #ff8833;
+    --key:       #cc8855;
+    --kw:        #ffaa44;
+    --str:       #88cc66;
+    --num:       #66bbdd;
+    --cmt:       #6a5a44;
+    --reg:       #ff8866;
+    --ins:       #ffcc44;
+    --dir:       #88aadd;
+    --lbl:       #ddbb88;
+    --head:      #ffe0b0;
+    --hr:        #221c14;
+    --scan:      rgba(255,102,0,0.025);
+    --warn-bg:   rgba(120,30,10,0.25);
+    --warn-brd:  #ff4422;
+    --warn-txt:  #ffaa88;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* CRT scanlines overlay */
+  body::before {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scan) 2px,
+      var(--scan) 4px
+    );
+    pointer-events:none;
+    z-index:9999;
+  }
+
+  /* CRT vignette */
+  body::after {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: radial-gradient(ellipse at center,
+      transparent 60%,
+      rgba(10,5,0,0.7) 100%
+    );
+    pointer-events:none;
+    z-index:9998;
+  }
+
+  /* ─── HEADER ─────────────────────────────────── */
+  #header {
+    background: linear-gradient(180deg, #1a1008 0%, var(--bg2) 100%);
+    border-bottom: 2px solid var(--glow);
+    padding: 18px 24px 14px;
+    position: sticky; top:0; z-index:100;
+    box-shadow: 0 0 30px rgba(255,102,0,0.15);
+  }
+
+  #header h1 {
+    font-family: 'VT323', monospace;
+    font-size: 2.4rem;
+    color: var(--bright);
+    text-shadow: 0 0 12px var(--glow2), 0 0 30px var(--glow);
+    letter-spacing: 3px;
+  }
+
+  #header .subtitle {
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  #header .subtitle span { color: var(--accent); }
+
+  /* ─── LAYOUT ─────────────────────────────────── */
+  #layout { display:flex; gap:0; }
+
+  /* ─── SIDEBAR / INDEX ────────────────────────── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    position: sticky;
+    top: 70px;
+    padding: 12px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+
+  #sidebar::-webkit-scrollbar { width:5px; }
+  #sidebar::-webkit-scrollbar-track { background: var(--bg); }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+
+  .nav-head {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    color: var(--accent2);
+    padding: 6px 14px 4px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px var(--glow-dim);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .nav-section { margin-bottom: 2px; }
+
+  .nav-section-title {
+    color: var(--kw);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 6px 14px 2px;
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  #sidebar a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: 3px 14px 3px 20px;
+    font-size: 11.5px;
+    transition: all 0.12s;
+    border-left: 2px solid transparent;
+  }
+
+  #sidebar a::before { content:'> '; color:var(--dim); }
+
+  #sidebar a:hover {
+    color: var(--bright);
+    background: rgba(255,102,0,0.08);
+    border-left-color: var(--glow);
+    text-shadow: 0 0 6px var(--glow2);
+  }
+
+  /* ─── MAIN CONTENT ───────────────────────────── */
+  #main {
+    flex:1;
+    padding: 20px 28px 60px;
+    overflow-x: hidden;
+    max-width: calc(100vw - 260px);
+  }
+
+  /* ─── SECTION ────────────────────────────────── */
+  .section {
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--panel2);
+    box-shadow: 0 0 18px rgba(60,30,0,0.5);
+    overflow: hidden;
+  }
+
+  .section-header {
+    background: linear-gradient(90deg, var(--glow-dim) 0%, var(--panel) 100%);
+    padding: 7px 14px;
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: var(--bright);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--glow2);
+    border-bottom: 1px solid var(--border2);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .section-header .icon { opacity:0.7; font-size:0.95rem; }
+
+  .section-body { padding: 12px 14px; }
+
+  /* ─── SUB-SECTION ────────────────────────────── */
+  .sub { margin: 10px 0; }
+
+  .sub-title {
+    color: var(--lbl);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    border-bottom: 1px dashed var(--hr);
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ─── CODE BLOCKS ────────────────────────────── */
+  pre, code {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  pre {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--glow-dim);
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text2);
+    border-radius: 1px;
+    margin: 6px 0;
+    white-space: pre;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+
+  pre::-webkit-scrollbar { height:4px; }
+  pre::-webkit-scrollbar-track { background:var(--bg); }
+  pre::-webkit-scrollbar-thumb { background:var(--glow-dim); }
+
+  .kw   { color: var(--kw);  }
+  .ins  { color: var(--ins); }
+  .reg  { color: var(--reg); }
+  .dir  { color: var(--dir); }
+  .str  { color: var(--str); }
+  .num  { color: var(--num); }
+  .cmt  { color: var(--cmt); font-style: italic; }
+  .lbl  { color: var(--lbl); }
+  .hd   { color: var(--head); font-weight:bold; }
+  .dim  { color: var(--dim); }
+
+  /* ─── TABLES ──────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 6px 0;
+  }
+
+  th {
+    background: rgba(255,102,0,0.12);
+    color: var(--accent2);
+    text-align: left;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  td {
+    padding: 4px 8px;
+    border: 1px solid var(--hr);
+    vertical-align: top;
+    color: var(--text2);
+  }
+
+  tr:nth-child(even) td { background: rgba(40,25,10,0.3); }
+  tr:hover td { background: rgba(255,102,0,0.06); }
+
+  td code, th code {
+    color: var(--reg);
+    background: rgba(0,0,0,0.25);
+    padding: 1px 4px;
+    border-radius: 1px;
+  }
+
+  /* ─── INLINE ──────────────────────────────────── */
+  p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
+
+  .note {
+    background: rgba(255,102,0,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: var(--text);
+  }
+
+  .warn {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn-brd);
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: var(--warn-txt);
+  }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+  /* ─── MEMORY MAP (visual) ──────────────────────── */
+  .mem-map {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0;
+    max-width: 500px;
+  }
+
+  .mem-seg {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    min-height: 44px;
+    transition: background 0.15s;
+  }
+
+  .mem-seg:last-child { border-bottom: none; }
+  .mem-seg:hover { background: rgba(255,102,0,0.06); }
+
+  .mem-addr {
+    width: 120px;
+    min-width: 120px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--num);
+    text-align: right;
+    border-right: 1px dashed var(--border2);
+  }
+
+  .mem-label {
+    flex: 1;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--bright);
+    letter-spacing: 1px;
+  }
+
+  .mem-label small {
+    display: block;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0;
+    margin-top: 1px;
+  }
+
+  .mem-seg.seg-stack  { background: rgba(255,60,30,0.12); }
+  .mem-seg.seg-heap   { background: rgba(255,160,0,0.10); }
+  .mem-seg.seg-bss    { background: rgba(100,80,40,0.10); }
+  .mem-seg.seg-data   { background: rgba(100,130,40,0.10); }
+  .mem-seg.seg-text   { background: rgba(60,100,160,0.10); }
+
+  /* ─── RESPONSIVE ─────────────────────────────── */
+  @media(max-width:900px) {
+    .grid2, .grid3 { grid-template-columns:1fr; }
+    #sidebar { display:none; }
+    #main { max-width:100vw; padding:14px; }
+    .mem-map { max-width: 100%; }
+  }
+
+  /* Cursor blink */
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  .cursor::after { content:'█'; animation:blink 1s infinite; color:var(--accent); }
+
+  /* anchor offset for sticky header */
+  .anchor { display:block; height:70px; margin-top:-70px; visibility:hidden; }
+
+  /* ─── SCROLLBAR ──────────────────────────────── */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>&gt; x86/x86_64 ASSEMBLY REFERENCE MANUAL <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>AT&amp;T Syntax / GNU Assembler / Linux</span> &mdash; v1.3</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-syntax">Sintassi AT&amp;T</a>
+    <a href="#s-compare">AT&amp;T vs Intel</a>
+    <a href="#s-registers">Registri</a>
+    <a href="#s-memory">Memory Layout</a>
+    <a href="#s-datatypes">Data Types</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Istruzioni</div>
+    <a href="#s-mov">MOV &amp; Trasferimento</a>
+    <a href="#s-arith">Aritmetica</a>
+    <a href="#s-logic">Logica &amp; Bit</a>
+    <a href="#s-string">Stringhe &amp; REP</a>
+    <a href="#s-flow">Salti &amp; Loop</a>
+    <a href="#s-stack">Stack &amp; Chiamate</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Sistema</div>
+    <a href="#s-syscall">Syscall Linux</a>
+    <a href="#s-signals">Segnali</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Build &amp; Link</div>
+    <a href="#s-nostdlib">No-stdlib (as + ld)</a>
+    <a href="#s-stdlib">With-stdlib (gcc)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-abi">ABI &amp; Calling Convention</a>
+    <a href="#s-float">SSE / Virgola Mobile</a>
+    <a href="#s-inline">Inline Assembly in C</a>
+    <a href="#s-opt">Ottimizzazione</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════
+     SINTASSI AT&T
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-syntax"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SINTASSI AT&amp;T (GNU AS)</div>
+  <div class="section-body">
+    <p>La sintassi AT&amp;T (usata da GNU Assembler / GAS) differisce dalla Intel per ordine degli operandi, prefissi e suffissi.</p>
+
+    <div class="sub">
+      <div class="sub-title">REGOLE FONDAMENTALI</div>
+      <table>
+        <tr><th>Elemento</th><th>AT&amp;T</th><th>Intel (confronto)</th></tr>
+        <tr><td>Ordine operandi</td><td><code>src, dst</code></td><td><code>dst, src</code></td></tr>
+        <tr><td>Registri</td><td>Prefisso <code>%</code> &rarr; <code>%rax</code></td><td>Nessun prefisso &rarr; <code>rax</code></td></tr>
+        <tr><td>Immediati</td><td>Prefisso <code>$</code> &rarr; <code>$42</code></td><td>Nessun prefisso &rarr; <code>42</code></td></tr>
+        <tr><td>Suffisso dimensione</td><td><code>b</code>(8) <code>w</code>(16) <code>l</code>(32) <code>q</code>(64)</td><td>Keyword: <code>BYTE PTR</code>, ecc.</td></tr>
+        <tr><td>Indirizzamento</td><td><code>disp(base,index,scale)</code></td><td><code>[base+index*scale+disp]</code></td></tr>
+        <tr><td>Commenti</td><td><code># commento</code> oppure <code>/* ... */</code></td><td><code>; commento</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">SUFFISSI DI DIMENSIONE</div>
+<pre><span class="ins">movb</span>  <span class="num">$0x41</span>, <span class="reg">%al</span>        <span class="cmt"># 8 bit  (byte)</span>
+<span class="ins">movw</span>  <span class="num">$0x1234</span>, <span class="reg">%ax</span>      <span class="cmt"># 16 bit (word)</span>
+<span class="ins">movl</span>  <span class="num">$0xDEAD</span>, <span class="reg">%eax</span>     <span class="cmt"># 32 bit (long/doubleword)</span>
+<span class="ins">movq</span>  <span class="num">$0xCAFE</span>, <span class="reg">%rax</span>     <span class="cmt"># 64 bit (quadword)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MODALITA' DI INDIRIZZAMENTO</div>
+<pre><span class="ins">movq</span>  <span class="num">$42</span>, <span class="reg">%rax</span>                 <span class="cmt"># Immediato</span>
+<span class="ins">movq</span>  <span class="reg">%rbx</span>, <span class="reg">%rax</span>                <span class="cmt"># Registro-registro</span>
+<span class="ins">movq</span>  (<span class="reg">%rbx</span>), <span class="reg">%rax</span>               <span class="cmt"># Indiretto: mem[RBX]</span>
+<span class="ins">movq</span>  <span class="num">8</span>(<span class="reg">%rbx</span>), <span class="reg">%rax</span>              <span class="cmt"># Base + displacement: mem[RBX+8]</span>
+<span class="ins">movq</span>  (<span class="reg">%rbx</span>,<span class="reg">%rcx</span>,<span class="num">4</span>), <span class="reg">%rax</span>       <span class="cmt"># Base + index*scale: mem[RBX+RCX*4]</span>
+<span class="ins">movq</span>  <span class="num">16</span>(<span class="reg">%rbx</span>,<span class="reg">%rcx</span>,<span class="num">8</span>), <span class="reg">%rax</span>    <span class="cmt"># Completo: mem[RBX+RCX*8+16]</span>
+<span class="ins">movq</span>  <span class="lbl">var</span>(<span class="reg">%rip</span>), <span class="reg">%rax</span>           <span class="cmt"># RIP-relative (PIC, x86_64)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DIRETTIVE GAS ESSENZIALI</div>
+<pre><span class="dir">.section</span> .text                  <span class="cmt"># Sezione codice</span>
+<span class="dir">.section</span> .data                  <span class="cmt"># Dati inizializzati</span>
+<span class="dir">.section</span> .bss                   <span class="cmt"># Dati non inizializzati</span>
+<span class="dir">.section</span> .rodata                <span class="cmt"># Dati read-only</span>
+<span class="dir">.global</span>  <span class="lbl">_start</span>                 <span class="cmt"># Rendi simbolo visibile al linker</span>
+<span class="dir">.extern</span>  <span class="lbl">printf</span>                 <span class="cmt"># Importa simbolo esterno</span>
+
+<span class="cmt"># Dichiarazione dati</span>
+<span class="dir">.byte</span>    <span class="num">0xFF</span>                   <span class="cmt"># 1 byte</span>
+<span class="dir">.word</span>    <span class="num">0x1234</span>                 <span class="cmt"># 2 byte (16 bit)</span>
+<span class="dir">.long</span>    <span class="num">0xDEADBEEF</span>             <span class="cmt"># 4 byte (32 bit)</span>
+<span class="dir">.quad</span>    <span class="num">0xCAFEBABE</span>             <span class="cmt"># 8 byte (64 bit)</span>
+<span class="dir">.ascii</span>   <span class="str">"hello"</span>                <span class="cmt"># Stringa (no terminatore)</span>
+<span class="dir">.asciz</span>   <span class="str">"hello"</span>                <span class="cmt"># Stringa con \0</span>
+<span class="dir">.space</span>   <span class="num">64</span>                     <span class="cmt"># Riserva 64 byte (zero-filled)</span>
+<span class="dir">.skip</span>    <span class="num">64</span>, <span class="num">0xFF</span>               <span class="cmt"># Riserva 64 byte riempiti con 0xFF</span>
+<span class="dir">.string</span>  <span class="str">"hello"</span>                <span class="cmt"># Alias per .asciz (stringa con \0)</span>
+<span class="dir">.align</span>   <span class="num">16</span>                     <span class="cmt"># Allinea a 16 byte</span>
+<span class="dir">.p2align</span> <span class="num">4</span>                      <span class="cmt"># Allinea a 2^4 = 16 byte</span>
+<span class="dir">.equ</span>     <span class="lbl">BUF_SIZE</span>, <span class="num">1024</span>        <span class="cmt"># Costante simbolica</span>
+<span class="dir">.set</span>     <span class="lbl">LIMIT</span>, <span class="num">256</span>            <span class="cmt"># Alias di .equ (riassegnabile con .set)</span>
+<span class="dir">.comm</span>    <span class="lbl">buffer</span>, <span class="num">4096</span>, <span class="num">16</span>     <span class="cmt"># Alloca 4096 byte in BSS, allineati a 16</span>
+<span class="dir">.lcomm</span>   <span class="lbl">local_buf</span>, <span class="num">256</span>       <span class="cmt"># Come .comm ma simbolo locale (non esportato)</span>
+<span class="dir">.type</span>    <span class="lbl">my_func</span>, @function    <span class="cmt"># Tipo simbolo ELF (function/object)</span>
+<span class="dir">.size</span>    <span class="lbl">my_func</span>, <span class="num">. - my_func</span>  <span class="cmt"># Dimensione simbolo ELF</span>
+<span class="dir">.include</span> <span class="str">"macros.inc"</span>           <span class="cmt"># Include file sorgente</span>
+
+<span class="cmt"># Macro</span>
+<span class="dir">.macro</span> <span class="lbl">PUSH_CALLEE_SAVED</span>
+    <span class="ins">pushq</span>  <span class="reg">%rbx</span>
+    <span class="ins">pushq</span>  <span class="reg">%r12</span>
+    <span class="ins">pushq</span>  <span class="reg">%r13</span>
+<span class="dir">.endm</span>
+
+<span class="cmt"># Macro con parametri</span>
+<span class="dir">.macro</span> <span class="lbl">SYSCALL_1</span> nr, arg1
+    <span class="ins">movq</span>   $\nr, <span class="reg">%rax</span>
+    <span class="ins">movq</span>   \arg1, <span class="reg">%rdi</span>
+    <span class="ins">syscall</span>
+<span class="dir">.endm</span>
+
+<span class="cmt"># Ripetizione</span>
+<span class="dir">.rept</span> <span class="num">8</span>
+    <span class="ins">nop</span>                        <span class="cmt"># Ripete 8 volte</span>
+<span class="dir">.endr</span>
+
+<span class="cmt"># Assembly condizionale</span>
+<span class="dir">.ifdef</span> <span class="lbl">DEBUG</span>
+    <span class="cmt"># codice di debug</span>
+<span class="dir">.endif</span>
+<span class="dir">.if</span> <span class="lbl">BUF_SIZE</span> > <span class="num">512</span>
+    <span class="cmt"># codice condizionale</span>
+<span class="dir">.else</span>
+    <span class="cmt"># alternativa</span>
+<span class="dir">.endif</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     CONFRONTO AT&T vs INTEL
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-compare"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CONFRONTO AT&amp;T vs INTEL &mdash; SIDE BY SIDE</div>
+  <div class="section-body">
+    <p>Le due sintassi rappresentano le stesse istruzioni macchina. GCC e GAS usano AT&amp;T per default; NASM e la documentazione Intel usano la sintassi Intel. GAS accetta anche Intel con <code>.intel_syntax noprefix</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">OPERAZIONI BASE</div>
+      <div class="grid2">
+        <div>
+          <p style="color:var(--kw);margin-bottom:4px;">AT&amp;T (GAS)</p>
+<pre><span class="ins">movq</span>   <span class="num">$42</span>, <span class="reg">%rax</span>
+<span class="ins">movq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>
+<span class="ins">movq</span>   (<span class="reg">%rbx</span>), <span class="reg">%rax</span>
+<span class="ins">movq</span>   <span class="num">8</span>(<span class="reg">%rbx</span>), <span class="reg">%rax</span>
+<span class="ins">movq</span>   (<span class="reg">%rbx</span>,<span class="reg">%rcx</span>,<span class="num">4</span>), <span class="reg">%rax</span>
+<span class="ins">leaq</span>   <span class="lbl">msg</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+<span class="ins">addq</span>   <span class="num">$1</span>, <span class="reg">%rax</span>
+<span class="ins">cmpq</span>   <span class="num">$0</span>, <span class="reg">%rax</span>
+<span class="ins">pushq</span>  <span class="reg">%rbp</span>
+<span class="ins">call</span>   <span class="lbl">func</span></pre>
+        </div>
+        <div>
+          <p style="color:var(--num);margin-bottom:4px;">Intel (NASM)</p>
+<pre><span class="ins">mov</span>    <span class="reg">rax</span>, <span class="num">42</span>
+<span class="ins">mov</span>    <span class="reg">rax</span>, <span class="reg">rbx</span>
+<span class="ins">mov</span>    <span class="reg">rax</span>, [<span class="reg">rbx</span>]
+<span class="ins">mov</span>    <span class="reg">rax</span>, [<span class="reg">rbx</span>+<span class="num">8</span>]
+<span class="ins">mov</span>    <span class="reg">rax</span>, [<span class="reg">rbx</span>+<span class="reg">rcx</span>*<span class="num">4</span>]
+<span class="ins">lea</span>    <span class="reg">rdi</span>, [<span class="kw">rel</span> <span class="lbl">msg</span>]
+<span class="ins">add</span>    <span class="reg">rax</span>, <span class="num">1</span>
+<span class="ins">cmp</span>    <span class="reg">rax</span>, <span class="num">0</span>
+<span class="ins">push</span>   <span class="reg">rbp</span>
+<span class="ins">call</span>   <span class="lbl">func</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ACCESSO ALLA MEMORIA</div>
+      <div class="grid2">
+        <div>
+          <p style="color:var(--kw);margin-bottom:4px;">AT&amp;T (GAS)</p>
+<pre><span class="cmt"># Byte da memoria</span>
+<span class="ins">movb</span>   (<span class="reg">%rsi</span>), <span class="reg">%al</span>
+<span class="cmt"># Long da indirizzo assoluto</span>
+<span class="ins">movl</span>   <span class="lbl">var</span>, <span class="reg">%eax</span>
+<span class="cmt"># Store word in memoria</span>
+<span class="ins">movw</span>   <span class="reg">%ax</span>, <span class="num">4</span>(<span class="reg">%rdi</span>)
+<span class="cmt"># Indirizzamento completo</span>
+<span class="ins">movl</span>   <span class="num">-8</span>(<span class="reg">%rbp</span>,<span class="reg">%rsi</span>,<span class="num">4</span>), <span class="reg">%eax</span></pre>
+        </div>
+        <div>
+          <p style="color:var(--num);margin-bottom:4px;">Intel (NASM)</p>
+<pre><span class="cmt">; Byte da memoria</span>
+<span class="ins">mov</span>    <span class="reg">al</span>, <span class="kw">BYTE</span> [<span class="reg">rsi</span>]
+<span class="cmt">; Long da indirizzo assoluto</span>
+<span class="ins">mov</span>    <span class="reg">eax</span>, <span class="kw">DWORD</span> [<span class="lbl">var</span>]
+<span class="cmt">; Store word in memoria</span>
+<span class="ins">mov</span>    <span class="kw">WORD</span> [<span class="reg">rdi</span>+<span class="num">4</span>], <span class="reg">ax</span>
+<span class="cmt">; Indirizzamento completo</span>
+<span class="ins">mov</span>    <span class="reg">eax</span>, <span class="kw">DWORD</span> [<span class="reg">rbp</span>+<span class="reg">rsi</span>*<span class="num">4</span>-<span class="num">8</span>]</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">HELLO WORLD COMPLETO</div>
+      <div class="grid2">
+        <div>
+          <p style="color:var(--kw);margin-bottom:4px;">AT&amp;T (GAS) &mdash; as + ld</p>
+<pre><span class="dir">.section</span> .rodata
+<span class="lbl">msg:</span> <span class="dir">.asciz</span> <span class="str">"Hello!\n"</span>
+<span class="dir">.equ</span> <span class="lbl">LEN</span>, <span class="num">7</span>
+
+<span class="dir">.section</span> .text
+<span class="dir">.global</span> <span class="lbl">_start</span>
+<span class="lbl">_start:</span>
+  <span class="ins">movq</span>  <span class="num">$1</span>, <span class="reg">%rax</span>
+  <span class="ins">movq</span>  <span class="num">$1</span>, <span class="reg">%rdi</span>
+  <span class="ins">leaq</span>  <span class="lbl">msg</span>(<span class="reg">%rip</span>), <span class="reg">%rsi</span>
+  <span class="ins">movq</span>  <span class="num">$LEN</span>, <span class="reg">%rdx</span>
+  <span class="ins">syscall</span>
+  <span class="ins">movq</span>  <span class="num">$60</span>, <span class="reg">%rax</span>
+  <span class="ins">xorq</span>  <span class="reg">%rdi</span>, <span class="reg">%rdi</span>
+  <span class="ins">syscall</span></pre>
+        </div>
+        <div>
+          <p style="color:var(--num);margin-bottom:4px;">Intel (NASM) &mdash; nasm + ld</p>
+<pre><span class="kw">section</span> .rodata
+<span class="lbl">msg:</span> <span class="kw">db</span> <span class="str">"Hello!"</span>, <span class="num">0x0A</span>
+<span class="lbl">LEN</span> <span class="kw">equ</span> <span class="num">7</span>
+
+<span class="kw">section</span> .text
+<span class="kw">global</span> <span class="lbl">_start</span>
+<span class="lbl">_start:</span>
+  <span class="ins">mov</span>   <span class="reg">rax</span>, <span class="num">1</span>
+  <span class="ins">mov</span>   <span class="reg">rdi</span>, <span class="num">1</span>
+  <span class="ins">lea</span>   <span class="reg">rsi</span>, [<span class="kw">rel</span> <span class="lbl">msg</span>]
+  <span class="ins">mov</span>   <span class="reg">rdx</span>, <span class="lbl">LEN</span>
+  <span class="ins">syscall</span>
+  <span class="ins">mov</span>   <span class="reg">rax</span>, <span class="num">60</span>
+  <span class="ins">xor</span>   <span class="reg">rdi</span>, <span class="reg">rdi</span>
+  <span class="ins">syscall</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">RIEPILOGO DIFFERENZE CHIAVE</div>
+      <table>
+        <tr><th>Aspetto</th><th>AT&amp;T (GAS)</th><th>Intel (NASM)</th></tr>
+        <tr><td>Ordine operandi</td><td><code>src, dst</code></td><td><code>dst, src</code></td></tr>
+        <tr><td>Prefisso registri</td><td><code>%rax</code></td><td><code>rax</code></td></tr>
+        <tr><td>Prefisso immediati</td><td><code>$42</code></td><td><code>42</code></td></tr>
+        <tr><td>Suffisso dimensione</td><td>Sulla istruzione: <code>movl</code></td><td>Sull'operando: <code>DWORD PTR</code></td></tr>
+        <tr><td>Indirizzamento</td><td><code>disp(%base,%idx,scale)</code></td><td><code>[base+idx*scale+disp]</code></td></tr>
+        <tr><td>Commenti</td><td><code># ...</code> o <code>/* ... */</code></td><td><code>; ...</code></td></tr>
+        <tr><td>Stringhe</td><td><code>.asciz "str"</code></td><td><code>db "str", 0</code></td></tr>
+        <tr><td>Costanti</td><td><code>.equ NAME, val</code></td><td><code>NAME equ val</code></td></tr>
+        <tr><td>Sezioni</td><td><code>.section .text</code></td><td><code>section .text</code></td></tr>
+        <tr><td>Assembler</td><td>GNU AS (gas)</td><td>NASM, YASM, FASM</td></tr>
+        <tr><td>Usato da</td><td>GCC, Clang, GDB, objdump -d</td><td>Documentazione Intel/AMD, NASM</td></tr>
+      </table>
+    </div>
+
+    <div class="note">Per usare la sintassi Intel in GAS: <code>.intel_syntax noprefix</code> all'inizio del file. Per tornare ad AT&amp;T: <code>.att_syntax prefix</code>. In GCC inline asm: <code>asm(".intel_syntax noprefix\n\t" ... ".att_syntax prefix");</code> Con <code>objdump</code>: <code>objdump -d -M intel</code> per disassemblare in sintassi Intel.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     REGISTRI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-registers"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MAPPING DEI REGISTRI</div>
+  <div class="section-body">
+    <p>In x86_64 ogni registro generale ha 4 sotto-registri accessibili. I registri R8&ndash;R15 sono nuovi in x86_64.</p>
+
+    <div class="sub">
+      <div class="sub-title">REGISTRI GENERAL PURPOSE</div>
+      <table>
+        <tr><th>64-bit</th><th>32-bit</th><th>16-bit</th><th>8-bit alto</th><th>8-bit basso</th><th>Uso tipico</th></tr>
+        <tr><td><code>%rax</code></td><td><code>%eax</code></td><td><code>%ax</code></td><td><code>%ah</code></td><td><code>%al</code></td><td>Accumulatore, valore di ritorno</td></tr>
+        <tr><td><code>%rbx</code></td><td><code>%ebx</code></td><td><code>%bx</code></td><td><code>%bh</code></td><td><code>%bl</code></td><td>Base (callee-saved)</td></tr>
+        <tr><td><code>%rcx</code></td><td><code>%ecx</code></td><td><code>%cx</code></td><td><code>%ch</code></td><td><code>%cl</code></td><td>Contatore, 4&deg; arg</td></tr>
+        <tr><td><code>%rdx</code></td><td><code>%edx</code></td><td><code>%dx</code></td><td><code>%dh</code></td><td><code>%dl</code></td><td>Dati, 3&deg; arg</td></tr>
+        <tr><td><code>%rsi</code></td><td><code>%esi</code></td><td><code>%si</code></td><td>&mdash;</td><td><code>%sil</code></td><td>Source index, 2&deg; arg</td></tr>
+        <tr><td><code>%rdi</code></td><td><code>%edi</code></td><td><code>%di</code></td><td>&mdash;</td><td><code>%dil</code></td><td>Dest index, 1&deg; arg</td></tr>
+        <tr><td><code>%rbp</code></td><td><code>%ebp</code></td><td><code>%bp</code></td><td>&mdash;</td><td><code>%bpl</code></td><td>Frame pointer (callee-saved)</td></tr>
+        <tr><td><code>%rsp</code></td><td><code>%esp</code></td><td><code>%sp</code></td><td>&mdash;</td><td><code>%spl</code></td><td>Stack pointer</td></tr>
+        <tr><td><code>%r8</code></td><td><code>%r8d</code></td><td><code>%r8w</code></td><td>&mdash;</td><td><code>%r8b</code></td><td>5&deg; arg</td></tr>
+        <tr><td><code>%r9</code></td><td><code>%r9d</code></td><td><code>%r9w</code></td><td>&mdash;</td><td><code>%r9b</code></td><td>6&deg; arg</td></tr>
+        <tr><td><code>%r10</code></td><td><code>%r10d</code></td><td><code>%r10w</code></td><td>&mdash;</td><td><code>%r10b</code></td><td>Temporaneo (caller-saved)</td></tr>
+        <tr><td><code>%r11</code></td><td><code>%r11d</code></td><td><code>%r11w</code></td><td>&mdash;</td><td><code>%r11b</code></td><td>Temporaneo (caller-saved)</td></tr>
+        <tr><td><code>%r12</code></td><td><code>%r12d</code></td><td><code>%r12w</code></td><td>&mdash;</td><td><code>%r12b</code></td><td>Callee-saved</td></tr>
+        <tr><td><code>%r13</code></td><td><code>%r13d</code></td><td><code>%r13w</code></td><td>&mdash;</td><td><code>%r13b</code></td><td>Callee-saved</td></tr>
+        <tr><td><code>%r14</code></td><td><code>%r14d</code></td><td><code>%r14w</code></td><td>&mdash;</td><td><code>%r14b</code></td><td>Callee-saved</td></tr>
+        <tr><td><code>%r15</code></td><td><code>%r15d</code></td><td><code>%r15w</code></td><td>&mdash;</td><td><code>%r15b</code></td><td>Callee-saved</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">REGISTRI SPECIALI</div>
+      <table>
+        <tr><th>Registro</th><th>Descrizione</th></tr>
+        <tr><td><code>%rip</code></td><td>Instruction Pointer (prossima istruzione da eseguire)</td></tr>
+        <tr><td><code>%rflags</code></td><td>Registro dei flag: CF, ZF, SF, OF, PF, AF, DF, IF, TF</td></tr>
+        <tr><td><code>%cs, %ds, %ss, %es, %fs, %gs</code></td><td>Registri di segmento (FS/GS usati per TLS in Linux)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FLAG PRINCIPALI (RFLAGS)</div>
+      <table>
+        <tr><th>Flag</th><th>Bit</th><th>Significato</th></tr>
+        <tr><td>CF (Carry)</td><td>0</td><td>Riporto/prestito in operazioni unsigned</td></tr>
+        <tr><td>ZF (Zero)</td><td>6</td><td>Risultato = 0</td></tr>
+        <tr><td>SF (Sign)</td><td>7</td><td>Bit di segno del risultato</td></tr>
+        <tr><td>OF (Overflow)</td><td>11</td><td>Overflow in operazioni signed</td></tr>
+        <tr><td>PF (Parity)</td><td>2</td><td>Parit&agrave; del byte basso</td></tr>
+        <tr><td>DF (Direction)</td><td>10</td><td>Direzione per istruzioni stringa (0=avanti, 1=indietro)</td></tr>
+      </table>
+    </div>
+
+    <div class="note">Scrivere un registro a 32 bit (es. <code>movl $1, %eax</code>) azzera automaticamente i 32 bit superiori del corrispondente registro a 64 bit. Scrivere a 8 o 16 bit NON azzera i bit superiori.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MEMORY LAYOUT
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-memory"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MEMORY LAYOUT (PROCESSO LINUX)</div>
+  <div class="section-body">
+    <p>Layout tipico dello spazio di indirizzamento di un processo Linux in x86_64 (user space, 48-bit virtual).</p>
+
+    <div class="mem-map">
+      <div class="mem-seg seg-stack">
+        <div class="mem-addr">0x7FFF...FFFF</div>
+        <div class="mem-label">STACK<small>Cresce verso il basso (&darr;). Variabili locali, indirizzi di ritorno, frame pointer.</small></div>
+      </div>
+      <div class="mem-seg">
+        <div class="mem-addr">&darr; &darr; &darr;</div>
+        <div class="mem-label" style="color:var(--dim);font-size:11px;">... spazio libero (stack cresce verso heap) ...</div>
+      </div>
+      <div class="mem-seg seg-heap">
+        <div class="mem-addr">&uarr; &uarr; &uarr;</div>
+        <div class="mem-label">HEAP<small>Cresce verso l'alto (&uarr;). Allocazione dinamica (brk/mmap).</small></div>
+      </div>
+      <div class="mem-seg seg-bss">
+        <div class="mem-addr"></div>
+        <div class="mem-label">BSS<small>.bss &mdash; Variabili globali/statiche non inizializzate (azzerato a runtime).</small></div>
+      </div>
+      <div class="mem-seg seg-data">
+        <div class="mem-addr"></div>
+        <div class="mem-label">DATA<small>.data / .rodata &mdash; Variabili globali inizializzate, stringhe costanti.</small></div>
+      </div>
+      <div class="mem-seg seg-text">
+        <div class="mem-addr">0x0040 0000</div>
+        <div class="mem-label">TEXT<small>.text &mdash; Codice eseguibile (read-only, executable).</small></div>
+      </div>
+      <div class="mem-seg">
+        <div class="mem-addr">0x0000 0000</div>
+        <div class="mem-label" style="color:var(--dim);font-size:11px;">NULL page (unmapped, accesso = SIGSEGV)</div>
+      </div>
+    </div>
+
+    <div class="note">Lo stack &egrave; allineato a 16 byte prima di ogni CALL (ABI System V). Il kernel randomizza gli indirizzi di stack/heap/mmap tramite ASLR.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DATA TYPES
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-datatypes"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DATA TYPES</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">TIPI INTERI &amp; DIRETTIVE</div>
+      <table>
+        <tr><th>Direttiva GAS</th><th>Dimensione</th><th>Suffisso istruzione</th><th>Esempio</th></tr>
+        <tr><td><code>.byte</code></td><td>1 byte (8 bit)</td><td><code>b</code></td><td><code>.byte 0xFF, 42, 'A'</code></td></tr>
+        <tr><td><code>.word</code></td><td>2 byte (16 bit)</td><td><code>w</code></td><td><code>.word 0x1234</code></td></tr>
+        <tr><td><code>.long</code></td><td>4 byte (32 bit)</td><td><code>l</code></td><td><code>.long 1000000</code></td></tr>
+        <tr><td><code>.quad</code></td><td>8 byte (64 bit)</td><td><code>q</code></td><td><code>.quad 0xDEADCAFE</code></td></tr>
+        <tr><td><code>.float</code></td><td>4 byte (IEEE 754)</td><td><code>s</code> (scalar single)</td><td><code>.float 3.14</code></td></tr>
+        <tr><td><code>.double</code></td><td>8 byte (IEEE 754)</td><td><code>d</code> (scalar double)</td><td><code>.double 2.718281828</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ARRAY</div>
+<pre><span class="dir">.section</span> .data
+<span class="lbl">array:</span>
+    <span class="dir">.long</span>  <span class="num">10, 20, 30, 40, 50</span>       <span class="cmt"># Array di 5 interi a 32 bit</span>
+<span class="lbl">array_len:</span>
+    <span class="dir">.equ</span>   <span class="lbl">ARRAY_LEN</span>, <span class="num">(array_len - array) / 4</span>
+
+<span class="dir">.section</span> .text
+    <span class="cmt"># Accesso: array[i] = base + i * sizeof(element)</span>
+    <span class="ins">leaq</span>   <span class="lbl">array</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>     <span class="cmt"># RDI = &amp;array[0]</span>
+    <span class="ins">movl</span>   <span class="num">$2</span>, <span class="reg">%esi</span>               <span class="cmt"># indice i = 2</span>
+    <span class="ins">movl</span>   (<span class="reg">%rdi</span>,<span class="reg">%rsi</span>,<span class="num">4</span>), <span class="reg">%eax</span>   <span class="cmt"># EAX = array[2] = 30</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">STRINGHE</div>
+<pre><span class="dir">.section</span> .rodata
+<span class="lbl">msg:</span>    <span class="dir">.asciz</span> <span class="str">"Hello, World!\n"</span>   <span class="cmt"># Stringa null-terminated</span>
+<span class="lbl">msg_len:</span>
+    <span class="dir">.equ</span>   <span class="lbl">MSG_LEN</span>, <span class="num">msg_len - msg - 1</span>
+
+<span class="cmt"># Stringa con lunghezza calcolata a compile-time (no \0)</span>
+<span class="lbl">msg2:</span>   <span class="dir">.ascii</span> <span class="str">"Ciao"</span>
+    <span class="dir">.equ</span>   <span class="lbl">MSG2_LEN</span>, <span class="num">. - msg2</span>    <span class="cmt"># '.' = posizione corrente</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MOV & TRASFERIMENTO
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-mov"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MOV &amp; TRASFERIMENTO DATI</div>
+  <div class="section-body">
+<pre><span class="cmt"># ─── MOV base ───</span>
+<span class="ins">movq</span>   <span class="num">$0</span>, <span class="reg">%rax</span>         <span class="cmt"># Carica immediato</span>
+<span class="ins">movq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>       <span class="cmt"># Copia registro</span>
+<span class="ins">movq</span>   (<span class="reg">%rbx</span>), <span class="reg">%rax</span>      <span class="cmt"># Load da memoria</span>
+<span class="ins">movq</span>   <span class="reg">%rax</span>, (<span class="reg">%rbx</span>)      <span class="cmt"># Store in memoria</span>
+
+<span class="cmt"># ─── Estensione ───</span>
+<span class="ins">movzbq</span> <span class="reg">%al</span>, <span class="reg">%rax</span>        <span class="cmt"># Zero-extend byte  &rarr; quad</span>
+<span class="ins">movzwl</span> <span class="reg">%ax</span>, <span class="reg">%eax</span>        <span class="cmt"># Zero-extend word  &rarr; long</span>
+<span class="ins">movsbq</span> <span class="reg">%al</span>, <span class="reg">%rax</span>        <span class="cmt"># Sign-extend byte  &rarr; quad</span>
+<span class="ins">movswl</span> <span class="reg">%ax</span>, <span class="reg">%eax</span>        <span class="cmt"># Sign-extend word  &rarr; long</span>
+<span class="ins">movslq</span> <span class="reg">%eax</span>, <span class="reg">%rax</span>       <span class="cmt"># Sign-extend long  &rarr; quad (cltq)</span>
+<span class="ins">cltq</span>                      <span class="cmt"># EAX sign-extend &rarr; RAX (alias di movslq %eax,%rax)</span>
+<span class="ins">cqto</span>                      <span class="cmt"># RAX sign-extend &rarr; RDX:RAX (per idivq)</span>
+
+<span class="cmt"># ─── LEA (Load Effective Address) ───</span>
+<span class="ins">leaq</span>   <span class="num">8</span>(<span class="reg">%rbx</span>,<span class="reg">%rcx</span>,<span class="num">4</span>), <span class="reg">%rax</span>  <span class="cmt"># RAX = RBX + RCX*4 + 8 (no memory access!)</span>
+
+<span class="cmt"># ─── Scambio ───</span>
+<span class="ins">xchgq</span>  <span class="reg">%rax</span>, <span class="reg">%rbx</span>       <span class="cmt"># Scambia RAX e RBX (atomico se con memoria)</span>
+
+<span class="cmt"># ─── Conditional move (evita branch) ───</span>
+<span class="ins">cmpq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>
+<span class="ins">cmovgq</span> <span class="reg">%rbx</span>, <span class="reg">%rax</span>       <span class="cmt"># RAX = RBX se RAX &gt; RBX (signed)</span>
+<span class="ins">cmoveq</span> <span class="reg">%rcx</span>, <span class="reg">%rax</span>       <span class="cmt"># RAX = RCX se ZF=1 (equal)</span></pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ARITMETICA
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-arith"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ARITMETICA</div>
+  <div class="section-body">
+<pre><span class="cmt"># ─── Somma / Sottrazione ───</span>
+<span class="ins">addq</span>   <span class="num">$10</span>, <span class="reg">%rax</span>        <span class="cmt"># RAX += 10</span>
+<span class="ins">addq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>       <span class="cmt"># RAX += RBX</span>
+<span class="ins">subq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>       <span class="cmt"># RAX -= RBX</span>
+<span class="ins">incq</span>   <span class="reg">%rax</span>             <span class="cmt"># RAX++ (non modifica CF)</span>
+<span class="ins">decq</span>   <span class="reg">%rax</span>             <span class="cmt"># RAX-- (non modifica CF)</span>
+<span class="ins">negq</span>   <span class="reg">%rax</span>             <span class="cmt"># RAX = -RAX (complemento a 2)</span>
+<span class="ins">adcq</span>   <span class="num">$0</span>, <span class="reg">%rax</span>         <span class="cmt"># RAX += 0 + CF (add with carry)</span>
+<span class="ins">sbbq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>       <span class="cmt"># RAX -= RBX + CF (subtract with borrow)</span>
+
+<span class="cmt"># ─── Moltiplicazione ───</span>
+<span class="ins">imulq</span>  <span class="reg">%rbx</span>, <span class="reg">%rax</span>       <span class="cmt"># RAX = RAX * RBX  (signed, 64-bit result)</span>
+<span class="ins">imulq</span>  <span class="num">$12</span>, <span class="reg">%rbx</span>, <span class="reg">%rax</span>  <span class="cmt"># RAX = RBX * 12   (3 operandi)</span>
+<span class="ins">mulq</span>   <span class="reg">%rbx</span>             <span class="cmt"># RDX:RAX = RAX * RBX (unsigned, 128-bit result)</span>
+
+<span class="cmt"># ─── Divisione ───</span>
+<span class="ins">cqto</span>                      <span class="cmt"># Sign-extend RAX &rarr; RDX:RAX (preparazione per idivq)</span>
+<span class="ins">idivq</span>  <span class="reg">%rbx</span>             <span class="cmt"># RAX = RDX:RAX / RBX, RDX = RDX:RAX % RBX (signed)</span>
+<span class="ins">xorq</span>   <span class="reg">%rdx</span>, <span class="reg">%rdx</span>       <span class="cmt"># Zero-extend per divisione unsigned</span>
+<span class="ins">divq</span>   <span class="reg">%rbx</span>             <span class="cmt"># RAX = RDX:RAX / RBX, RDX = remainder (unsigned)</span>
+
+<span class="cmt"># ─── Confronto ───</span>
+<span class="ins">cmpq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>       <span class="cmt"># Calcola RAX - RBX, setta flag (risultato scartato)</span>
+<span class="ins">testq</span>  <span class="reg">%rax</span>, <span class="reg">%rax</span>       <span class="cmt"># AND logico, setta flag (test se zero)</span></pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     LOGICA & BIT
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-logic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LOGICA &amp; OPERAZIONI SUI BIT</div>
+  <div class="section-body">
+<pre><span class="cmt"># ─── Logiche ───</span>
+<span class="ins">andq</span>   <span class="num">$0xFF</span>, <span class="reg">%rax</span>      <span class="cmt"># Maschera: mantieni solo byte basso</span>
+<span class="ins">orq</span>    <span class="num">$0x20</span>, <span class="reg">%rax</span>      <span class="cmt"># Setta bit (es: uppercase &rarr; lowercase)</span>
+<span class="ins">xorq</span>   <span class="reg">%rax</span>, <span class="reg">%rax</span>       <span class="cmt"># Azzera registro (modo efficiente)</span>
+<span class="ins">notq</span>   <span class="reg">%rax</span>             <span class="cmt"># Complemento a 1 (inverte tutti i bit)</span>
+
+<span class="cmt"># ─── Shift ───</span>
+<span class="ins">shlq</span>   <span class="num">$3</span>, <span class="reg">%rax</span>         <span class="cmt"># Shift left 3 (= RAX * 8)</span>
+<span class="ins">shrq</span>   <span class="num">$1</span>, <span class="reg">%rax</span>         <span class="cmt"># Shift right logico (unsigned / 2)</span>
+<span class="ins">sarq</span>   <span class="num">$1</span>, <span class="reg">%rax</span>         <span class="cmt"># Shift right aritmetico (signed / 2, preserva segno)</span>
+<span class="ins">shlq</span>   <span class="reg">%cl</span>, <span class="reg">%rax</span>        <span class="cmt"># Shift di CL posizioni (solo CL per shift variabile!)</span>
+
+<span class="cmt"># ─── Rotazione ───</span>
+<span class="ins">rolq</span>   <span class="num">$4</span>, <span class="reg">%rax</span>         <span class="cmt"># Ruota a sinistra di 4</span>
+<span class="ins">rorq</span>   <span class="num">$4</span>, <span class="reg">%rax</span>         <span class="cmt"># Ruota a destra di 4</span>
+
+<span class="cmt"># ─── Bit test/set ───</span>
+<span class="ins">btq</span>    <span class="num">$5</span>, <span class="reg">%rax</span>         <span class="cmt"># Testa bit 5 di RAX &rarr; CF</span>
+<span class="ins">btsq</span>   <span class="num">$5</span>, <span class="reg">%rax</span>         <span class="cmt"># Test e Set bit 5</span>
+<span class="ins">btrq</span>   <span class="num">$5</span>, <span class="reg">%rax</span>         <span class="cmt"># Test e Reset bit 5</span>
+<span class="ins">bsfq</span>   <span class="reg">%rax</span>, <span class="reg">%rbx</span>       <span class="cmt"># Bit Scan Forward: RBX = indice primo bit=1 (da LSB)</span>
+<span class="ins">bsrq</span>   <span class="reg">%rax</span>, <span class="reg">%rbx</span>       <span class="cmt"># Bit Scan Reverse: RBX = indice primo bit=1 (da MSB)</span>
+<span class="ins">bswapq</span> <span class="reg">%rax</span>             <span class="cmt"># Byte swap: inverte l'ordine dei byte (endian swap)</span></pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ISTRUZIONI STRINGA & REP
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-string"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ISTRUZIONI STRINGA &amp; PREFISSO REP</div>
+  <div class="section-body">
+    <p>Operano su blocchi di memoria. Usano RSI (sorgente), RDI (destinazione), RCX (contatore). Il flag DF controlla la direzione (0=avanti, 1=indietro).</p>
+
+    <div class="sub">
+      <div class="sub-title">ISTRUZIONI BASE</div>
+      <table>
+        <tr><th>Istruzione</th><th>Operazione</th><th>Registri coinvolti</th></tr>
+        <tr><td><code>movsb/w/l/q</code></td><td>Copia mem[RSI] &rarr; mem[RDI], avanza RSI e RDI</td><td>RSI, RDI</td></tr>
+        <tr><td><code>stosb/w/l/q</code></td><td>Scrive AL/AX/EAX/RAX &rarr; mem[RDI], avanza RDI</td><td>RAX, RDI</td></tr>
+        <tr><td><code>lodsb/w/l/q</code></td><td>Carica mem[RSI] &rarr; AL/AX/EAX/RAX, avanza RSI</td><td>RAX, RSI</td></tr>
+        <tr><td><code>cmpsb/w/l/q</code></td><td>Confronta mem[RSI] vs mem[RDI], setta flag</td><td>RSI, RDI</td></tr>
+        <tr><td><code>scasb/w/l/q</code></td><td>Confronta AL/AX/EAX/RAX vs mem[RDI], setta flag</td><td>RAX, RDI</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PREFISSI REP</div>
+      <table>
+        <tr><th>Prefisso</th><th>Condizione loop</th><th>Uso tipico</th></tr>
+        <tr><td><code>rep</code></td><td>Ripete RCX volte (decrementa RCX ogni iterazione)</td><td>movsb, stosb, lodsb</td></tr>
+        <tr><td><code>repe</code> / <code>repz</code></td><td>Ripete finch&eacute; RCX &gt; 0 AND ZF=1</td><td>cmpsb (confronto stringhe uguali)</td></tr>
+        <tr><td><code>repne</code> / <code>repnz</code></td><td>Ripete finch&eacute; RCX &gt; 0 AND ZF=0</td><td>scasb (ricerca carattere)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPI PRATICI</div>
+<pre><span class="cmt"># ─── memcpy: copia RCX byte da RSI a RDI ───</span>
+    <span class="ins">cld</span>                       <span class="cmt"># Direzione avanti (DF=0)</span>
+    <span class="ins">movq</span>   <span class="num">$256</span>, <span class="reg">%rcx</span>       <span class="cmt"># Numero di byte</span>
+    <span class="ins">leaq</span>   <span class="lbl">src</span>(<span class="reg">%rip</span>), <span class="reg">%rsi</span>
+    <span class="ins">leaq</span>   <span class="lbl">dst</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+    <span class="ins">rep movsb</span>                 <span class="cmt"># Copia byte per byte</span>
+
+<span class="cmt"># ─── Ottimizzato: copia a quadword (8 byte alla volta) ───</span>
+    <span class="ins">movq</span>   <span class="num">$32</span>, <span class="reg">%rcx</span>        <span class="cmt"># 32 * 8 = 256 byte</span>
+    <span class="ins">rep movsq</span>                 <span class="cmt"># Copia 8 byte alla volta</span>
+
+<span class="cmt"># ─── memset: riempi RCX byte con AL ───</span>
+    <span class="ins">cld</span>
+    <span class="ins">movb</span>   <span class="num">$0</span>, <span class="reg">%al</span>          <span class="cmt"># Valore di riempimento</span>
+    <span class="ins">movq</span>   <span class="num">$1024</span>, <span class="reg">%rcx</span>
+    <span class="ins">leaq</span>   <span class="lbl">buffer</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+    <span class="ins">rep stosb</span>                 <span class="cmt"># Azzeramento buffer</span>
+
+<span class="cmt"># ─── strlen: cerca \0 in stringa ───</span>
+    <span class="ins">cld</span>
+    <span class="ins">xorb</span>   <span class="reg">%al</span>, <span class="reg">%al</span>         <span class="cmt"># Cerca byte 0</span>
+    <span class="ins">movq</span>   <span class="num">$-1</span>, <span class="reg">%rcx</span>        <span class="cmt"># Contatore massimo</span>
+    <span class="ins">leaq</span>   <span class="lbl">str</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+    <span class="ins">repne scasb</span>               <span class="cmt"># Scansiona finch&eacute; trova \0</span>
+    <span class="ins">notq</span>   <span class="reg">%rcx</span>
+    <span class="ins">decq</span>   <span class="reg">%rcx</span>             <span class="cmt"># RCX = lunghezza stringa</span>
+
+<span class="cmt"># ─── strcmp: confronta due stringhe ───</span>
+    <span class="ins">cld</span>
+    <span class="ins">movq</span>   <span class="num">$100</span>, <span class="reg">%rcx</span>       <span class="cmt"># Max byte da confrontare</span>
+    <span class="ins">leaq</span>   <span class="lbl">str1</span>(<span class="reg">%rip</span>), <span class="reg">%rsi</span>
+    <span class="ins">leaq</span>   <span class="lbl">str2</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+    <span class="ins">repe cmpsb</span>                <span class="cmt"># Confronta finch&eacute; uguali</span>
+    <span class="cmt"># ZF=1 se tutte uguali, altrimenti AL contiene la differenza</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DIREZIONE: CLD / STD</div>
+<pre><span class="ins">cld</span>                           <span class="cmt"># Clear Direction Flag: RSI/RDI incrementano (avanti)</span>
+<span class="ins">std</span>                           <span class="cmt"># Set Direction Flag:   RSI/RDI decrementano (indietro)</span></pre>
+      <div class="warn">La ABI System V richiede DF=0 all'ingresso e all'uscita di ogni funzione. Dopo <code>std</code>, ripristina sempre con <code>cld</code> prima di <code>ret</code> o <code>call</code>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SALTI & LOOP
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-flow"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SALTI &amp; CONTROLLO DI FLUSSO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">SALTI CONDIZIONALI (DOPO CMP/TEST)</div>
+      <table>
+        <tr><th>Istruzione</th><th>Condizione</th><th>Flag</th><th>Uso</th></tr>
+        <tr><td><code>je</code> / <code>jz</code></td><td>Equal / Zero</td><td>ZF=1</td><td>a == b</td></tr>
+        <tr><td><code>jne</code> / <code>jnz</code></td><td>Not equal</td><td>ZF=0</td><td>a != b</td></tr>
+        <tr><td><code>jg</code> / <code>jnle</code></td><td>Greater (signed)</td><td>ZF=0 &amp; SF=OF</td><td>a &gt; b</td></tr>
+        <tr><td><code>jge</code> / <code>jnl</code></td><td>Greater or equal</td><td>SF=OF</td><td>a &gt;= b</td></tr>
+        <tr><td><code>jl</code> / <code>jnge</code></td><td>Less (signed)</td><td>SF&ne;OF</td><td>a &lt; b</td></tr>
+        <tr><td><code>jle</code> / <code>jng</code></td><td>Less or equal</td><td>ZF=1 | SF&ne;OF</td><td>a &lt;= b</td></tr>
+        <tr><td><code>ja</code> / <code>jnbe</code></td><td>Above (unsigned)</td><td>CF=0 &amp; ZF=0</td><td>a &gt; b (unsigned)</td></tr>
+        <tr><td><code>jae</code> / <code>jnb</code></td><td>Above or equal</td><td>CF=0</td><td>a &gt;= b (unsigned)</td></tr>
+        <tr><td><code>jb</code> / <code>jnae</code></td><td>Below (unsigned)</td><td>CF=1</td><td>a &lt; b (unsigned)</td></tr>
+        <tr><td><code>jbe</code> / <code>jna</code></td><td>Below or equal</td><td>CF=1 | ZF=1</td><td>a &lt;= b (unsigned)</td></tr>
+        <tr><td><code>js</code></td><td>Sign (negativo)</td><td>SF=1</td><td>risultato &lt; 0</td></tr>
+        <tr><td><code>jo</code></td><td>Overflow</td><td>OF=1</td><td>overflow signed</td></tr>
+        <tr><td><code>jc</code></td><td>Carry</td><td>CF=1</td><td>carry/borrow</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">SETcc &mdash; IMPOSTAZIONE CONDIZIONALE DI UN BYTE</div>
+      <p>Imposta un registro a 8 bit a 1 o 0 in base alla condizione (stesse condizioni dei salti).</p>
+<pre><span class="ins">cmpq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>
+<span class="ins">sete</span>   <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX == RBX, 0 altrimenti</span>
+<span class="ins">setne</span>  <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX != RBX</span>
+<span class="ins">setg</span>   <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX &gt;  RBX (signed)</span>
+<span class="ins">setge</span>  <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX &gt;= RBX (signed)</span>
+<span class="ins">setl</span>   <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX &lt;  RBX (signed)</span>
+<span class="ins">setle</span>  <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX &lt;= RBX (signed)</span>
+<span class="ins">seta</span>   <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX &gt;  RBX (unsigned)</span>
+<span class="ins">setb</span>   <span class="reg">%al</span>              <span class="cmt"># AL = 1 se RAX &lt;  RBX (unsigned)</span>
+
+<span class="cmt"># Tipico pattern: converti flag in intero a 32 bit</span>
+<span class="ins">cmpq</span>   <span class="reg">%rsi</span>, <span class="reg">%rdi</span>
+<span class="ins">setg</span>   <span class="reg">%al</span>              <span class="cmt"># AL = (RDI &gt; RSI) ? 1 : 0</span>
+<span class="ins">movzbl</span> <span class="reg">%al</span>, <span class="reg">%eax</span>        <span class="cmt"># Zero-extend a 32 bit (azzera anche i 32 bit alti)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PATTERN: IF-ELSE</div>
+<pre><span class="cmt"># if (RAX > RBX) { ... } else { ... }</span>
+    <span class="ins">cmpq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>
+    <span class="ins">jle</span>    <span class="lbl">.Lelse</span>
+    <span class="cmt"># --- blocco if ---</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lendif</span>
+<span class="lbl">.Lelse:</span>
+    <span class="cmt"># --- blocco else ---</span>
+<span class="lbl">.Lendif:</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PATTERN: LOOP (FOR / WHILE)</div>
+<pre><span class="cmt"># for (int i = 0; i &lt; 10; i++) { ... }</span>
+    <span class="ins">xorl</span>   <span class="reg">%ecx</span>, <span class="reg">%ecx</span>       <span class="cmt"># i = 0</span>
+<span class="lbl">.Lloop:</span>
+    <span class="ins">cmpl</span>   <span class="num">$10</span>, <span class="reg">%ecx</span>
+    <span class="ins">jge</span>    <span class="lbl">.Lend</span>
+    <span class="cmt"># --- corpo del loop ---</span>
+    <span class="ins">incl</span>   <span class="reg">%ecx</span>             <span class="cmt"># i++</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lloop</span>
+<span class="lbl">.Lend:</span>
+
+<span class="cmt"># Loop con LOOP (decrementa RCX, salta se RCX != 0)</span>
+    <span class="ins">movq</span>   <span class="num">$100</span>, <span class="reg">%rcx</span>
+<span class="lbl">.Lloop2:</span>
+    <span class="cmt"># --- corpo ---</span>
+    <span class="ins">loop</span>   <span class="lbl">.Lloop2</span>          <span class="cmt"># RCX--, salta se RCX &ne; 0</span></pre>
+      <div class="warn">L'istruzione <code>loop</code> &egrave; lenta sulle CPU moderne. Preferire <code>dec</code>/<code>jnz</code> o <code>cmp</code>/<code>jne</code>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     STACK & CHIAMATE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stack"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> STACK &amp; CHIAMATE A FUNZIONE</div>
+  <div class="section-body">
+<pre><span class="cmt"># ─── Operazioni base ───</span>
+<span class="ins">pushq</span>  <span class="reg">%rax</span>             <span class="cmt"># RSP -= 8; mem[RSP] = RAX</span>
+<span class="ins">popq</span>   <span class="reg">%rax</span>             <span class="cmt"># RAX = mem[RSP]; RSP += 8</span>
+<span class="ins">pushq</span>  <span class="num">$42</span>              <span class="cmt"># Push immediato</span>
+<span class="ins">pushfq</span>                    <span class="cmt"># Push RFLAGS sullo stack</span>
+<span class="ins">popfq</span>                     <span class="cmt"># Pop RFLAGS dallo stack</span>
+
+<span class="cmt"># ─── Chiamata e ritorno ───</span>
+<span class="ins">call</span>   <span class="lbl">my_func</span>          <span class="cmt"># Push return addr, jump to my_func</span>
+<span class="ins">ret</span>                       <span class="cmt"># Pop return addr, jump to it</span>
+
+<span class="cmt"># ─── Prologo / Epilogo funzione ───</span>
+<span class="lbl">my_func:</span>
+    <span class="ins">pushq</span>  <span class="reg">%rbp</span>           <span class="cmt"># Salva vecchio frame pointer</span>
+    <span class="ins">movq</span>   <span class="reg">%rsp</span>, <span class="reg">%rbp</span>     <span class="cmt"># Nuovo frame pointer</span>
+    <span class="ins">subq</span>   <span class="num">$32</span>, <span class="reg">%rsp</span>      <span class="cmt"># Alloca 32 byte per variabili locali</span>
+
+    <span class="cmt"># --- corpo funzione ---</span>
+    <span class="cmt"># Variabili locali: -8(%rbp), -16(%rbp), ...</span>
+    <span class="cmt"># Argomenti (se passati via stack): 16(%rbp), 24(%rbp), ...</span>
+
+    <span class="ins">movq</span>   <span class="reg">%rbp</span>, <span class="reg">%rsp</span>     <span class="cmt"># Dealloca locali</span>
+    <span class="ins">popq</span>   <span class="reg">%rbp</span>           <span class="cmt"># Ripristina vecchio frame pointer</span>
+    <span class="ins">ret</span>
+
+<span class="cmt"># ─── Forme compatte: enter / leave ───</span>
+<span class="ins">enter</span>  <span class="num">$32</span>, <span class="num">$0</span>           <span class="cmt"># Equivale a: push %rbp; mov %rsp,%rbp; sub $32,%rsp</span>
+<span class="ins">leave</span>                     <span class="cmt"># Equivale a: mov %rbp,%rsp; pop %rbp</span>
+    <span class="cmt"># NOTA: enter &egrave; lenta sulle CPU moderne, preferire push/mov/sub espliciti</span>
+    <span class="cmt"># leave &egrave; veloce e usata normalmente da GCC</span>
+
+<span class="cmt"># ─── Prologo/Epilogo senza frame pointer (con -fomit-frame-pointer) ───</span>
+<span class="lbl">fast_func:</span>
+    <span class="ins">subq</span>   <span class="num">$24</span>, <span class="reg">%rsp</span>      <span class="cmt"># Alloca (mantieni allineamento a 16!)</span>
+    <span class="cmt"># --- corpo ---</span>
+    <span class="ins">addq</span>   <span class="num">$24</span>, <span class="reg">%rsp</span>
+    <span class="ins">ret</span></pre>
+
+    <div class="note">Dopo <code>call</code>, RSP &egrave; disallineato di 8. Una funzione che chiama altre funzioni deve riallineare RSP a 16 byte prima della prossima <code>call</code>.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SYSCALL LINUX
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-syscall"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SYSCALL LINUX</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">x86_64: SYSCALL</div>
+      <table>
+        <tr><th>Registro</th><th>Uso</th></tr>
+        <tr><td><code>%rax</code></td><td>Numero syscall</td></tr>
+        <tr><td><code>%rdi</code></td><td>Argomento 1</td></tr>
+        <tr><td><code>%rsi</code></td><td>Argomento 2</td></tr>
+        <tr><td><code>%rdx</code></td><td>Argomento 3</td></tr>
+        <tr><td><code>%r10</code></td><td>Argomento 4</td></tr>
+        <tr><td><code>%r8</code></td><td>Argomento 5</td></tr>
+        <tr><td><code>%r9</code></td><td>Argomento 6</td></tr>
+        <tr><td><code>%rax</code></td><td>Valore di ritorno (negativo = -errno)</td></tr>
+        <tr><td><code>%rcx, %r11</code></td><td>Distrutti dalla syscall</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">x86 (32 bit): INT 0x80</div>
+      <table>
+        <tr><th>Registro</th><th>Uso</th></tr>
+        <tr><td><code>%eax</code></td><td>Numero syscall</td></tr>
+        <tr><td><code>%ebx</code></td><td>Argomento 1</td></tr>
+        <tr><td><code>%ecx</code></td><td>Argomento 2</td></tr>
+        <tr><td><code>%edx</code></td><td>Argomento 3</td></tr>
+        <tr><td><code>%esi</code></td><td>Argomento 4</td></tr>
+        <tr><td><code>%edi</code></td><td>Argomento 5</td></tr>
+        <tr><td><code>%ebp</code></td><td>Argomento 6</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">SYSCALL COMUNI</div>
+      <table>
+        <tr><th>Syscall</th><th>RAX (x86_64)</th><th>EAX (x86)</th><th>Firma</th></tr>
+        <tr><td>read</td><td>0</td><td>3</td><td><code>read(fd, buf, count)</code></td></tr>
+        <tr><td>write</td><td>1</td><td>4</td><td><code>write(fd, buf, count)</code></td></tr>
+        <tr><td>open</td><td>2</td><td>5</td><td><code>open(path, flags, mode)</code></td></tr>
+        <tr><td>close</td><td>3</td><td>6</td><td><code>close(fd)</code></td></tr>
+        <tr><td>mmap</td><td>9</td><td>90</td><td><code>mmap(addr, len, prot, flags, fd, off)</code></td></tr>
+        <tr><td>munmap</td><td>11</td><td>91</td><td><code>munmap(addr, len)</code></td></tr>
+        <tr><td>brk</td><td>12</td><td>45</td><td><code>brk(addr)</code></td></tr>
+        <tr><td>exit</td><td>60</td><td>1</td><td><code>exit(status)</code></td></tr>
+        <tr><td>fork</td><td>57</td><td>2</td><td><code>fork()</code></td></tr>
+        <tr><td>execve</td><td>59</td><td>11</td><td><code>execve(path, argv, envp)</code></td></tr>
+        <tr><td>kill</td><td>62</td><td>37</td><td><code>kill(pid, sig)</code></td></tr>
+        <tr><td>rt_sigaction</td><td>13</td><td>174</td><td><code>rt_sigaction(sig, act, oldact, sigsetsize)</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPIO COMPLETO: HELLO WORLD (x86_64)</div>
+<pre><span class="dir">.section</span> .rodata
+<span class="lbl">msg:</span>    <span class="dir">.asciz</span> <span class="str">"Hello, World!\n"</span>
+
+<span class="dir">.section</span> .text
+<span class="dir">.global</span> <span class="lbl">_start</span>
+
+<span class="lbl">_start:</span>
+    <span class="cmt"># write(1, msg, 14)</span>
+    <span class="ins">movq</span>   <span class="num">$1</span>, <span class="reg">%rax</span>         <span class="cmt"># syscall: write</span>
+    <span class="ins">movq</span>   <span class="num">$1</span>, <span class="reg">%rdi</span>         <span class="cmt"># fd: stdout</span>
+    <span class="ins">leaq</span>   <span class="lbl">msg</span>(<span class="reg">%rip</span>), <span class="reg">%rsi</span>  <span class="cmt"># buf: &amp;msg</span>
+    <span class="ins">movq</span>   <span class="num">$14</span>, <span class="reg">%rdx</span>        <span class="cmt"># count: 14</span>
+    <span class="ins">syscall</span>
+
+    <span class="cmt"># exit(0)</span>
+    <span class="ins">movq</span>   <span class="num">$60</span>, <span class="reg">%rax</span>        <span class="cmt"># syscall: exit</span>
+    <span class="ins">xorq</span>   <span class="reg">%rdi</span>, <span class="reg">%rdi</span>       <span class="cmt"># status: 0</span>
+    <span class="ins">syscall</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPIO: HELLO WORLD (x86 / 32-bit)</div>
+<pre><span class="dir">.section</span> .rodata
+<span class="lbl">msg:</span>    <span class="dir">.asciz</span> <span class="str">"Hello, World!\n"</span>
+
+<span class="dir">.section</span> .text
+<span class="dir">.global</span> <span class="lbl">_start</span>
+
+<span class="lbl">_start:</span>
+    <span class="cmt"># write(1, msg, 14)</span>
+    <span class="ins">movl</span>   <span class="num">$4</span>, <span class="reg">%eax</span>         <span class="cmt"># syscall: write</span>
+    <span class="ins">movl</span>   <span class="num">$1</span>, <span class="reg">%ebx</span>         <span class="cmt"># fd: stdout</span>
+    <span class="ins">leal</span>   <span class="lbl">msg</span>, <span class="reg">%ecx</span>        <span class="cmt"># buf: &amp;msg</span>
+    <span class="ins">movl</span>   <span class="num">$14</span>, <span class="reg">%edx</span>        <span class="cmt"># count</span>
+    <span class="ins">int</span>    <span class="num">$0x80</span>
+
+    <span class="cmt"># exit(0)</span>
+    <span class="ins">movl</span>   <span class="num">$1</span>, <span class="reg">%eax</span>         <span class="cmt"># syscall: exit</span>
+    <span class="ins">xorl</span>   <span class="reg">%ebx</span>, <span class="reg">%ebx</span>       <span class="cmt"># status: 0</span>
+    <span class="ins">int</span>    <span class="num">$0x80</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SEGNALI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-signals"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> GESTIONE DEI SEGNALI</div>
+  <div class="section-body">
+    <p>Per installare un signal handler in puro assembly si usa la syscall <code>rt_sigaction</code> (nr. 13 su x86_64).</p>
+
+    <div class="sub">
+      <div class="sub-title">STRUTTURA SIGACTION (x86_64 Linux)</div>
+<pre><span class="cmt"># struct sigaction (semplificato, 152 byte su x86_64):</span>
+<span class="cmt">#   offset 0:   sa_handler / sa_sigaction   (8 byte, puntatore)</span>
+<span class="cmt">#   offset 8:   sa_flags                    (8 byte)</span>
+<span class="cmt">#   offset 16:  sa_restorer                 (8 byte, puntatore)</span>
+<span class="cmt">#   offset 24:  sa_mask                     (128 byte, sigset_t)</span>
+
+<span class="dir">.equ</span> <span class="lbl">SA_RESTORER</span>, <span class="num">0x04000000</span>
+<span class="dir">.equ</span> <span class="lbl">SIGINT</span>,      <span class="num">2</span>
+<span class="dir">.equ</span> <span class="lbl">SIG_SIZE</span>,    <span class="num">8</span>               <span class="cmt"># sizeof(sigset_t) per il kernel = 8</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPIO: HANDLER PER SIGINT</div>
+<pre><span class="dir">.section</span> .data
+<span class="lbl">caught_msg:</span>  <span class="dir">.asciz</span> <span class="str">"Caught SIGINT!\n"</span>
+<span class="dir">.equ</span> <span class="lbl">CAUGHT_LEN</span>, <span class="num">15</span>
+
+<span class="dir">.section</span> .bss
+    <span class="dir">.align</span> <span class="num">8</span>
+<span class="lbl">sa:</span>  <span class="dir">.space</span> <span class="num">152</span>                    <span class="cmt"># struct sigaction</span>
+
+<span class="dir">.section</span> .text
+<span class="dir">.global</span> <span class="lbl">_start</span>
+
+<span class="cmt"># ─── Signal handler ───</span>
+<span class="lbl">sigint_handler:</span>
+    <span class="cmt"># write(1, caught_msg, CAUGHT_LEN)</span>
+    <span class="ins">movq</span>   <span class="num">$1</span>, <span class="reg">%rax</span>
+    <span class="ins">movq</span>   <span class="num">$1</span>, <span class="reg">%rdi</span>
+    <span class="ins">leaq</span>   <span class="lbl">caught_msg</span>(<span class="reg">%rip</span>), <span class="reg">%rsi</span>
+    <span class="ins">movq</span>   <span class="num">$CAUGHT_LEN</span>, <span class="reg">%rdx</span>
+    <span class="ins">syscall</span>
+    <span class="ins">ret</span>
+
+<span class="cmt"># ─── Restorer (richiesto dal kernel) ───</span>
+<span class="lbl">restorer:</span>
+    <span class="ins">movq</span>   <span class="num">$15</span>, <span class="reg">%rax</span>        <span class="cmt"># rt_sigreturn</span>
+    <span class="ins">syscall</span>
+
+<span class="lbl">_start:</span>
+    <span class="cmt"># Popola struct sigaction</span>
+    <span class="ins">leaq</span>   <span class="lbl">sa</span>(<span class="reg">%rip</span>), <span class="reg">%r12</span>
+    <span class="ins">leaq</span>   <span class="lbl">sigint_handler</span>(<span class="reg">%rip</span>), <span class="reg">%rax</span>
+    <span class="ins">movq</span>   <span class="reg">%rax</span>, (<span class="reg">%r12</span>)                     <span class="cmt"># sa_handler</span>
+    <span class="ins">movq</span>   <span class="num">$SA_RESTORER</span>, <span class="num">8</span>(<span class="reg">%r12</span>)           <span class="cmt"># sa_flags</span>
+    <span class="ins">leaq</span>   <span class="lbl">restorer</span>(<span class="reg">%rip</span>), <span class="reg">%rax</span>
+    <span class="ins">movq</span>   <span class="reg">%rax</span>, <span class="num">16</span>(<span class="reg">%r12</span>)                  <span class="cmt"># sa_restorer</span>
+
+    <span class="cmt"># rt_sigaction(SIGINT, &amp;sa, NULL, sizeof(sigset_t))</span>
+    <span class="ins">movq</span>   <span class="num">$13</span>, <span class="reg">%rax</span>        <span class="cmt"># rt_sigaction</span>
+    <span class="ins">movq</span>   <span class="num">$SIGINT</span>, <span class="reg">%rdi</span>
+    <span class="ins">movq</span>   <span class="reg">%r12</span>, <span class="reg">%rsi</span>       <span class="cmt"># act</span>
+    <span class="ins">xorq</span>   <span class="reg">%rdx</span>, <span class="reg">%rdx</span>       <span class="cmt"># oldact = NULL</span>
+    <span class="ins">movq</span>   <span class="num">$SIG_SIZE</span>, <span class="reg">%r10</span>
+    <span class="ins">syscall</span>
+
+    <span class="cmt"># Loop infinito (aspetta segnale)</span>
+<span class="lbl">.Lwait:</span>
+    <span class="ins">pause</span>                     <span class="cmt"># Hint CPU: spin-wait</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lwait</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     NO-STDLIB
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-nostdlib"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> NO-STDLIB: COMPILAZIONE CON AS + LD</div>
+  <div class="section-body">
+    <p>Workflow minimale senza libreria C. Entry point: <code>_start</code>. Nessuna libc, solo syscall dirette.</p>
+
+    <div class="sub">
+      <div class="sub-title">x86_64</div>
+<pre><span class="cmt"># Assembla</span>
+$ <span class="ins">as</span> --64 -o program.o program.s
+
+<span class="cmt"># Linka (statico, no libc)</span>
+$ <span class="ins">ld</span> -o program program.o
+
+<span class="cmt"># Oppure in un singolo passo con gcc (no stdlib)</span>
+$ <span class="ins">gcc</span> -nostdlib -no-pie -o program program.s</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">x86 (32-bit)</div>
+<pre><span class="cmt"># Assembla</span>
+$ <span class="ins">as</span> --32 -o program.o program.s
+
+<span class="cmt"># Linka</span>
+$ <span class="ins">ld</span> -m elf_i386 -o program program.o
+
+<span class="cmt"># Con gcc</span>
+$ <span class="ins">gcc</span> -m32 -nostdlib -no-pie -o program program.s</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TEMPLATE NO-STDLIB</div>
+<pre><span class="dir">.section</span> .text
+<span class="dir">.global</span> <span class="lbl">_start</span>
+
+<span class="lbl">_start:</span>
+    <span class="cmt"># Il tuo codice qui...</span>
+
+    <span class="cmt"># IMPORTANTE: termina sempre con exit syscall!</span>
+    <span class="cmt"># Se ret da _start &rarr; SIGSEGV (non c'&egrave; return address).</span>
+    <span class="ins">movq</span>   <span class="num">$60</span>, <span class="reg">%rax</span>
+    <span class="ins">xorq</span>   <span class="reg">%rdi</span>, <span class="reg">%rdi</span>
+    <span class="ins">syscall</span></pre>
+    </div>
+
+    <div class="warn"><code>_start</code> NON &egrave; una funzione: lo stack contiene argc, argv, envp &mdash; non un return address. Non usare <code>ret</code>!</div>
+
+    <div class="sub">
+      <div class="sub-title">ACCESSO A ARGC / ARGV DA _start</div>
+<pre><span class="lbl">_start:</span>
+    <span class="cmt"># All'entry, lo stack contiene:</span>
+    <span class="cmt">#   (%rsp)       = argc</span>
+    <span class="cmt">#   8(%rsp)      = argv[0]  (path del programma)</span>
+    <span class="cmt">#   16(%rsp)     = argv[1]</span>
+    <span class="cmt">#   ...          = argv[n]</span>
+    <span class="cmt">#   NULL</span>
+    <span class="cmt">#   envp[0], envp[1], ..., NULL</span>
+
+    <span class="ins">popq</span>   <span class="reg">%rdi</span>             <span class="cmt"># RDI = argc</span>
+    <span class="ins">movq</span>   <span class="reg">%rsp</span>, <span class="reg">%rsi</span>       <span class="cmt"># RSI = &amp;argv[0]</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     WITH-STDLIB
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stdlib"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> WITH-STDLIB: COMPILAZIONE CON GCC</div>
+  <div class="section-body">
+    <p>Linkaggio con la libreria C standard. Entry point: <code>main</code> (la libc fornisce <code>_start</code>).</p>
+
+    <div class="sub">
+      <div class="sub-title">COMPILAZIONE</div>
+<pre><span class="cmt"># Compila e linka con libc</span>
+$ <span class="ins">gcc</span> -o program program.s
+
+<span class="cmt"># 32-bit</span>
+$ <span class="ins">gcc</span> -m32 -o program program.s
+
+<span class="cmt"># Con debug symbols</span>
+$ <span class="ins">gcc</span> -g -o program program.s
+
+<span class="cmt"># Statico (include libc nel binario)</span>
+$ <span class="ins">gcc</span> -static -o program program.s</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPIO: PRINTF &amp; SCANF</div>
+<pre><span class="dir">.section</span> .rodata
+<span class="lbl">fmt_out:</span>  <span class="dir">.asciz</span> <span class="str">"Risultato: %d\n"</span>
+<span class="lbl">fmt_in:</span>   <span class="dir">.asciz</span> <span class="str">"%d"</span>
+
+<span class="dir">.section</span> .bss
+<span class="lbl">num:</span>      <span class="dir">.space</span> <span class="num">4</span>
+
+<span class="dir">.section</span> .text
+<span class="dir">.global</span> <span class="lbl">main</span>
+
+<span class="lbl">main:</span>
+    <span class="ins">pushq</span>  <span class="reg">%rbp</span>
+    <span class="ins">movq</span>   <span class="reg">%rsp</span>, <span class="reg">%rbp</span>
+
+    <span class="cmt"># scanf("%d", &amp;num)</span>
+    <span class="ins">leaq</span>   <span class="lbl">fmt_in</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+    <span class="ins">leaq</span>   <span class="lbl">num</span>(<span class="reg">%rip</span>), <span class="reg">%rsi</span>
+    <span class="ins">xorl</span>   <span class="reg">%eax</span>, <span class="reg">%eax</span>       <span class="cmt"># AL = 0 (nessun arg XMM per variadic)</span>
+    <span class="ins">call</span>   <span class="lbl">scanf@PLT</span>
+
+    <span class="cmt"># printf("Risultato: %d\n", num * 2)</span>
+    <span class="ins">movl</span>   <span class="lbl">num</span>(<span class="reg">%rip</span>), <span class="reg">%esi</span>
+    <span class="ins">addl</span>   <span class="reg">%esi</span>, <span class="reg">%esi</span>       <span class="cmt"># ESI = num * 2</span>
+    <span class="ins">leaq</span>   <span class="lbl">fmt_out</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+    <span class="ins">xorl</span>   <span class="reg">%eax</span>, <span class="reg">%eax</span>       <span class="cmt"># AL = 0</span>
+    <span class="ins">call</span>   <span class="lbl">printf@PLT</span>
+
+    <span class="cmt"># return 0</span>
+    <span class="ins">xorl</span>   <span class="reg">%eax</span>, <span class="reg">%eax</span>
+    <span class="ins">popq</span>   <span class="reg">%rbp</span>
+    <span class="ins">ret</span></pre>
+    </div>
+
+    <div class="note">Per funzioni variadic (printf, scanf), <code>AL</code> deve contenere il numero di argomenti passati in registri XMM (0 se nessun float). Usare <code>@PLT</code> per il linkaggio dinamico (PIE).</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ABI & CALLING CONVENTION
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-abi"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ABI &amp; CALLING CONVENTION (SYSTEM V AMD64)</div>
+  <div class="section-body">
+    <p>La ABI System V AMD64 &egrave; lo standard su Linux, BSD, macOS per x86_64.</p>
+
+    <div class="sub">
+      <div class="sub-title">PASSAGGIO ARGOMENTI (INTERI / PUNTATORI)</div>
+      <table>
+        <tr><th>Argomento</th><th>Registro</th></tr>
+        <tr><td>1&deg;</td><td><code>%rdi</code></td></tr>
+        <tr><td>2&deg;</td><td><code>%rsi</code></td></tr>
+        <tr><td>3&deg;</td><td><code>%rdx</code></td></tr>
+        <tr><td>4&deg;</td><td><code>%rcx</code></td></tr>
+        <tr><td>5&deg;</td><td><code>%r8</code></td></tr>
+        <tr><td>6&deg;</td><td><code>%r9</code></td></tr>
+        <tr><td>7&deg;+</td><td>Stack (push da destra a sinistra)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PASSAGGIO ARGOMENTI FLOAT</div>
+      <table>
+        <tr><th>Argomento</th><th>Registro</th></tr>
+        <tr><td>1&deg;&ndash;8&deg; float/double</td><td><code>%xmm0</code> &ndash; <code>%xmm7</code></td></tr>
+        <tr><td>9&deg;+</td><td>Stack</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">VALORE DI RITORNO</div>
+      <table>
+        <tr><th>Tipo</th><th>Registro</th></tr>
+        <tr><td>Intero / puntatore</td><td><code>%rax</code> (e <code>%rdx</code> per valori a 128 bit)</td></tr>
+        <tr><td>Float / double</td><td><code>%xmm0</code> (e <code>%xmm1</code>)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CALLER-SAVED vs CALLEE-SAVED</div>
+      <div class="grid2">
+        <div>
+          <p><strong style="color:var(--kw);">Caller-saved</strong> (il chiamante deve salvarli se ne ha bisogno dopo la call):</p>
+<pre><span class="reg">%rax  %rcx  %rdx  %rsi  %rdi
+%r8   %r9   %r10  %r11</span></pre>
+        </div>
+        <div>
+          <p><strong style="color:var(--kw);">Callee-saved</strong> (la funzione chiamata deve ripristinarli):</p>
+<pre><span class="reg">%rbx  %rbp  %r12  %r13  %r14  %r15</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPIO: CHIAMATA A FUNZIONE CON 7+ ARGOMENTI</div>
+<pre><span class="cmt"># Chiama func(a, b, c, d, e, f, g, h) con g e h su stack</span>
+    <span class="ins">pushq</span>  <span class="num">$8</span>               <span class="cmt"># h (8&deg; arg, pushato per primo)</span>
+    <span class="ins">pushq</span>  <span class="num">$7</span>               <span class="cmt"># g (7&deg; arg)</span>
+    <span class="ins">movq</span>   <span class="num">$1</span>, <span class="reg">%rdi</span>         <span class="cmt"># a</span>
+    <span class="ins">movq</span>   <span class="num">$2</span>, <span class="reg">%rsi</span>         <span class="cmt"># b</span>
+    <span class="ins">movq</span>   <span class="num">$3</span>, <span class="reg">%rdx</span>         <span class="cmt"># c</span>
+    <span class="ins">movq</span>   <span class="num">$4</span>, <span class="reg">%rcx</span>         <span class="cmt"># d</span>
+    <span class="ins">movq</span>   <span class="num">$5</span>, <span class="reg">%r8</span>          <span class="cmt"># e</span>
+    <span class="ins">movq</span>   <span class="num">$6</span>, <span class="reg">%r9</span>          <span class="cmt"># f</span>
+    <span class="ins">xorl</span>   <span class="reg">%eax</span>, <span class="reg">%eax</span>       <span class="cmt"># AL = 0 (no XMM args)</span>
+    <span class="ins">call</span>   <span class="lbl">func</span>
+    <span class="ins">addq</span>   <span class="num">$16</span>, <span class="reg">%rsp</span>       <span class="cmt"># Pulisci stack (2 * 8 byte)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">RED ZONE</div>
+      <p>I 128 byte sotto <code>%rsp</code> sono la "red zone": le funzioni foglia (che non chiamano altre funzioni) possono usarli senza modificare RSP. Le funzioni che chiamano altre funzioni NON devono fare affidamento su questa zona.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SSE / VIRGOLA MOBILE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-float"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SSE / VIRGOLA MOBILE (XMM)</div>
+  <div class="section-body">
+    <p>Registri XMM0&ndash;XMM15 (128 bit ciascuno). Usati per float (32-bit), double (64-bit) e operazioni SIMD.</p>
+
+    <div class="sub">
+      <div class="sub-title">OPERAZIONI SCALARI</div>
+<pre><span class="cmt"># ─── Single-precision (float, 32 bit) ───</span>
+<span class="ins">movss</span>    <span class="lbl">fval</span>(<span class="reg">%rip</span>), <span class="reg">%xmm0</span>     <span class="cmt"># Load float</span>
+<span class="ins">addss</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># xmm0 += xmm1</span>
+<span class="ins">subss</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># xmm0 -= xmm1</span>
+<span class="ins">mulss</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># xmm0 *= xmm1</span>
+<span class="ins">divss</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># xmm0 /= xmm1</span>
+<span class="ins">sqrtss</span>   <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># xmm0 = sqrt(xmm1)</span>
+
+<span class="cmt"># ─── Double-precision (double, 64 bit) ───</span>
+<span class="ins">movsd</span>    <span class="lbl">dval</span>(<span class="reg">%rip</span>), <span class="reg">%xmm0</span>     <span class="cmt"># Load double</span>
+<span class="ins">addsd</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># Addizione double</span>
+<span class="ins">mulsd</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># Moltiplicazione double</span>
+<span class="ins">divsd</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># Divisione double</span>
+<span class="ins">ucomisd</span>  <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># Confronto (setta EFLAGS)</span>
+
+<span class="cmt"># ─── Conversioni ───</span>
+<span class="ins">cvtsi2sdq</span>  <span class="reg">%rax</span>, <span class="reg">%xmm0</span>       <span class="cmt"># int64 &rarr; double</span>
+<span class="ins">cvtsd2siq</span>  <span class="reg">%xmm0</span>, <span class="reg">%rax</span>       <span class="cmt"># double &rarr; int64 (troncamento)</span>
+<span class="ins">cvtss2sd</span>   <span class="reg">%xmm0</span>, <span class="reg">%xmm0</span>      <span class="cmt"># float &rarr; double</span>
+<span class="ins">cvtsd2ss</span>   <span class="reg">%xmm0</span>, <span class="reg">%xmm0</span>      <span class="cmt"># double &rarr; float</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">OPERAZIONI PACKED (SIMD)</div>
+<pre><span class="cmt"># ─── 4 float in parallelo (packed single) ───</span>
+<span class="ins">movaps</span>   (<span class="reg">%rdi</span>), <span class="reg">%xmm0</span>         <span class="cmt"># Load 4 float allineati (16 byte)</span>
+<span class="ins">addps</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># xmm0[0..3] += xmm1[0..3]</span>
+<span class="ins">mulps</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># 4 moltiplicazioni parallele</span>
+<span class="ins">movaps</span>   <span class="reg">%xmm0</span>, (<span class="reg">%rdi</span>)         <span class="cmt"># Store risultato</span>
+
+<span class="cmt"># ─── 2 double in parallelo (packed double) ───</span>
+<span class="ins">movapd</span>   (<span class="reg">%rdi</span>), <span class="reg">%xmm0</span>         <span class="cmt"># Load 2 double allineati</span>
+<span class="ins">addpd</span>    <span class="reg">%xmm1</span>, <span class="reg">%xmm0</span>         <span class="cmt"># 2 addizioni parallele</span>
+<span class="ins">movapd</span>   <span class="reg">%xmm0</span>, (<span class="reg">%rdi</span>)         <span class="cmt"># Store</span>
+
+<span class="cmt"># ─── Non-allineato (pi&ugrave; lento, ma senza vincoli) ───</span>
+<span class="ins">movups</span>   (<span class="reg">%rdi</span>), <span class="reg">%xmm0</span>         <span class="cmt"># Load non-allineato (single)</span>
+<span class="ins">movupd</span>   (<span class="reg">%rdi</span>), <span class="reg">%xmm0</span>         <span class="cmt"># Load non-allineato (double)</span></pre>
+      <div class="warn">Le istruzioni <code>movaps</code>/<code>movapd</code> richiedono dati allineati a 16 byte. Accesso non allineato = SIGSEGV. Usare <code>.align 16</code> prima dei dati.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPIO: SOMMA DI UN ARRAY DI DOUBLE</div>
+<pre><span class="dir">.section</span> .data
+    <span class="dir">.align</span> <span class="num">16</span>
+<span class="lbl">arr:</span>   <span class="dir">.double</span> <span class="num">1.1, 2.2, 3.3, 4.4</span>
+<span class="dir">.equ</span>   <span class="lbl">ARR_LEN</span>, <span class="num">4</span>
+
+<span class="dir">.section</span> .text
+<span class="dir">.global</span> <span class="lbl">main</span>
+<span class="lbl">main:</span>
+    <span class="ins">pushq</span>  <span class="reg">%rbp</span>
+    <span class="ins">movq</span>   <span class="reg">%rsp</span>, <span class="reg">%rbp</span>
+    <span class="ins">xorpd</span>  <span class="reg">%xmm0</span>, <span class="reg">%xmm0</span>     <span class="cmt"># sum = 0.0</span>
+    <span class="ins">leaq</span>   <span class="lbl">arr</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
+    <span class="ins">movl</span>   <span class="num">$ARR_LEN</span>, <span class="reg">%ecx</span>
+<span class="lbl">.Lsum:</span>
+    <span class="ins">addsd</span>  (<span class="reg">%rdi</span>), <span class="reg">%xmm0</span>     <span class="cmt"># sum += arr[i]</span>
+    <span class="ins">addq</span>   <span class="num">$8</span>, <span class="reg">%rdi</span>          <span class="cmt"># next double</span>
+    <span class="ins">decl</span>   <span class="reg">%ecx</span>
+    <span class="ins">jnz</span>    <span class="lbl">.Lsum</span>
+    <span class="cmt"># xmm0 contiene la somma (11.0)</span>
+    <span class="ins">xorl</span>   <span class="reg">%eax</span>, <span class="reg">%eax</span>
+    <span class="ins">popq</span>   <span class="reg">%rbp</span>
+    <span class="ins">ret</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     INLINE ASSEMBLY
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-inline"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INLINE ASSEMBLY IN C (GCC EXTENDED ASM)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">SINTASSI</div>
+<pre><span class="kw">asm</span> <span class="kw">volatile</span> (
+    <span class="str">"istruzioni assembly"</span>        <span class="cmt">/* template (AT&amp;T syntax) */</span>
+    : <span class="str">"=constraint"</span>(output)       <span class="cmt">/* output operands  */</span>
+    : <span class="str">"constraint"</span>(input)         <span class="cmt">/* input operands   */</span>
+    : <span class="str">"clobber_list"</span>              <span class="cmt">/* registri sporcati */</span>
+);</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CONSTRAINT COMUNI</div>
+      <table>
+        <tr><th>Constraint</th><th>Significato</th></tr>
+        <tr><td><code>"r"</code></td><td>Qualsiasi registro general purpose</td></tr>
+        <tr><td><code>"a"</code></td><td>%rax / %eax / %ax / %al</td></tr>
+        <tr><td><code>"b"</code></td><td>%rbx / %ebx</td></tr>
+        <tr><td><code>"c"</code></td><td>%rcx / %ecx</td></tr>
+        <tr><td><code>"d"</code></td><td>%rdx / %edx</td></tr>
+        <tr><td><code>"S"</code></td><td>%rsi / %esi</td></tr>
+        <tr><td><code>"D"</code></td><td>%rdi / %edi</td></tr>
+        <tr><td><code>"m"</code></td><td>Operando in memoria</td></tr>
+        <tr><td><code>"i"</code></td><td>Immediato intero</td></tr>
+        <tr><td><code>"x"</code></td><td>Registro SSE (XMM)</td></tr>
+        <tr><td><code>"=r"</code></td><td>Output: registro</td></tr>
+        <tr><td><code>"+r"</code></td><td>Input+Output: stesso registro</td></tr>
+        <tr><td><code>"0"</code></td><td>Matching constraint: usa lo stesso registro dell'operando 0</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPI</div>
+<pre><span class="cmt">/* Semplice: leggi il TSC (Time Stamp Counter) */</span>
+<span class="kw">static inline</span> <span class="kw">unsigned long</span> rdtsc(<span class="kw">void</span>) {
+    <span class="kw">unsigned</span> hi, lo;
+    <span class="kw">asm volatile</span> (<span class="str">"rdtsc"</span> : <span class="str">"=a"</span>(lo), <span class="str">"=d"</span>(hi));
+    <span class="kw">return</span> ((<span class="kw">unsigned long</span>)hi &lt;&lt; <span class="num">32</span>) | lo;
+}
+
+<span class="cmt">/* Addizione con flag detection */</span>
+<span class="kw">int</span> add_check_overflow(<span class="kw">int</span> a, <span class="kw">int</span> b, <span class="kw">int</span> *overflow) {
+    <span class="kw">int</span> result;
+    <span class="kw">asm</span> (
+        <span class="str">"addl %2, %0\n\t"</span>
+        <span class="str">"seto %b1"</span>
+        : <span class="str">"=r"</span>(result), <span class="str">"=q"</span>(*overflow)
+        : <span class="str">"r"</span>(b), <span class="str">"0"</span>(a)
+        : <span class="str">"cc"</span>
+    );
+    <span class="kw">return</span> result;
+}
+
+<span class="cmt">/* Syscall wrapper (write) */</span>
+<span class="kw">long</span> my_write(<span class="kw">int</span> fd, <span class="kw">const void</span> *buf, <span class="kw">unsigned long</span> count) {
+    <span class="kw">long</span> ret;
+    <span class="kw">asm volatile</span> (
+        <span class="str">"syscall"</span>
+        : <span class="str">"=a"</span>(ret)
+        : <span class="str">"a"</span>((<span class="kw">long</span>)<span class="num">1</span>), <span class="str">"D"</span>(fd), <span class="str">"S"</span>(buf), <span class="str">"d"</span>(count)
+        : <span class="str">"rcx"</span>, <span class="str">"r11"</span>, <span class="str">"memory"</span>
+    );
+    <span class="kw">return</span> ret;
+}
+
+<span class="cmt">/* Atomic compare-and-swap */</span>
+<span class="kw">static inline int</span> cas(<span class="kw">int</span> *ptr, <span class="kw">int</span> old, <span class="kw">int</span> new) {
+    <span class="kw">int</span> prev;
+    <span class="kw">asm volatile</span> (
+        <span class="str">"lock cmpxchgl %2, %1"</span>
+        : <span class="str">"=a"</span>(prev), <span class="str">"+m"</span>(*ptr)
+        : <span class="str">"r"</span>(new), <span class="str">"0"</span>(old)
+        : <span class="str">"memory"</span>, <span class="str">"cc"</span>
+    );
+    <span class="kw">return</span> prev == old;
+}</pre>
+    </div>
+
+    <div class="note"><code>volatile</code> impedisce al compilatore di eliminare o riordinare il blocco asm. Usalo sempre per I/O, syscall e operazioni con side-effect. Il clobber <code>"memory"</code> indica al compilatore che l'asm potrebbe leggere/scrivere memoria arbitraria. Il clobber <code>"cc"</code> indica che i flag sono modificati.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     OTTIMIZZAZIONE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-opt"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TECNICHE DI OTTIMIZZAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">LEA PER ARITMETICA VELOCE</div>
+<pre><span class="cmt"># LEA non accede alla memoria: calcola solo l'indirizzo</span>
+<span class="ins">leaq</span>  (<span class="reg">%rax</span>,<span class="reg">%rax</span>,<span class="num">2</span>), <span class="reg">%rax</span>      <span class="cmt"># RAX = RAX * 3</span>
+<span class="ins">leaq</span>  (<span class="reg">%rax</span>,<span class="reg">%rax</span>,<span class="num">4</span>), <span class="reg">%rax</span>      <span class="cmt"># RAX = RAX * 5</span>
+<span class="ins">leaq</span>  (,<span class="reg">%rax</span>,<span class="num">8</span>), <span class="reg">%rax</span>          <span class="cmt"># RAX = RAX * 8</span>
+<span class="ins">leaq</span>  <span class="num">1</span>(<span class="reg">%rax</span>,<span class="reg">%rax</span>,<span class="num">2</span>), <span class="reg">%rax</span>    <span class="cmt"># RAX = RAX * 3 + 1</span>
+<span class="ins">leaq</span>  (<span class="reg">%rdi</span>,<span class="reg">%rsi</span>), <span class="reg">%rax</span>        <span class="cmt"># RAX = RDI + RSI (somma senza toccare flag)</span>
+
+<span class="cmt"># Moltiplicazione per costanti non-potenza-di-2:</span>
+<span class="cmt"># RAX * 7 = RAX * 8 - RAX</span>
+<span class="ins">leaq</span>  (,<span class="reg">%rax</span>,<span class="num">8</span>), <span class="reg">%rdx</span>
+<span class="ins">subq</span>  <span class="reg">%rax</span>, <span class="reg">%rdx</span>               <span class="cmt"># RDX = RAX * 7</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">AZZERARE UN REGISTRO</div>
+<pre><span class="ins">xorl</span>  <span class="reg">%eax</span>, <span class="reg">%eax</span>      <span class="cmt"># Modo ottimale: 2 byte, azzera anche i 32 bit alti</span>
+                          <span class="cmt"># Rompe la dipendenza dal valore precedente di RAX</span>
+                          <span class="cmt"># Riconosciuto dalla CPU come idioma di azzeramento</span>
+
+<span class="cmt"># NON usare:</span>
+<span class="ins">movq</span>  <span class="num">$0</span>, <span class="reg">%rax</span>         <span class="cmt"># 7 byte, pi&ugrave; lento, NON rompe la dipendenza</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LOOP UNROLLING</div>
+<pre><span class="cmt"># ─── Loop base (1 iterazione per ciclo) ───</span>
+<span class="lbl">.Lloop:</span>
+    <span class="ins">addl</span>  (<span class="reg">%rdi</span>), <span class="reg">%eax</span>
+    <span class="ins">addq</span>  <span class="num">$4</span>, <span class="reg">%rdi</span>
+    <span class="ins">decl</span>  <span class="reg">%ecx</span>
+    <span class="ins">jnz</span>   <span class="lbl">.Lloop</span>
+
+<span class="cmt"># ─── Unrolled x4 (4 iterazioni per ciclo) ───</span>
+<span class="lbl">.Lloop4:</span>
+    <span class="ins">addl</span>    (<span class="reg">%rdi</span>), <span class="reg">%eax</span>
+    <span class="ins">addl</span>  <span class="num">4</span>(<span class="reg">%rdi</span>), <span class="reg">%eax</span>
+    <span class="ins">addl</span>  <span class="num">8</span>(<span class="reg">%rdi</span>), <span class="reg">%eax</span>
+    <span class="ins">addl</span> <span class="num">12</span>(<span class="reg">%rdi</span>), <span class="reg">%eax</span>
+    <span class="ins">addq</span>  <span class="num">$16</span>, <span class="reg">%rdi</span>
+    <span class="ins">subl</span>  <span class="num">$4</span>, <span class="reg">%ecx</span>
+    <span class="ins">jnz</span>   <span class="lbl">.Lloop4</span>
+    <span class="cmt"># (gestire il resto con un loop separato o duff's device)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ALLINEAMENTO DELLO STACK E DEI DATI</div>
+<pre><span class="cmt"># Stack: allineare a 16 byte prima di CALL</span>
+<span class="ins">andq</span>  <span class="num">$-16</span>, <span class="reg">%rsp</span>        <span class="cmt"># Forza allineamento RSP a 16</span>
+
+<span class="cmt"># Dati: allineare per SIMD</span>
+<span class="dir">.align</span> <span class="num">16</span>
+<span class="lbl">vec_data:</span> <span class="dir">.float</span> <span class="num">1.0, 2.0, 3.0, 4.0</span>
+
+<span class="cmt"># Allineamento loop target (riduce penalita' di branch)</span>
+    <span class="dir">.p2align</span> <span class="num">4</span>           <span class="cmt"># Allinea a 2^4 = 16 byte</span>
+<span class="lbl">.Lhot_loop:</span>
+    <span class="cmt"># ...</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BRANCH-FREE (CONDITIONAL MOVE)</div>
+<pre><span class="cmt"># if (a &gt; b) max = a; else max = b;</span>
+<span class="cmt"># Versione branch-free:</span>
+    <span class="ins">cmpl</span>  <span class="reg">%esi</span>, <span class="reg">%edi</span>       <span class="cmt"># confronta a, b</span>
+    <span class="ins">movl</span>  <span class="reg">%esi</span>, <span class="reg">%eax</span>       <span class="cmt"># eax = b (default)</span>
+    <span class="ins">cmovgl</span> <span class="reg">%edi</span>, <span class="reg">%eax</span>      <span class="cmt"># se a &gt; b: eax = a</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PREFETCH &amp; HINT</div>
+<pre><span class="ins">prefetcht0</span>  <span class="num">64</span>(<span class="reg">%rdi</span>)     <span class="cmt"># Prefetch in L1 cache</span>
+<span class="ins">prefetcht1</span>  <span class="num">128</span>(<span class="reg">%rdi</span>)    <span class="cmt"># Prefetch in L2 cache</span>
+<span class="ins">prefetchnta</span> <span class="num">256</span>(<span class="reg">%rdi</span>)    <span class="cmt"># Prefetch non-temporal (non inquina cache)</span>
+<span class="ins">pause</span>                      <span class="cmt"># Hint per spin-wait loop (riduce consumo CPU)</span>
+<span class="ins">nop</span>                        <span class="cmt"># No operation (padding)</span>
+<span class="ins">lfence</span>                     <span class="cmt"># Load fence (serializza load)</span>
+<span class="ins">sfence</span>                     <span class="cmt"># Store fence (serializza store)</span>
+<span class="ins">mfence</span>                     <span class="cmt"># Full memory fence</span></pre>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
