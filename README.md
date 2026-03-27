@@ -1,5 +1,5 @@
 # Cheatsheets
-A collection of cheatsheets created by claude ai for quick consultation on various topics.
+A collection of cheatsheets created by Claude AI for quick consultation on various topics.
 
 ## Webpage
 The cheatsheet collection can be found at the URL: https://nikmaffi.github.io/Cheatsheets/
