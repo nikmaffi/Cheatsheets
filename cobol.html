@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COBOL CHEATSHEET — TERMINALE v2.0</title>
+<title>COBOL CHEATSHEET — TERMINAL v1.3</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
 
@@ -323,7 +323,7 @@
 <body>
 
 <div id="header">
-  <h1>◈ COBOL REFERENCE MANUAL <span class="cursor"></span></h1>
+  <h1>&gt; COBOL REFERENCE MANUAL <span class="cursor"></span></h1>
   <div class="subtitle">GnuCOBOL 3.x — <span>COMPLETE CHEATSHEET</span> — COMPILATO DA DEREK BANAS + ESTENSIONI</div>
 </div>
 
@@ -433,17 +433,31 @@
        <span class="hd">&gt;&gt;SOURCE FORMAT FREE</span>
 
 <span class="hd">IDENTIFICATION DIVISION.</span>
-<span class="kw">PROGRAM-ID.</span>   nome-programma.
-<span class="kw">AUTHOR.</span>       Nome Autore.
-<span class="kw">DATE-WRITTEN.</span> 01 Jan 2025.
+<span class="kw">PROGRAM-ID.</span>    nome-programma.
+<span class="kw">AUTHOR.</span>        Nome Autore.
+<span class="kw">DATE-WRITTEN.</span>  01 Jan 2025.
+<span class="kw">DATE-COMPILED.</span> 01 Jan 2025.
+<span class="kw">SECURITY.</span>      Confidential.
 
 <span class="hd">ENVIRONMENT DIVISION.</span>
 <span class="kw">CONFIGURATION SECTION.</span>
+<span class="kw">REPOSITORY.</span>
+    <span class="kw">FUNCTION ALL INTRINSIC.</span> <span class="cmt">*> Permette di usare SQRT(X) invece di FUNCTION SQRT(X)</span>
+<span class="kw">SOURCE-COMPUTER.</span> Nome computer.
+<span class="kw">OBJECT-COMPUTER.</span> Nome computer
+    MEMORY SIZE dimensione-memoria [CHARACTERS | WORDS | MODULES]
+    PROGRAM COLLATING SEQUENCE IS nome-alfabeto <span class="cmt">*> Stabilisce l'ordine di "valore" dei caratteri (MERGE e SORT)</span>
+    SEGMENT-LIMIT IS limite.
 <span class="kw">SPECIAL-NAMES.</span>
     <span class="cmt">*> Classificazioni personalizzate</span>
+    <span class="kw">CLASS</span> nome <span class="kw">IS</span> val1, val2, ...
+    <span class="kw">DECIMAL-POINT IS COMMA</span>
+    <span class="kw">CURRENCY SIGN IS</span> carattere
+    <span class="kw">ALPHABET</span> nome-alfabeto <span class="kw">IS</span> [<span class="kw">ASCII</span> | <span class="kw">EBCDIC</span> | <span class="kw">NATIVE</span> | <span class="kw">STANDARD-1/2</span>].
 <span class="kw">INPUT-OUTPUT SECTION.</span>
 <span class="kw">FILE-CONTROL.</span>
     <span class="cmt">*> Associazione file</span>
+<span class="kw">I-O-CONTROL.</span>
 
 <span class="hd">DATA DIVISION.</span>
 <span class="kw">FILE SECTION.</span>
@@ -458,6 +472,12 @@
     <span class="cmt">*> Definizioni schermi interattivi</span>
 
 <span class="hd">PROCEDURE DIVISION</span> [<span class="kw">USING</span> param1 param2] [<span class="kw">RETURNING</span> ret].
+<span class="kw">DECLARATIVES</span>.
+nome-sezione <span class="kw">SECTION.</span>
+    <span class="kw">USE AFTER STANDARD ERROR PROCEDURE ON</span> nome-file.
+    <span class="kw">DISPLAY</span> messaggio.
+<span class="kw">END DECLARATIVES</span>.
+
     <span class="cmt">*> Logica del programma</span>
     <span class="kw">STOP RUN.</span></pre>
   </div>
@@ -1732,10 +1752,10 @@ matrice[1][2] = 7;</pre>
     <div class="sub-title" style="margin-top:10px">Costanti colori</div>
     <table>
       <tr><th>Num</th><th>Colore</th><th>Num</th><th>Colore</th></tr>
-      <tr><td>0</td><td>Nero (BLACK)</td><td>4</td><td>Blu (BLUE)</td></tr>
-      <tr><td>1</td><td>Rosso (RED)</td><td>5</td><td>Magenta (MAGENTA)</td></tr>
-      <tr><td>2</td><td>Verde (GREEN)</td><td>6</td><td>Ciano (CYAN)</td></tr>
-      <tr><td>3</td><td>Giallo (YELLOW)</td><td>7</td><td>Bianco (WHITE)</td></tr>
+      <tr><td>0</td><td>Nero (BLACK)</td><td>4</td><td>Rosso (RED)</td></tr>
+      <tr><td>1</td><td>Blu (BLUE)</td><td>5</td><td>Magenta (MAGENTA)</td></tr>
+      <tr><td>2</td><td>Verde (GREEN)</td><td>6</td><td>Giallo (YELLOW)</td></tr>
+      <tr><td>3</td><td>Ciano (CYAN)</td><td>7</td><td>Bianco (WHITE)</td></tr>
     </table>
 
     <div class="sub-title" style="margin-top:10px">Esempio completo SCREEN SECTION</div>
