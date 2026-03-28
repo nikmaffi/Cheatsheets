@@ -256,6 +256,7 @@
   .badge-asm     { background:#1a0c00; color:#ff8833; border:1px solid #5c2a00; }
   .badge-gdb     { background:#1a0808; color:#ff5555; border:1px solid #5c1a1a; }
   .badge-dsa     { background:#0c1414; color:#33ccbb; border:1px solid #203a3a; }
+  .badge-c       { background:#080e1a; color:#4488ff; border:1px solid #1a2a5c; }
 
   /* ─── INLINE ──────────────────────────────────── */
   p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
@@ -305,7 +306,8 @@
 
   <div class="nav-section">
     <div class="nav-section-title">Programming</div>
-    <a href="#cat-lang">Linguaggi</a>
+    <a href="#cat-lang">Languages</a>
+    <a href="#cat-c">C Language</a>
   </div>
 
   <div class="nav-section">
@@ -348,6 +350,40 @@
         <a href="assembly_x86.html">ASM_x86_x86_64_REFERENCE.html</a>
         <span class="lang-badge badge-asm">ASM x86</span>
         <span class="desc">Guida completa Assembly x86/x86_64 — Sintassi AT&amp;T, Registri, Syscall, ABI, SSE, Inline ASM, Segnali.</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<a class="anchor" id="cat-c"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C LANGUAGE</div>
+  <div class="section-body">
+    <ul class="file-list">
+      <li>
+        <a href="c_language.html">C_LANGUAGE_REFERENCE.html</a>
+        <span class="lang-badge badge-c">C99</span>
+        <span class="desc">Guida completa al linguaggio C standard (ANSI C99) — Tipi, Puntatori, Struct, Enum, Preprocessore, I/O, Allocazione dinamica, Stringhe.</span>
+      </li>
+      <li>
+        <a href="c_versions.html">C_VERSIONS_DIFF.html</a>
+        <span class="lang-badge badge-c">C STD</span>
+        <span class="desc">Differenze dettagliate fra le versioni dello standard C — K&amp;R, C89/C90, C99, C11, C17, C23. Novità, deprecazioni, incompatibilità.</span>
+      </li>
+      <li>
+        <a href="c_multiprocess.html">C_MULTIPROCESS_IPC.html</a>
+        <span class="lang-badge badge-c">IPC</span>
+        <span class="desc">Programmazione multiprocesso UNIX/POSIX — fork, exec, wait, pipe, FIFO, System V IPC (semafori, shared memory, message queue), segnali.</span>
+      </li>
+      <li>
+        <a href="c_multithreading.html">C_MULTITHREADING.html</a>
+        <span class="lang-badge badge-c">THREAD</span>
+        <span class="desc">Programmazione multithreading in C — POSIX Threads (pthread), mutex, condition variable, rwlock, barrier, thread-safety, pattern produttore-consumatore.</span>
+      </li>
+      <li>
+        <a href="c_sqlite.html">C_SQLITE_REFERENCE.html</a>
+        <span class="lang-badge badge-c">SQLite</span>
+        <span class="desc">SQLite per C — API C (sqlite3_open, prepare, step, finalize), bind, transazioni, callback, gestione errori, compilazione e linking.</span>
       </li>
     </ul>
   </div>

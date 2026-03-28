@@ -1,0 +1,3180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C Language (C99) CHEATSHEET</title>
+<link rel="icon" type="image/png" href="./res/icons/icon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+  :root {
+    --bg:        #060810;
+    --bg2:       #080b14;
+    --panel:     #0c1018;
+    --panel2:    #10141c;
+    --border:    #141c2a;
+    --border2:   #203050;
+    --glow:      #4488ff;
+    --glow2:     #66aaff;
+    --glow-dim:  #0a1a3b;
+    --dim:       #203060;
+    --text:      #a0b0c8;
+    --text2:     #c0d0e8;
+    --bright:    #c0ddff;
+    --accent:    #3366cc;
+    --accent2:   #5599ff;
+    --key:       #5588cc;
+    --kw:        #4488ff;
+    --fn:        #66ccaa;
+    --str:       #88cc66;
+    --num:       #dd8844;
+    --cmt:       #445577;
+    --type:      #cc77dd;
+    --dir:       #ddaa44;
+    --lbl:       #88aadd;
+    --head:      #c0ddff;
+    --hr:        #141c2a;
+    --scan:      rgba(68,136,255,0.025);
+    --warn-bg:   rgba(120,30,10,0.25);
+    --warn-brd:  #ff4422;
+    --warn-txt:  #ffaa88;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* CRT scanlines overlay */
+  body::before {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scan) 2px,
+      var(--scan) 4px
+    );
+    pointer-events:none;
+    z-index:9999;
+  }
+
+  /* CRT vignette */
+  body::after {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: radial-gradient(ellipse at center,
+      transparent 60%,
+      rgba(0,2,10,0.7) 100%
+    );
+    pointer-events:none;
+    z-index:9998;
+  }
+
+  /* ─── HEADER ─────────────────────────────────── */
+  #header {
+    background: linear-gradient(180deg, #0a1020 0%, var(--bg2) 100%);
+    border-bottom: 2px solid var(--glow);
+    padding: 18px 24px 14px;
+    position: sticky; top:0; z-index:100;
+    box-shadow: 0 0 30px rgba(68,136,255,0.15);
+  }
+
+  #header h1 {
+    font-family: 'VT323', monospace;
+    font-size: 2.4rem;
+    color: var(--bright);
+    text-shadow: 0 0 12px var(--glow2), 0 0 30px var(--glow);
+    letter-spacing: 3px;
+  }
+
+  #header .subtitle {
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  #header .subtitle span { color: var(--accent); }
+
+  /* ─── LAYOUT ─────────────────────────────────── */
+  #layout { display:flex; gap:0; }
+
+  /* ─── SIDEBAR / INDEX ────────────────────────── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    position: sticky;
+    top: 70px;
+    padding: 12px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+
+  #sidebar::-webkit-scrollbar { width:5px; }
+  #sidebar::-webkit-scrollbar-track { background: var(--bg); }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+
+  .nav-head {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    color: var(--accent2);
+    padding: 6px 14px 4px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px var(--glow-dim);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .nav-section { margin-bottom: 2px; }
+
+  .nav-section-title {
+    color: var(--kw);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 6px 14px 2px;
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  #sidebar a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: 3px 14px 3px 20px;
+    font-size: 11.5px;
+    transition: all 0.12s;
+    border-left: 2px solid transparent;
+  }
+
+  #sidebar a::before { content:'> '; color:var(--dim); }
+
+  #sidebar a:hover {
+    color: var(--bright);
+    background: rgba(68,136,255,0.08);
+    border-left-color: var(--glow);
+    text-shadow: 0 0 6px var(--glow2);
+  }
+
+  /* ─── MAIN CONTENT ───────────────────────────── */
+  #main {
+    flex:1;
+    padding: 20px 28px 60px;
+    overflow-x: hidden;
+    max-width: calc(100vw - 260px);
+  }
+
+  /* ─── SECTION ────────────────────────────────── */
+  .section {
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--panel2);
+    box-shadow: 0 0 18px rgba(20,40,80,0.5);
+    overflow: hidden;
+  }
+
+  .section-header {
+    background: linear-gradient(90deg, var(--glow-dim) 0%, var(--panel) 100%);
+    padding: 7px 14px;
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: var(--bright);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--glow2);
+    border-bottom: 1px solid var(--border2);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .section-header .icon { opacity:0.7; font-size:0.95rem; }
+
+  .section-body { padding: 12px 14px; }
+
+  /* ─── SUB-SECTION ────────────────────────────── */
+  .sub { margin: 10px 0; }
+
+  .sub-title {
+    color: var(--lbl);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    border-bottom: 1px dashed var(--hr);
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ─── CODE BLOCKS ────────────────────────────── */
+  pre, code {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  pre {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--glow-dim);
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text2);
+    border-radius: 1px;
+    margin: 6px 0;
+    white-space: pre;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+
+  pre::-webkit-scrollbar { height:4px; }
+  pre::-webkit-scrollbar-track { background:var(--bg); }
+  pre::-webkit-scrollbar-thumb { background:var(--glow-dim); }
+
+  .kw   { color: var(--kw);  }
+  .fn   { color: var(--fn);  }
+  .type { color: var(--type); }
+  .dir  { color: var(--dir); }
+  .str  { color: var(--str); }
+  .num  { color: var(--num); }
+  .cmt  { color: var(--cmt); font-style: italic; }
+  .lbl  { color: var(--lbl); }
+  .hd   { color: var(--head); font-weight:bold; }
+  .dim  { color: var(--dim); }
+
+  /* ─── TABLES ──────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 6px 0;
+  }
+
+  th {
+    background: rgba(68,136,255,0.12);
+    color: var(--accent2);
+    text-align: left;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  td {
+    padding: 4px 8px;
+    border: 1px solid var(--hr);
+    vertical-align: top;
+    color: var(--text2);
+  }
+
+  tr:nth-child(even) td { background: rgba(10,20,50,0.3); }
+  tr:hover td { background: rgba(68,136,255,0.06); }
+
+  td code, th code {
+    color: var(--kw);
+    background: rgba(0,0,0,0.25);
+    padding: 1px 4px;
+    border-radius: 1px;
+  }
+
+  /* ─── INLINE ──────────────────────────────────── */
+  p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
+
+  .note {
+    background: rgba(68,136,255,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: var(--text);
+  }
+
+  .warn {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn-brd);
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: var(--warn-txt);
+  }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+  /* ─── RESPONSIVE ─────────────────────────────── */
+  @media(max-width:900px) {
+    .grid2, .grid3 { grid-template-columns:1fr; }
+    #sidebar { display:none; }
+    #main { max-width:100vw; padding:14px; }
+  }
+
+  /* Cursor blink */
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  .cursor::after { content:'█'; animation:blink 1s infinite; color:var(--accent); }
+
+  /* anchor offset for sticky header */
+  .anchor { display:block; height:70px; margin-top:-70px; visibility:hidden; }
+
+  /* ─── SCROLLBAR ──────────────────────────────── */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>&gt; C LANGUAGE REFERENCE MANUAL (C99) <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>ISO/IEC 9899:1999 &mdash; ANSI C99</span> &mdash; v1.3</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-compile">Compilazione</a>
+    <a href="#s-structure">Struttura Programma</a>
+    <a href="#s-types">Tipi di Dato</a>
+    <a href="#s-literals">Letterali &amp; Costanti</a>
+    <a href="#s-operators">Operatori</a>
+    <a href="#s-cast">Cast &amp; Conversioni</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Controllo di Flusso</div>
+    <a href="#s-branch">Selezione</a>
+    <a href="#s-loops">Iterazione</a>
+    <a href="#s-jump">Salti</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Funzioni</div>
+    <a href="#s-functions">Dichiarazione &amp; Definizione</a>
+    <a href="#s-variadic">Funzioni Variadic</a>
+    <a href="#s-recursion">Ricorsione</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Puntatori &amp; Array</div>
+    <a href="#s-pointers">Puntatori</a>
+    <a href="#s-arrays">Array</a>
+    <a href="#s-ptrarith">Aritmetica Puntatori</a>
+    <a href="#s-funcptr">Puntatori a Funzione</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Stringhe</div>
+    <a href="#s-strings">Stringhe C</a>
+    <a href="#s-stringfn">Funzioni string.h</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Strutture Dati</div>
+    <a href="#s-struct">Struct</a>
+    <a href="#s-union">Union</a>
+    <a href="#s-enum">Enum</a>
+    <a href="#s-typedef">Typedef</a>
+    <a href="#s-bitfield">Bit Fields</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Memoria</div>
+    <a href="#s-storage">Classi di Memoria</a>
+    <a href="#s-malloc">Allocazione Dinamica</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Preprocessore</div>
+    <a href="#s-preproc">Direttive</a>
+    <a href="#s-macros">Macro Avanzate</a>
+    <a href="#s-predefined">Macro Predefinite</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">I/O &amp; File</div>
+    <a href="#s-stdio">I/O Standard</a>
+    <a href="#s-fileio">I/O su File</a>
+    <a href="#s-format">Formattazione</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Libreria Standard</div>
+    <a href="#s-stdlib">stdlib.h</a>
+    <a href="#s-math">math.h</a>
+    <a href="#s-ctype">ctype.h</a>
+    <a href="#s-stdint">stdint.h &amp; inttypes.h</a>
+    <a href="#s-stdbool">stdbool.h &amp; altri C99</a>
+    <a href="#s-limits">limits.h &amp; float.h</a>
+    <a href="#s-time">time.h</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-volatile">volatile &amp; restrict</a>
+    <a href="#s-inline">Inline Functions</a>
+    <a href="#s-vla">VLA (C99)</a>
+    <a href="#s-compound">Compound Literals (C99)</a>
+    <a href="#s-designated">Designated Initializers</a>
+    <a href="#s-assert">Assert &amp; Debugging</a>
+    <a href="#s-errno">Gestione Errori</a>
+    <a href="#s-setjmp">setjmp / longjmp</a>
+    <a href="#s-scope">Scope &amp; Linkage</a>
+    <a href="#s-bitwise">Bitwise Tricks</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Idiomi &amp; Pattern</div>
+    <a href="#s-ub">Undefined Behavior</a>
+    <a href="#s-aliasing">Strict Aliasing</a>
+    <a href="#s-opaque">Opaque Types &amp; ADT</a>
+    <a href="#s-xmacros">X-Macros</a>
+    <a href="#s-errcodes">Error Handling Patterns</a>
+    <a href="#s-generic">Strutture Dati Generiche</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════════
+     COMPILAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-compile"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMPILAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">GCC — Compilazione Base</div>
+<pre>
+<span class="cmt"># Compilazione + linking in un colpo</span>
+<span class="fn">gcc</span> <span class="str">-std=c99</span> <span class="str">-Wall</span> <span class="str">-Wextra</span> <span class="str">-pedantic</span> main.c <span class="str">-o</span> main
+
+<span class="cmt"># Solo preprocessing (-E), compilazione (-S), assemblaggio (-c)</span>
+<span class="fn">gcc</span> <span class="str">-E</span> main.c <span class="str">-o</span> main.i       <span class="cmt"># output preprocessato</span>
+<span class="fn">gcc</span> <span class="str">-S</span> main.c <span class="str">-o</span> main.s       <span class="cmt"># output assembly</span>
+<span class="fn">gcc</span> <span class="str">-c</span> main.c <span class="str">-o</span> main.o       <span class="cmt"># output oggetto</span>
+
+<span class="cmt"># Più file sorgente</span>
+<span class="fn">gcc</span> <span class="str">-std=c99</span> main.c utils.c <span class="str">-o</span> app
+
+<span class="cmt"># Con librerie esterne</span>
+<span class="fn">gcc</span> main.c <span class="str">-lm</span> <span class="str">-lpthread</span> <span class="str">-o</span> app   <span class="cmt"># -l linka la libreria</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flag Comuni</div>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>-std=c99</code></td><td>Standard C99</td></tr>
+        <tr><td><code>-Wall</code></td><td>Abilita la maggior parte dei warning</td></tr>
+        <tr><td><code>-Wextra</code></td><td>Warning extra oltre -Wall</td></tr>
+        <tr><td><code>-Werror</code></td><td>Tratta i warning come errori</td></tr>
+        <tr><td><code>-pedantic</code></td><td>Aderenza stretta allo standard</td></tr>
+        <tr><td><code>-g</code></td><td>Informazioni di debug (per GDB)</td></tr>
+        <tr><td><code>-O0 / -O1 / -O2 / -O3 / -Os</code></td><td>Livelli di ottimizzazione</td></tr>
+        <tr><td><code>-D NOME=val</code></td><td>Definisce macro da riga di comando</td></tr>
+        <tr><td><code>-I dir</code></td><td>Aggiunge directory per header include</td></tr>
+        <tr><td><code>-L dir</code></td><td>Aggiunge directory per librerie</td></tr>
+        <tr><td><code>-fsanitize=address</code></td><td>AddressSanitizer (buffer overflow, use-after-free)</td></tr>
+        <tr><td><code>-fsanitize=undefined</code></td><td>UBSan (comportamento indefinito)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Makefile Minimo</div>
+<pre>
+<span class="lbl">CC</span>      = gcc
+<span class="lbl">CFLAGS</span>  = -std=c99 -Wall -Wextra -pedantic -g
+<span class="lbl">LDFLAGS</span> = -lm
+<span class="lbl">SRC</span>     = main.c utils.c
+<span class="lbl">OBJ</span>     = $(SRC:.c=.o)
+<span class="lbl">TARGET</span>  = app
+
+<span class="fn">$(TARGET)</span>: $(OBJ)
+	$(CC) $(OBJ) $(LDFLAGS) -o $@
+
+<span class="fn">%.o</span>: %.c
+	$(CC) $(CFLAGS) -c $&lt; -o $@
+
+<span class="fn">clean</span>:
+	rm -f $(OBJ) $(TARGET)
+
+<span class="fn">.PHONY</span>: clean
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRUTTURA PROGRAMMA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-structure"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRUTTURA DI UN PROGRAMMA C</div>
+  <div class="section-body">
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>      <span class="cmt">// header libreria standard</span>
+<span class="dir">#include</span> <span class="str">"myheader.h"</span>   <span class="cmt">// header locale</span>
+
+<span class="cmt">// Dichiarazione forward (prototipo)</span>
+<span class="type">int</span> <span class="fn">somma</span>(<span class="type">int</span> a, <span class="type">int</span> b);
+
+<span class="cmt">// Variabile globale</span>
+<span class="type">int</span> <span class="lbl">g_counter</span> = <span class="num">0</span>;
+
+<span class="cmt">// Punto di ingresso</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> *argv[]) {
+    <span class="fn">printf</span>(<span class="str">"Somma: %d\n"</span>, <span class="fn">somma</span>(<span class="num">3</span>, <span class="num">4</span>));
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="cmt">// Definizione funzione</span>
+<span class="type">int</span> <span class="fn">somma</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="kw">return</span> a + b;
+}
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Header Guard (Pattern)</div>
+<pre>
+<span class="cmt">/* myheader.h */</span>
+<span class="dir">#ifndef</span> <span class="lbl">MYHEADER_H</span>
+<span class="dir">#define</span> <span class="lbl">MYHEADER_H</span>
+
+<span class="type">int</span> <span class="fn">somma</span>(<span class="type">int</span> a, <span class="type">int</span> b);
+<span class="type">void</span> <span class="fn">print_info</span>(<span class="kw">const</span> <span class="type">char</span> *msg);
+
+<span class="dir">#endif</span> <span class="cmt">/* MYHEADER_H */</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Unità di Traduzione</div>
+      <p>Ogni file <code>.c</code> + i suoi <code>#include</code> forma un'unità di traduzione compilata indipendentemente. Il linker unisce i file <code>.o</code> nel binario finale.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TIPI DI DATO
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-types"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TIPI DI DATO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tipi Interi</div>
+      <table>
+        <tr><th>Tipo</th><th>Dimensione tipica</th><th>Range</th></tr>
+        <tr><td><code>char</code></td><td>1 byte</td><td>-128 .. 127 (o 0..255 se unsigned)</td></tr>
+        <tr><td><code>short</code></td><td>2 byte</td><td>-32768 .. 32767</td></tr>
+        <tr><td><code>int</code></td><td>4 byte</td><td>-2³¹ .. 2³¹-1</td></tr>
+        <tr><td><code>long</code></td><td>4/8 byte</td><td>almeno 32 bit</td></tr>
+        <tr><td><code>long long</code></td><td>8 byte</td><td>-2⁶³ .. 2⁶³-1 (C99)</td></tr>
+        <tr><td><code>_Bool</code></td><td>1 byte</td><td>0 o 1 (C99)</td></tr>
+      </table>
+      <p>Ogni tipo intero può essere <code>signed</code> (default per int/short/long) o <code>unsigned</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tipi Virgola Mobile</div>
+      <table>
+        <tr><th>Tipo</th><th>Dimensione</th><th>Precisione</th></tr>
+        <tr><td><code>float</code></td><td>4 byte</td><td>~7 cifre decimali</td></tr>
+        <tr><td><code>double</code></td><td>8 byte</td><td>~15 cifre decimali</td></tr>
+        <tr><td><code>long double</code></td><td>10/12/16 byte</td><td>≥ double (impl. defined)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">void</div>
+      <p><code>void</code> — tipo incompleto: nessun valore. Usato per funzioni senza ritorno, puntatori generici (<code>void *</code>), e cast espliciti.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">sizeof</div>
+<pre>
+<span class="fn">sizeof</span>(<span class="type">int</span>)          <span class="cmt">// dimensione del tipo in byte</span>
+<span class="fn">sizeof</span>(arr)          <span class="cmt">// dimensione totale dell'array (se non decaduto)</span>
+<span class="fn">sizeof</span>(arr)/<span class="fn">sizeof</span>(arr[<span class="num">0</span>])   <span class="cmt">// numero elementi array</span>
+<span class="fn">sizeof</span>(<span class="type">char</span>)         <span class="cmt">// sempre 1 per definizione</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Qualificatori di Tipo</div>
+      <table>
+        <tr><th>Qualificatore</th><th>Significato</th></tr>
+        <tr><td><code>const</code></td><td>Valore non modificabile dopo l'inizializzazione</td></tr>
+        <tr><td><code>volatile</code></td><td>Valore può cambiare esternamente (HW, signal handler)</td></tr>
+        <tr><td><code>restrict</code></td><td>Il puntatore è l'unico accesso a quell'area di memoria (C99)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     LETTERALI & COSTANTI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-literals"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LETTERALI &amp; COSTANTI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Letterali Numerici</div>
+<pre>
+<span class="num">42</span>           <span class="cmt">// int decimale</span>
+<span class="num">042</span>          <span class="cmt">// int ottale (= 34)</span>
+<span class="num">0x2A</span>         <span class="cmt">// int esadecimale (= 42)</span>
+<span class="num">42L</span>          <span class="cmt">// long</span>
+<span class="num">42LL</span>         <span class="cmt">// long long (C99)</span>
+<span class="num">42U</span>          <span class="cmt">// unsigned int</span>
+<span class="num">42ULL</span>        <span class="cmt">// unsigned long long</span>
+<span class="num">3.14</span>         <span class="cmt">// double</span>
+<span class="num">3.14f</span>        <span class="cmt">// float</span>
+<span class="num">3.14L</span>        <span class="cmt">// long double</span>
+<span class="num">1.5e3</span>        <span class="cmt">// 1500.0 (notazione scientifica)</span>
+<span class="num">0x1.8p1</span>     <span class="cmt">// hex float: 3.0 (C99)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Letterali Carattere &amp; Stringa</div>
+<pre>
+<span class="str">'A'</span>          <span class="cmt">// char (valore int = 65)</span>
+<span class="str">'\n'</span>         <span class="cmt">// newline</span>
+<span class="str">'\t'</span>         <span class="cmt">// tab</span>
+<span class="str">'\0'</span>         <span class="cmt">// null terminator</span>
+<span class="str">'\\'</span>         <span class="cmt">// backslash</span>
+<span class="str">'\x41'</span>       <span class="cmt">// hex escape (= 'A')</span>
+<span class="str">'\077'</span>       <span class="cmt">// octal escape (= '?')</span>
+
+<span class="str">"hello"</span>      <span class="cmt">// string literal (const char[6])</span>
+<span class="str">"hello"</span> <span class="str">" world"</span>   <span class="cmt">// concatenazione automatica</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Costanti con #define e const</div>
+<pre>
+<span class="dir">#define</span> <span class="lbl">PI</span>       <span class="num">3.14159265358979</span>
+<span class="dir">#define</span> <span class="lbl">MAX_BUF</span>  <span class="num">1024</span>
+
+<span class="kw">const</span> <span class="type">int</span> <span class="lbl">MAX_SIZE</span> = <span class="num">100</span>;     <span class="cmt">// non utilizzabile come dimensione array statico (pre-VLA)</span>
+<span class="kw">enum</span> { <span class="lbl">LIMIT</span> = <span class="num">256</span> };         <span class="cmt">// costante intera "vera" (compile-time)</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     OPERATORI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-operators"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OPERATORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Precedenza (dall'alto = più alta)</div>
+      <table>
+        <tr><th>Prec.</th><th>Operatori</th><th>Associatività</th></tr>
+        <tr><td>1</td><td><code>() [] -> . ++ --</code> (postfisso)</td><td>Sinistra</td></tr>
+        <tr><td>2</td><td><code>++ -- + - ! ~ * & (type) sizeof</code> (prefisso/unario)</td><td>Destra</td></tr>
+        <tr><td>3</td><td><code>* / %</code></td><td>Sinistra</td></tr>
+        <tr><td>4</td><td><code>+ -</code></td><td>Sinistra</td></tr>
+        <tr><td>5</td><td><code>&lt;&lt; &gt;&gt;</code></td><td>Sinistra</td></tr>
+        <tr><td>6</td><td><code>&lt; &lt;= &gt; &gt;=</code></td><td>Sinistra</td></tr>
+        <tr><td>7</td><td><code>== !=</code></td><td>Sinistra</td></tr>
+        <tr><td>8</td><td><code>&amp;</code> (bitwise AND)</td><td>Sinistra</td></tr>
+        <tr><td>9</td><td><code>^</code> (bitwise XOR)</td><td>Sinistra</td></tr>
+        <tr><td>10</td><td><code>|</code> (bitwise OR)</td><td>Sinistra</td></tr>
+        <tr><td>11</td><td><code>&amp;&amp;</code></td><td>Sinistra</td></tr>
+        <tr><td>12</td><td><code>||</code></td><td>Sinistra</td></tr>
+        <tr><td>13</td><td><code>?:</code> (ternario)</td><td>Destra</td></tr>
+        <tr><td>14</td><td><code>= += -= *= /= %= &lt;&lt;= &gt;&gt;= &amp;= ^= |=</code></td><td>Destra</td></tr>
+        <tr><td>15</td><td><code>,</code> (virgola)</td><td>Sinistra</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatori Aritmetici &amp; Relazionali</div>
+<pre>
+a + b    a - b    a * b    a / b    a % b   <span class="cmt">// aritmetici</span>
+a == b   a != b   a &lt; b    a &gt; b             <span class="cmt">// relazionali</span>
+a &lt;= b   a &gt;= b                               <span class="cmt">// relazionali</span>
+!a       a &amp;&amp; b   a || b                      <span class="cmt">// logici</span>
+a ? b : c                                     <span class="cmt">// ternario</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatori Bitwise</div>
+<pre>
+a &amp; b    <span class="cmt">// AND bit a bit</span>
+a | b    <span class="cmt">// OR bit a bit</span>
+a ^ b    <span class="cmt">// XOR bit a bit</span>
+~a       <span class="cmt">// NOT bit a bit (complemento a 1)</span>
+a &lt;&lt; n   <span class="cmt">// shift sinistro</span>
+a &gt;&gt; n   <span class="cmt">// shift destro (aritmetico per signed, logico per unsigned)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatori di Assegnamento Composto</div>
+<pre>
+a += b   a -= b   a *= b   a /= b   a %= b
+a &amp;= b   a |= b   a ^= b   a &lt;&lt;= b  a &gt;&gt;= b
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Incremento / Decremento</div>
+<pre>
+<span class="type">int</span> x = <span class="num">5</span>;
+<span class="type">int</span> a = x++;   <span class="cmt">// a = 5, poi x = 6  (post-incremento)</span>
+<span class="type">int</span> b = ++x;   <span class="cmt">// x = 7, poi b = 7  (pre-incremento)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatore Virgola</div>
+<pre>
+<span class="type">int</span> x = (<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>);   <span class="cmt">// x = 3 (valuta tutto, restituisce l'ultimo)</span>
+<span class="kw">for</span> (<span class="type">int</span> i=<span class="num">0</span>, j=<span class="num">10</span>; i &lt; j; i++, j--)  <span class="cmt">// uso tipico nel for</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     CAST & CONVERSIONI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-cast"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CAST &amp; CONVERSIONI IMPLICITE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Promozioni Intere (Integer Promotion)</div>
+      <p>Tipi più piccoli di <code>int</code> (<code>char</code>, <code>short</code>, <code>_Bool</code>, bitfield) vengono promossi a <code>int</code> (o <code>unsigned int</code>) prima di qualsiasi operazione aritmetica.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Conversioni Aritmetiche Usuali</div>
+<pre>
+<span class="cmt">// Gerarchia: long double > double > float > unsigned long long > long long > ...</span>
+<span class="cmt">// L'operando di tipo inferiore viene convertito al tipo superiore</span>
+
+<span class="type">int</span>    a = <span class="num">5</span>;
+<span class="type">double</span> b = <span class="num">2.5</span>;
+<span class="type">double</span> c = a + b;     <span class="cmt">// a promosso a double → 7.5</span>
+
+<span class="type">int</span>      x = <span class="num">-1</span>;
+<span class="type">unsigned</span> y = <span class="num">1</span>;
+<span class="cmt">// x + y → x convertito a unsigned! -1 diventa UINT_MAX → BUG COMUNE</span>
+</pre>
+      <div class="warn">⚠ Confronti signed/unsigned: <code>-1 &lt; 1U</code> è <b>falso</b> perché -1 diventa UINT_MAX. Usare -Wsign-compare.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Cast Esplicito</div>
+<pre>
+<span class="type">double</span> d = <span class="num">3.99</span>;
+<span class="type">int</span> n = (<span class="type">int</span>)d;              <span class="cmt">// troncamento → 3</span>
+
+<span class="type">void</span> *p = <span class="fn">malloc</span>(<span class="num">100</span>);
+<span class="type">int</span> *ip = (<span class="type">int</span> *)p;          <span class="cmt">// cast da void* (in C non necessario ma usuale)</span>
+
+<span class="type">int</span> a = <span class="num">7</span>, b = <span class="num">2</span>;
+<span class="type">double</span> r = (<span class="type">double</span>)a / b;    <span class="cmt">// 3.5 (senza cast: 3)</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SELEZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-branch"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SELEZIONE (if / switch)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">if / else if / else</div>
+<pre>
+<span class="kw">if</span> (x &gt; <span class="num">0</span>) {
+    <span class="fn">printf</span>(<span class="str">"positivo\n"</span>);
+} <span class="kw">else if</span> (x == <span class="num">0</span>) {
+    <span class="fn">printf</span>(<span class="str">"zero\n"</span>);
+} <span class="kw">else</span> {
+    <span class="fn">printf</span>(<span class="str">"negativo\n"</span>);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">switch</div>
+<pre>
+<span class="kw">switch</span> (scelta) {
+    <span class="kw">case</span> <span class="num">1</span>:
+        <span class="fn">printf</span>(<span class="str">"uno\n"</span>);
+        <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">2</span>:
+    <span class="kw">case</span> <span class="num">3</span>:
+        <span class="fn">printf</span>(<span class="str">"due o tre\n"</span>);
+        <span class="kw">break</span>;
+    <span class="kw">default</span>:
+        <span class="fn">printf</span>(<span class="str">"altro\n"</span>);
+        <span class="kw">break</span>;
+}
+</pre>
+      <div class="note">I case devono essere espressioni intere costanti. Senza <code>break</code> si ha fall-through.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ITERAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-loops"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ITERAZIONE (for / while / do-while)</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// for — C99 permette dichiarazione nell'init</span>
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+    <span class="fn">printf</span>(<span class="str">"%d "</span>, i);
+}
+
+<span class="cmt">// while</span>
+<span class="type">int</span> i = <span class="num">0</span>;
+<span class="kw">while</span> (i &lt; n) {
+    <span class="fn">printf</span>(<span class="str">"%d "</span>, i++);
+}
+
+<span class="cmt">// do-while — esegue almeno una volta</span>
+<span class="type">int</span> c;
+<span class="kw">do</span> {
+    c = <span class="fn">getchar</span>();
+} <span class="kw">while</span> (c != <span class="str">'\n'</span> &amp;&amp; c != EOF);
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SALTI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-jump"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SALTI (break / continue / goto / return)</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">break</span>;         <span class="cmt">// esce dal loop o switch più interno</span>
+<span class="kw">continue</span>;      <span class="cmt">// salta alla prossima iterazione del loop</span>
+<span class="kw">return</span> expr;   <span class="cmt">// esce dalla funzione restituendo expr</span>
+
+<span class="cmt">// goto — usare con parsimonia (cleanup pattern)</span>
+<span class="type">int</span> *buf = <span class="fn">malloc</span>(<span class="num">1024</span>);
+<span class="kw">if</span> (!buf) <span class="kw">goto</span> <span class="lbl">cleanup</span>;
+<span class="type">FILE</span> *f = <span class="fn">fopen</span>(<span class="str">"file.txt"</span>, <span class="str">"r"</span>);
+<span class="kw">if</span> (!f) <span class="kw">goto</span> <span class="lbl">cleanup_buf</span>;
+<span class="cmt">// ... lavoro ...</span>
+<span class="fn">fclose</span>(f);
+<span class="lbl">cleanup_buf</span>:
+    <span class="fn">free</span>(buf);
+<span class="lbl">cleanup</span>:
+    <span class="kw">return</span> <span class="num">-1</span>;
+</pre>
+    <div class="note">Il goto è idiomatico in C per la gestione errori con pulizia risorse (pattern usato nel kernel Linux).</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FUNZIONI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-functions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FUNZIONI — DICHIARAZIONE &amp; DEFINIZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipo vs Definizione</div>
+<pre>
+<span class="cmt">// Prototipo (dichiarazione) — tipicamente nell'header</span>
+<span class="type">int</span> <span class="fn">massimo</span>(<span class="type">int</span> a, <span class="type">int</span> b);
+
+<span class="cmt">// Definizione — nel file .c</span>
+<span class="type">int</span> <span class="fn">massimo</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="kw">return</span> (a &gt; b) ? a : b;
+}
+
+<span class="cmt">// Funzione void senza parametri: usare (void) esplicitamente in C</span>
+<span class="type">void</span> <span class="fn">stampa_banner</span>(<span class="type">void</span>) {
+    <span class="fn">puts</span>(<span class="str">"=== BANNER ==="</span>);
+}
+</pre>
+      <div class="warn">⚠ <code>int f()</code> senza <code>void</code> in C significa "accetta qualsiasi numero di argomenti", non "zero argomenti"!</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Passaggio per Valore &amp; per Riferimento (via puntatore)</div>
+<pre>
+<span class="cmt">// Per valore — la funzione lavora su una copia</span>
+<span class="type">void</span> <span class="fn">raddoppia</span>(<span class="type">int</span> x) { x *= <span class="num">2</span>; }  <span class="cmt">// nessun effetto sul chiamante</span>
+
+<span class="cmt">// Per riferimento — si passa il puntatore</span>
+<span class="type">void</span> <span class="fn">raddoppia</span>(<span class="type">int</span> *x) { *x *= <span class="num">2</span>; } <span class="cmt">// modifica la variabile esterna</span>
+
+<span class="type">int</span> val = <span class="num">5</span>;
+<span class="fn">raddoppia</span>(&amp;val);  <span class="cmt">// val = 10</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Passaggio di Array a Funzione</div>
+<pre>
+<span class="cmt">// L'array decade a puntatore — si perde la dimensione</span>
+<span class="type">void</span> <span class="fn">stampa</span>(<span class="type">int</span> arr[], <span class="type">size_t</span> n) {
+    <span class="kw">for</span> (<span class="type">size_t</span> i = <span class="num">0</span>; i &lt; n; i++)
+        <span class="fn">printf</span>(<span class="str">"%d "</span>, arr[i]);
+}
+
+<span class="cmt">// Equivalente a:</span>
+<span class="type">void</span> <span class="fn">stampa</span>(<span class="type">int</span> *arr, <span class="type">size_t</span> n);
+
+<span class="cmt">// Array multidimensionale — colonne fisse</span>
+<span class="type">void</span> <span class="fn">mat_print</span>(<span class="type">int</span> rows, <span class="type">int</span> cols, <span class="type">int</span> m[rows][cols]);  <span class="cmt">// C99 VLA param</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">static nelle Funzioni</div>
+<pre>
+<span class="cmt">// Funzione static: visibilità limitata all'unità di traduzione</span>
+<span class="kw">static</span> <span class="type">int</span> <span class="fn">helper</span>(<span class="type">int</span> x) { <span class="kw">return</span> x * <span class="num">2</span>; }
+
+<span class="cmt">// Variabile static: persiste tra le chiamate</span>
+<span class="type">int</span> <span class="fn">contatore</span>(<span class="type">void</span>) {
+    <span class="kw">static</span> <span class="type">int</span> count = <span class="num">0</span>;   <span class="cmt">// inizializzata solo una volta</span>
+    <span class="kw">return</span> ++count;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FUNZIONI VARIADIC
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-variadic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FUNZIONI VARIADIC</div>
+  <div class="section-body">
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdarg.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">somma_n</span>(<span class="type">int</span> count, ...) {
+    <span class="type">va_list</span> args;
+    <span class="fn">va_start</span>(args, count);      <span class="cmt">// inizializza la lista</span>
+
+    <span class="type">int</span> totale = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; count; i++)
+        totale += <span class="fn">va_arg</span>(args, <span class="type">int</span>);  <span class="cmt">// estrae il prossimo argomento</span>
+
+    <span class="fn">va_end</span>(args);               <span class="cmt">// pulizia</span>
+    <span class="kw">return</span> totale;
+}
+
+<span class="cmt">// Uso:</span>
+<span class="fn">somma_n</span>(<span class="num">3</span>, <span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>);  <span class="cmt">// → 60</span>
+</pre>
+    <table>
+      <tr><th>Macro</th><th>Descrizione</th></tr>
+      <tr><td><code>va_list</code></td><td>Tipo che contiene le info sugli argomenti variabili</td></tr>
+      <tr><td><code>va_start(ap, last)</code></td><td>Inizializza ap; last è l'ultimo parametro fisso</td></tr>
+      <tr><td><code>va_arg(ap, type)</code></td><td>Estrae il prossimo argomento di tipo type</td></tr>
+      <tr><td><code>va_end(ap)</code></td><td>Pulizia della lista</td></tr>
+      <tr><td><code>va_copy(dest, src)</code></td><td>Copia la lista (C99)</td></tr>
+    </table>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     RICORSIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-recursion"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> RICORSIONE</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Fattoriale — ricorsione classica</span>
+<span class="type">unsigned long</span> <span class="fn">factorial</span>(<span class="type">unsigned int</span> n) {
+    <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>;
+    <span class="kw">return</span> n * <span class="fn">factorial</span>(n - <span class="num">1</span>);
+}
+
+<span class="cmt">// Tail-recursive (il compilatore può ottimizzare con -O2)</span>
+<span class="type">unsigned long</span> <span class="fn">fact_tail</span>(<span class="type">unsigned int</span> n, <span class="type">unsigned long</span> acc) {
+    <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> acc;
+    <span class="kw">return</span> <span class="fn">fact_tail</span>(n - <span class="num">1</span>, n * acc);
+}
+
+<span class="cmt">// Fibonacci — ricorsione doppia (inefficiente senza memoizzazione)</span>
+<span class="type">int</span> <span class="fn">fib</span>(<span class="type">int</span> n) {
+    <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+    <span class="kw">return</span> <span class="fn">fib</span>(n-<span class="num">1</span>) + <span class="fn">fib</span>(n-<span class="num">2</span>);
+}
+</pre>
+    <div class="warn">⚠ Ogni chiamata ricorsiva consuma spazio sullo stack. Per profondità elevate, preferire la versione iterativa.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PUNTATORI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-pointers"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PUNTATORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Dichiarazione &amp; Operatori Base</div>
+<pre>
+<span class="type">int</span>  x  = <span class="num">42</span>;
+<span class="type">int</span> *p  = &amp;x;       <span class="cmt">// p punta a x</span>
+<span class="type">int</span>  y  = *p;       <span class="cmt">// dereferenziazione: y = 42</span>
+*p = <span class="num">100</span>;            <span class="cmt">// x diventa 100</span>
+
+<span class="type">int</span> **pp = &amp;p;       <span class="cmt">// puntatore a puntatore</span>
+**pp = <span class="num">200</span>;          <span class="cmt">// x diventa 200</span>
+
+<span class="type">int</span> *q = <span class="lbl">NULL</span>;       <span class="cmt">// puntatore nullo — dereferenziare = UB</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">const e Puntatori</div>
+<pre>
+<span class="kw">const</span> <span class="type">int</span> *p;         <span class="cmt">// puntatore a int costante (non si può modificare *p)</span>
+<span class="type">int</span> *<span class="kw">const</span> p;         <span class="cmt">// puntatore costante a int (non si può modificare p)</span>
+<span class="kw">const</span> <span class="type">int</span> *<span class="kw">const</span> p;  <span class="cmt">// entrambi costanti</span>
+</pre>
+      <div class="note">Regola: <code>const</code> si applica a ciò che sta alla sua sinistra. Se non c'è nulla a sinistra, si applica a destra.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">void* — Puntatore Generico</div>
+<pre>
+<span class="type">void</span> *generic = &amp;x;
+<span class="cmt">// Non si può dereferenziare direttamente — serve cast</span>
+<span class="type">int</span> val = *(<span class="type">int</span> *)generic;
+
+<span class="cmt">// void* è il tipo di ritorno di malloc/calloc/realloc</span>
+<span class="cmt">// In C, la conversione void* ↔ T* è implicita (a differenza del C++)</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ARRAY
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-arrays"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ARRAY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Dichiarazione &amp; Inizializzazione</div>
+<pre>
+<span class="type">int</span> a[<span class="num">5</span>];                          <span class="cmt">// non inizializzato (valori indefiniti)</span>
+<span class="type">int</span> b[<span class="num">5</span>] = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};              <span class="cmt">// {1, 2, 3, 0, 0}</span>
+<span class="type">int</span> c[<span class="num">5</span>] = {<span class="num">0</span>};                     <span class="cmt">// tutti zero</span>
+<span class="type">int</span> d[]  = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>};             <span class="cmt">// dimensione dedotta: 3</span>
+
+<span class="cmt">// Designated initializers (C99)</span>
+<span class="type">int</span> e[<span class="num">10</span>] = {[<span class="num">0</span>] = <span class="num">1</span>, [<span class="num">5</span>] = <span class="num">50</span>, [<span class="num">9</span>] = <span class="num">99</span>};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Array Multidimensionali</div>
+<pre>
+<span class="type">int</span> mat[<span class="num">3</span>][<span class="num">4</span>];                        <span class="cmt">// 3 righe, 4 colonne</span>
+<span class="type">int</span> mat[<span class="num">3</span>][<span class="num">4</span>] = {
+    {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>},
+    {<span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">8</span>},
+    {<span class="num">9</span>, <span class="num">10</span>, <span class="num">11</span>, <span class="num">12</span>}
+};
+
+<span class="cmt">// Accesso: mat[riga][col]</span>
+<span class="cmt">// In memoria: layout row-major (righe contigue)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Relazione Array/Puntatore</div>
+<pre>
+<span class="type">int</span> arr[<span class="num">5</span>] = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+<span class="type">int</span> *p = arr;          <span class="cmt">// arr decade a &amp;arr[0]</span>
+
+arr[<span class="num">2</span>]  == *(arr + <span class="num">2</span>)  <span class="cmt">// equivalenti</span>
+p[<span class="num">2</span>]    == *(p + <span class="num">2</span>)    <span class="cmt">// equivalenti</span>
+&amp;arr[<span class="num">2</span>] == arr + <span class="num">2</span>     <span class="cmt">// equivalenti</span>
+</pre>
+      <div class="warn">⚠ <code>sizeof(arr)</code> dà la dimensione totale dell'array, ma <code>sizeof(p)</code> dà la dimensione del puntatore (4/8 byte).</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ARITMETICA PUNTATORI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-ptrarith"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ARITMETICA DEI PUNTATORI</div>
+  <div class="section-body">
+
+<pre>
+<span class="type">int</span> arr[<span class="num">5</span>] = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+<span class="type">int</span> *p = arr;
+
+p + <span class="num">3</span>        <span class="cmt">// punta a arr[3] — avanza di 3 * sizeof(int) byte</span>
+p - <span class="num">1</span>        <span class="cmt">// punta all'elemento precedente</span>
+p++          <span class="cmt">// avanza al prossimo elemento</span>
+p2 - p1      <span class="cmt">// differenza in numero di elementi (ptrdiff_t)</span>
+
+<span class="cmt">// Iterazione con puntatore</span>
+<span class="kw">for</span> (<span class="type">int</span> *p = arr; p &lt; arr + <span class="num">5</span>; p++)
+    <span class="fn">printf</span>(<span class="str">"%d "</span>, *p);
+
+<span class="cmt">// Confronto puntatori: solo tra puntatori allo stesso array/oggetto</span>
+<span class="kw">if</span> (p1 &lt; p2) { <span class="cmt">/* p1 precede p2 */</span> }
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PUNTATORI A FUNZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-funcptr"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PUNTATORI A FUNZIONE</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Dichiarazione</span>
+<span class="type">int</span> (*<span class="lbl">fp</span>)(<span class="type">int</span>, <span class="type">int</span>);         <span class="cmt">// puntatore a funzione (int,int)→int</span>
+
+<span class="cmt">// Assegnazione</span>
+<span class="lbl">fp</span> = <span class="fn">massimo</span>;                 <span class="cmt">// oppure fp = &amp;massimo</span>
+
+<span class="cmt">// Chiamata</span>
+<span class="type">int</span> r = <span class="lbl">fp</span>(<span class="num">3</span>, <span class="num">7</span>);             <span class="cmt">// oppure (*fp)(3, 7)</span>
+
+<span class="cmt">// Typedef per leggibilità</span>
+<span class="kw">typedef</span> <span class="type">int</span> (*<span class="type">BinOp</span>)(<span class="type">int</span>, <span class="type">int</span>);
+<span class="type">BinOp</span> op = <span class="fn">massimo</span>;
+op(<span class="num">3</span>, <span class="num">7</span>);
+
+<span class="cmt">// Array di puntatori a funzione</span>
+<span class="type">BinOp</span> ops[] = { <span class="fn">somma</span>, <span class="fn">sottrai</span>, <span class="fn">moltiplica</span> };
+ops[<span class="num">1</span>](<span class="num">10</span>, <span class="num">3</span>);   <span class="cmt">// chiama sottrai(10, 3)</span>
+
+<span class="cmt">// Callback — passare funzione come argomento</span>
+<span class="type">void</span> <span class="fn">applica</span>(<span class="type">int</span> *arr, <span class="type">size_t</span> n, <span class="type">int</span> (*<span class="lbl">f</span>)(<span class="type">int</span>)) {
+    <span class="kw">for</span> (<span class="type">size_t</span> i = <span class="num">0</span>; i &lt; n; i++)
+        arr[i] = f(arr[i]);
+}
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">qsort — Esempio con Callback</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">cmp_int</span>(<span class="kw">const</span> <span class="type">void</span> *a, <span class="kw">const</span> <span class="type">void</span> *b) {
+    <span class="kw">return</span> (*(<span class="kw">const</span> <span class="type">int</span> *)a) - (*(<span class="kw">const</span> <span class="type">int</span> *)b);
+}
+
+<span class="type">int</span> arr[] = {<span class="num">5</span>, <span class="num">2</span>, <span class="num">8</span>, <span class="num">1</span>, <span class="num">9</span>};
+<span class="fn">qsort</span>(arr, <span class="num">5</span>, <span class="kw">sizeof</span>(<span class="type">int</span>), <span class="fn">cmp_int</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRINGHE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-strings"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRINGHE C</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Stringa C = array di char terminato da '\0'</span>
+<span class="type">char</span> s1[] = <span class="str">"hello"</span>;          <span class="cmt">// char[6]: {'h','e','l','l','o','\0'}</span>
+<span class="type">char</span> *s2   = <span class="str">"hello"</span>;          <span class="cmt">// puntatore a string literal (read-only!)</span>
+<span class="type">char</span> s3[<span class="num">20</span>] = <span class="str">"hello"</span>;        <span class="cmt">// buffer più grande, resto = '\0'</span>
+
+<span class="cmt">// ATTENZIONE: s2 punta a memoria read-only</span>
+s1[<span class="num">0</span>] = <span class="str">'H'</span>;     <span class="cmt">// OK</span>
+<span class="cmt">// s2[0] = 'H';   // UNDEFINED BEHAVIOR!</span>
+
+<span class="cmt">// Lunghezza</span>
+<span class="type">size_t</span> len = <span class="fn">strlen</span>(s1);    <span class="cmt">// 5 (non conta '\0')</span>
+<span class="type">size_t</span> siz = <span class="kw">sizeof</span>(s1);    <span class="cmt">// 6 (conta '\0')</span>
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FUNZIONI STRING.H
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stringfn"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FUNZIONI string.h</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>strlen(s)</code></td><td>Lunghezza (senza '\0')</td></tr>
+      <tr><td><code>strcpy(dst, src)</code></td><td>Copia stringa (⚠ nessun bounds check)</td></tr>
+      <tr><td><code>strncpy(dst, src, n)</code></td><td>Copia al max n char (attenzione: potrebbe non terminare con '\0')</td></tr>
+      <tr><td><code>strcat(dst, src)</code></td><td>Concatena src a dst</td></tr>
+      <tr><td><code>strncat(dst, src, n)</code></td><td>Concatena al max n char</td></tr>
+      <tr><td><code>strcmp(a, b)</code></td><td>Confronta: &lt;0, 0, &gt;0</td></tr>
+      <tr><td><code>strncmp(a, b, n)</code></td><td>Confronta primi n char</td></tr>
+      <tr><td><code>strchr(s, c)</code></td><td>Trova prima occorrenza di c (ritorna puntatore o NULL)</td></tr>
+      <tr><td><code>strrchr(s, c)</code></td><td>Trova ultima occorrenza di c</td></tr>
+      <tr><td><code>strstr(hay, needle)</code></td><td>Trova prima occorrenza di sottostringa</td></tr>
+      <tr><td><code>strtok(s, delim)</code></td><td>Tokenizzazione (modifica la stringa, non thread-safe)</td></tr>
+      <tr><td><code>memcpy(dst, src, n)</code></td><td>Copia n byte (no overlap)</td></tr>
+      <tr><td><code>memmove(dst, src, n)</code></td><td>Copia n byte (gestisce overlap)</td></tr>
+      <tr><td><code>memset(s, c, n)</code></td><td>Imposta n byte al valore c</td></tr>
+      <tr><td><code>memcmp(a, b, n)</code></td><td>Confronta n byte</td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">Pattern Sicuro per Stringhe</div>
+<pre>
+<span class="cmt">// snprintf è più sicuro di sprintf (bounds-checked)</span>
+<span class="type">char</span> buf[<span class="num">64</span>];
+<span class="fn">snprintf</span>(buf, <span class="kw">sizeof</span>(buf), <span class="str">"Nome: %s, Età: %d"</span>, nome, eta);
+
+<span class="cmt">// Duplicazione stringa (POSIX, non standard C99)</span>
+<span class="type">char</span> *copia = <span class="fn">strdup</span>(originale);  <span class="cmt">// malloc + strcpy — ricordarsi di free()</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRUCT
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-struct"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRUCT</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Definizione</span>
+<span class="kw">struct</span> <span class="type">Punto</span> {
+    <span class="type">double</span> x;
+    <span class="type">double</span> y;
+};
+
+<span class="cmt">// Dichiarazione e inizializzazione</span>
+<span class="kw">struct</span> <span class="type">Punto</span> p1 = {<span class="num">1.0</span>, <span class="num">2.5</span>};
+<span class="kw">struct</span> <span class="type">Punto</span> p2 = {.y = <span class="num">3.0</span>, .x = <span class="num">1.0</span>};   <span class="cmt">// designated init (C99)</span>
+
+<span class="cmt">// Accesso ai campi</span>
+p1.x = <span class="num">5.0</span>;
+
+<span class="cmt">// Puntatore a struct → operatore freccia</span>
+<span class="kw">struct</span> <span class="type">Punto</span> *pp = &amp;p1;
+pp-&gt;x = <span class="num">10.0</span>;       <span class="cmt">// equivale a (*pp).x</span>
+
+<span class="cmt">// Copia di struct (copia membro per membro)</span>
+<span class="kw">struct</span> <span class="type">Punto</span> p3 = p1;
+
+<span class="cmt">// Struct con array flessibile (C99)</span>
+<span class="kw">struct</span> <span class="type">Buffer</span> {
+    <span class="type">size_t</span> len;
+    <span class="type">char</span>   data[];   <span class="cmt">// flexible array member — deve essere l'ultimo campo</span>
+};
+<span class="kw">struct</span> <span class="type">Buffer</span> *b = <span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="kw">struct</span> <span class="type">Buffer</span>) + <span class="num">100</span>);
+b-&gt;len = <span class="num">100</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Struct Annidate &amp; Padding</div>
+<pre>
+<span class="kw">struct</span> <span class="type">Rettangolo</span> {
+    <span class="kw">struct</span> <span class="type">Punto</span> origine;
+    <span class="type">double</span> larghezza, altezza;
+};
+
+<span class="cmt">// Padding: il compilatore inserisce byte di allineamento</span>
+<span class="kw">struct</span> <span class="type">Bad</span>  { <span class="type">char</span> a; <span class="type">int</span> b; <span class="type">char</span> c; };  <span class="cmt">// sizeof = 12 (con padding)</span>
+<span class="kw">struct</span> <span class="type">Good</span> { <span class="type">int</span> b; <span class="type">char</span> a; <span class="type">char</span> c; };  <span class="cmt">// sizeof = 8  (meno padding)</span>
+</pre>
+      <div class="note">Ordinare i campi dal più grande al più piccolo riduce il padding.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     UNION
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-union"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> UNION</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Tutti i campi condividono la stessa area di memoria</span>
+<span class="kw">union</span> <span class="type">Dato</span> {
+    <span class="type">int</span>    i;
+    <span class="type">float</span>  f;
+    <span class="type">char</span>   s[<span class="num">4</span>];
+};
+
+<span class="kw">union</span> <span class="type">Dato</span> d;
+d.i = <span class="num">42</span>;
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, d.i);    <span class="cmt">// 42</span>
+d.f = <span class="num">3.14f</span>;
+<span class="cmt">// d.i ora contiene la rappresentazione binaria di 3.14f</span>
+
+<span class="fn">sizeof</span>(<span class="kw">union</span> <span class="type">Dato</span>)  <span class="cmt">// = max(sizeof(int), sizeof(float), 4) = 4</span>
+
+<span class="cmt">// Tagged union pattern</span>
+<span class="kw">struct</span> <span class="type">Variant</span> {
+    <span class="kw">enum</span> { <span class="lbl">VAR_INT</span>, <span class="lbl">VAR_FLOAT</span>, <span class="lbl">VAR_STR</span> } tag;
+    <span class="kw">union</span> {
+        <span class="type">int</span>   i;
+        <span class="type">float</span> f;
+        <span class="type">char</span>  s[<span class="num">32</span>];
+    } val;
+};
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ENUM
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-enum"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ENUM</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">enum</span> <span class="type">Colore</span> { <span class="lbl">ROSSO</span>, <span class="lbl">VERDE</span>, <span class="lbl">BLU</span> };          <span class="cmt">// 0, 1, 2</span>
+<span class="kw">enum</span> <span class="type">Stato</span>  { <span class="lbl">OFF</span> = <span class="num">0</span>, <span class="lbl">ON</span> = <span class="num">1</span>, <span class="lbl">STANDBY</span> = <span class="num">5</span> }; <span class="cmt">// valori espliciti</span>
+
+<span class="kw">enum</span> <span class="type">Colore</span> c = <span class="lbl">VERDE</span>;
+
+<span class="cmt">// Enum come flag bitmask</span>
+<span class="kw">enum</span> <span class="type">Perm</span> {
+    <span class="lbl">PERM_READ</span>    = <span class="num">1</span> &lt;&lt; <span class="num">0</span>,   <span class="cmt">// 1</span>
+    <span class="lbl">PERM_WRITE</span>   = <span class="num">1</span> &lt;&lt; <span class="num">1</span>,   <span class="cmt">// 2</span>
+    <span class="lbl">PERM_EXECUTE</span> = <span class="num">1</span> &lt;&lt; <span class="num">2</span>,   <span class="cmt">// 4</span>
+};
+<span class="type">unsigned</span> perms = <span class="lbl">PERM_READ</span> | <span class="lbl">PERM_WRITE</span>;
+<span class="kw">if</span> (perms &amp; <span class="lbl">PERM_READ</span>) { <span class="cmt">/* ha permesso lettura */</span> }
+</pre>
+    <div class="note">In C gli enum sono int. Non c'è type-safety — si possono assegnare interi arbitrari.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TYPEDEF
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-typedef"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TYPEDEF</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Alias per tipi semplici</span>
+<span class="kw">typedef</span> <span class="type">unsigned long</span> <span class="type">ulong</span>;
+<span class="kw">typedef</span> <span class="type">unsigned char</span> <span class="type">byte</span>;
+
+<span class="cmt">// Typedef per struct (idiomatico in C)</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">double</span> x, y;
+} <span class="type">Punto</span>;
+
+<span class="type">Punto</span> p = {<span class="num">1.0</span>, <span class="num">2.0</span>};   <span class="cmt">// non serve "struct Punto"</span>
+
+<span class="cmt">// Typedef per puntatori a funzione</span>
+<span class="kw">typedef</span> <span class="type">int</span> (*<span class="type">Comparator</span>)(<span class="kw">const</span> <span class="type">void</span> *, <span class="kw">const</span> <span class="type">void</span> *);
+
+<span class="cmt">// Typedef per strutture opache (forward declaration)</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">Nodo</span> <span class="type">Nodo</span>;   <span class="cmt">// per strutture auto-referenziali</span>
+<span class="kw">struct</span> <span class="type">Nodo</span> {
+    <span class="type">int</span>   data;
+    <span class="type">Nodo</span> *next;
+};
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BIT FIELDS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bitfield"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> BIT FIELDS</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">struct</span> <span class="type">Flags</span> {
+    <span class="type">unsigned int</span> attivo   : <span class="num">1</span>;   <span class="cmt">// 1 bit</span>
+    <span class="type">unsigned int</span> priorita : <span class="num">3</span>;   <span class="cmt">// 3 bit (0-7)</span>
+    <span class="type">unsigned int</span> tipo     : <span class="num">4</span>;   <span class="cmt">// 4 bit (0-15)</span>
+};
+
+<span class="kw">struct</span> <span class="type">Flags</span> f = {.attivo = <span class="num">1</span>, .priorita = <span class="num">5</span>, .tipo = <span class="num">3</span>};
+f.priorita = <span class="num">7</span>;
+
+<span class="cmt">// Il layout in memoria è implementation-defined</span>
+<span class="cmt">// Non si può prendere l'indirizzo di un bit field: &amp;f.attivo è illegale</span>
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     CLASSI DI MEMORIA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-storage"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CLASSI DI MEMORIA (Storage Class)</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Specifier</th><th>Scope</th><th>Lifetime</th><th>Note</th></tr>
+      <tr><td><code>auto</code></td><td>Blocco</td><td>Blocco</td><td>Default per variabili locali (mai usato esplicitamente)</td></tr>
+      <tr><td><code>register</code></td><td>Blocco</td><td>Blocco</td><td>Suggerimento al compilatore (ignorato con -O). No & operator</td></tr>
+      <tr><td><code>static</code> (locale)</td><td>Blocco</td><td>Programma</td><td>Persiste tra le chiamate, inizializzata a zero se non esplicita</td></tr>
+      <tr><td><code>static</code> (globale/fn)</td><td>File</td><td>Programma</td><td>Linkage interno: visibile solo nell'unità di traduzione</td></tr>
+      <tr><td><code>extern</code></td><td>Globale</td><td>Programma</td><td>Dichiara una variabile/funzione definita altrove</td></tr>
+      <tr><td>(nessuno, globale)</td><td>Globale</td><td>Programma</td><td>Linkage esterno (visibile da altre unità di traduzione)</td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">extern — Esempio Multi-file</div>
+<pre>
+<span class="cmt">/* globals.c */</span>
+<span class="type">int</span> <span class="lbl">g_count</span> = <span class="num">0</span>;          <span class="cmt">// definizione</span>
+
+<span class="cmt">/* globals.h */</span>
+<span class="kw">extern</span> <span class="type">int</span> <span class="lbl">g_count</span>;       <span class="cmt">// dichiarazione</span>
+
+<span class="cmt">/* main.c */</span>
+<span class="dir">#include</span> <span class="str">"globals.h"</span>
+<span class="lbl">g_count</span>++;                  <span class="cmt">// usa la variabile definita in globals.c</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ALLOCAZIONE DINAMICA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-malloc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ALLOCAZIONE DINAMICA (stdlib.h)</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>malloc(size)</code></td><td>Alloca size byte non inizializzati. Ritorna NULL se fallisce</td></tr>
+      <tr><td><code>calloc(n, size)</code></td><td>Alloca n*size byte inizializzati a zero</td></tr>
+      <tr><td><code>realloc(ptr, size)</code></td><td>Ridimensiona il blocco; può spostare. realloc(NULL,n) = malloc(n)</td></tr>
+      <tr><td><code>free(ptr)</code></td><td>Libera la memoria. free(NULL) è un no-op</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Allocare un array dinamico di 100 int</span>
+<span class="type">int</span> *arr = <span class="fn">malloc</span>(<span class="num">100</span> * <span class="kw">sizeof</span>(*arr));
+<span class="kw">if</span> (arr == <span class="lbl">NULL</span>) {
+    <span class="fn">perror</span>(<span class="str">"malloc"</span>);
+    <span class="fn">exit</span>(<span class="lbl">EXIT_FAILURE</span>);
+}
+
+<span class="cmt">// Usare l'array</span>
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="num">100</span>; i++)
+    arr[i] = i * i;
+
+<span class="cmt">// Ridimensionare</span>
+<span class="type">int</span> *tmp = <span class="fn">realloc</span>(arr, <span class="num">200</span> * <span class="kw">sizeof</span>(*arr));
+<span class="kw">if</span> (tmp == <span class="lbl">NULL</span>) {
+    <span class="fn">free</span>(arr);    <span class="cmt">// realloc fallito — arr è ancora valido</span>
+    <span class="fn">exit</span>(<span class="lbl">EXIT_FAILURE</span>);
+}
+arr = tmp;
+
+<span class="cmt">// Liberare</span>
+<span class="fn">free</span>(arr);
+arr = <span class="lbl">NULL</span>;   <span class="cmt">// buona pratica: evita dangling pointer</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Allocazione Matrice Dinamica</div>
+<pre>
+<span class="cmt">// Matrice rows x cols</span>
+<span class="type">int</span> **mat = <span class="fn">malloc</span>(rows * <span class="kw">sizeof</span>(*mat));
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; rows; i++)
+    mat[i] = <span class="fn">malloc</span>(cols * <span class="kw">sizeof</span>(**mat));
+
+<span class="cmt">// Deallocazione — ordine inverso</span>
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; rows; i++)
+    <span class="fn">free</span>(mat[i]);
+<span class="fn">free</span>(mat);
+
+<span class="cmt">// Alternativa: singola allocazione contigua (cache-friendly)</span>
+<span class="type">int</span> *flat = <span class="fn">malloc</span>(rows * cols * <span class="kw">sizeof</span>(*flat));
+<span class="cmt">// accesso: flat[i * cols + j]</span>
+</pre>
+    </div>
+
+    <div class="warn">⚠ Errori comuni: memory leak (dimenticare free), double free, use-after-free, buffer overflow. Usare Valgrind o ASan per diagnosticare.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PREPROCESSORE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-preproc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PREPROCESSORE — DIRETTIVE</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Direttiva</th><th>Descrizione</th></tr>
+      <tr><td><code>#include &lt;h&gt;</code></td><td>Include header di sistema</td></tr>
+      <tr><td><code>#include "h"</code></td><td>Include header locale (cerca prima nella dir corrente)</td></tr>
+      <tr><td><code>#define NAME val</code></td><td>Definisce macro oggetto</td></tr>
+      <tr><td><code>#define M(a,b) ...</code></td><td>Definisce macro funzione</td></tr>
+      <tr><td><code>#undef NAME</code></td><td>Rimuove la definizione di una macro</td></tr>
+      <tr><td><code>#if expr</code></td><td>Compilazione condizionale</td></tr>
+      <tr><td><code>#ifdef NAME</code></td><td>Se NAME è definita</td></tr>
+      <tr><td><code>#ifndef NAME</code></td><td>Se NAME non è definita</td></tr>
+      <tr><td><code>#elif expr</code></td><td>Else if</td></tr>
+      <tr><td><code>#else</code></td><td>Else</td></tr>
+      <tr><td><code>#endif</code></td><td>Fine blocco condizionale</td></tr>
+      <tr><td><code>#pragma</code></td><td>Direttiva specifica del compilatore</td></tr>
+      <tr><td><code>#error "msg"</code></td><td>Genera errore di compilazione</td></tr>
+      <tr><td><code>#line n "file"</code></td><td>Cambia numero riga e nome file</td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">Compilazione Condizionale — Pattern</div>
+<pre>
+<span class="dir">#ifdef</span> <span class="lbl">DEBUG</span>
+    <span class="fn">printf</span>(<span class="str">"Debug: x = %d\n"</span>, x);
+<span class="dir">#endif</span>
+
+<span class="dir">#if</span> <span class="fn">defined</span>(<span class="lbl">__linux__</span>)
+    <span class="cmt">// codice Linux</span>
+<span class="dir">#elif</span> <span class="fn">defined</span>(<span class="lbl">_WIN32</span>)
+    <span class="cmt">// codice Windows</span>
+<span class="dir">#elif</span> <span class="fn">defined</span>(<span class="lbl">__APPLE__</span>)
+    <span class="cmt">// codice macOS</span>
+<span class="dir">#else</span>
+    <span class="dir">#error</span> <span class="str">"Piattaforma non supportata"</span>
+<span class="dir">#endif</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     MACRO AVANZATE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-macros"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> MACRO AVANZATE</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Macro funzione</span>
+<span class="dir">#define</span> <span class="fn">MAX</span>(a, b)       ((a) &gt; (b) ? (a) : (b))
+<span class="dir">#define</span> <span class="fn">SQUARE</span>(x)       ((x) * (x))
+
+<span class="cmt">// ⚠ Le parentesi sono essenziali per evitare problemi di precedenza</span>
+<span class="cmt">// ⚠ Argomenti con side-effect: SQUARE(i++) → ((i++) * (i++)) → UB</span>
+
+<span class="cmt">// Stringification: # trasforma in stringa</span>
+<span class="dir">#define</span> <span class="fn">STR</span>(x)          #x
+<span class="fn">STR</span>(hello)     <span class="cmt">// → "hello"</span>
+
+<span class="cmt">// Token pasting: ## concatena token</span>
+<span class="dir">#define</span> <span class="fn">CONCAT</span>(a, b)    a##b
+<span class="fn">CONCAT</span>(var, <span class="num">1</span>)  <span class="cmt">// → var1</span>
+
+<span class="cmt">// Macro multi-linea con do { } while(0)</span>
+<span class="dir">#define</span> <span class="fn">SWAP</span>(a, b) <span class="kw">do</span> { \
+    <span class="kw">typeof</span>(a) _tmp = (a); \
+    (a) = (b); \
+    (b) = _tmp; \
+} <span class="kw">while</span>(<span class="num">0</span>)
+
+<span class="cmt">// Variadic macro (C99)</span>
+<span class="dir">#define</span> <span class="fn">LOG</span>(fmt, ...)   <span class="fn">fprintf</span>(stderr, fmt, __VA_ARGS__)
+<span class="dir">#define</span> <span class="fn">LOG2</span>(fmt, ...)  <span class="fn">fprintf</span>(stderr, fmt, ##__VA_ARGS__)  <span class="cmt">// ## elimina la , se nessun arg (GCC ext)</span>
+
+<span class="cmt">// Macro per dimensione array</span>
+<span class="dir">#define</span> <span class="fn">ARRAY_SIZE</span>(arr) (<span class="kw">sizeof</span>(arr) / <span class="kw">sizeof</span>((arr)[<span class="num">0</span>]))
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     MACRO PREDEFINITE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-predefined"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> MACRO PREDEFINITE</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Macro</th><th>Descrizione</th></tr>
+      <tr><td><code>__FILE__</code></td><td>Nome del file sorgente corrente</td></tr>
+      <tr><td><code>__LINE__</code></td><td>Numero di riga corrente</td></tr>
+      <tr><td><code>__func__</code></td><td>Nome della funzione corrente (C99)</td></tr>
+      <tr><td><code>__DATE__</code></td><td>Data di compilazione "Mmm dd yyyy"</td></tr>
+      <tr><td><code>__TIME__</code></td><td>Ora di compilazione "hh:mm:ss"</td></tr>
+      <tr><td><code>__STDC__</code></td><td>1 se il compilatore è conforme allo standard</td></tr>
+      <tr><td><code>__STDC_VERSION__</code></td><td>199901L per C99, 201112L per C11, ecc.</td></tr>
+    </table>
+
+<pre>
+<span class="fn">printf</span>(<span class="str">"Errore in %s:%d (%s)\n"</span>, <span class="lbl">__FILE__</span>, <span class="lbl">__LINE__</span>, <span class="lbl">__func__</span>);
+
+<span class="dir">#if</span> <span class="lbl">__STDC_VERSION__</span> &gt;= <span class="num">199901L</span>
+    <span class="cmt">// codice C99+</span>
+<span class="dir">#endif</span>
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     I/O STANDARD
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stdio"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> I/O STANDARD (stdio.h)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Output</div>
+<pre>
+<span class="fn">printf</span>(<span class="str">"Hello %s, age %d\n"</span>, nome, eta);
+<span class="fn">putchar</span>(<span class="str">'A'</span>);          <span class="cmt">// stampa un carattere</span>
+<span class="fn">puts</span>(<span class="str">"hello"</span>);          <span class="cmt">// stampa stringa + newline</span>
+<span class="fn">fprintf</span>(stderr, <span class="str">"Errore: %s\n"</span>, msg);   <span class="cmt">// output su stream</span>
+<span class="fn">sprintf</span>(buf, <span class="str">"x=%d"</span>, x);              <span class="cmt">// scrive in stringa (⚠ overflow)</span>
+<span class="fn">snprintf</span>(buf, <span class="kw">sizeof</span>(buf), <span class="str">"x=%d"</span>, x); <span class="cmt">// sicuro: limita a n byte</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Input</div>
+<pre>
+<span class="type">int</span> n;
+<span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;n);           <span class="cmt">// legge intero da stdin</span>
+
+<span class="type">char</span> buf[<span class="num">100</span>];
+<span class="fn">fgets</span>(buf, <span class="kw">sizeof</span>(buf), stdin);   <span class="cmt">// legge una riga (incluso \n)</span>
+
+<span class="type">int</span> c = <span class="fn">getchar</span>();        <span class="cmt">// legge un carattere (ritorna int o EOF)</span>
+
+<span class="fn">sscanf</span>(str, <span class="str">"%d %f"</span>, &amp;n, &amp;f);  <span class="cmt">// parsing da stringa</span>
+</pre>
+      <div class="warn">⚠ Non usare mai <code>gets()</code> — buffer overflow garantito. Usare <code>fgets()</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Stream Standard</div>
+      <table>
+        <tr><th>Stream</th><th>Tipo</th><th>Descrizione</th></tr>
+        <tr><td><code>stdin</code></td><td>FILE*</td><td>Standard input (fd 0)</td></tr>
+        <tr><td><code>stdout</code></td><td>FILE*</td><td>Standard output (fd 1) — buffered</td></tr>
+        <tr><td><code>stderr</code></td><td>FILE*</td><td>Standard error (fd 2) — unbuffered</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     I/O SU FILE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-fileio"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> I/O SU FILE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Apertura &amp; Chiusura</div>
+      <table>
+        <tr><th>Modalità</th><th>Descrizione</th></tr>
+        <tr><td><code>"r"</code></td><td>Lettura (il file deve esistere)</td></tr>
+        <tr><td><code>"w"</code></td><td>Scrittura (crea o tronca)</td></tr>
+        <tr><td><code>"a"</code></td><td>Append (crea se non esiste)</td></tr>
+        <tr><td><code>"r+"</code></td><td>Lettura + scrittura (il file deve esistere)</td></tr>
+        <tr><td><code>"w+"</code></td><td>Lettura + scrittura (crea o tronca)</td></tr>
+        <tr><td><code>"a+"</code></td><td>Lettura + append</td></tr>
+        <tr><td><code>"rb"</code></td><td>Modalità binaria (importante su Windows)</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="type">FILE</span> *f = <span class="fn">fopen</span>(<span class="str">"data.txt"</span>, <span class="str">"r"</span>);
+<span class="kw">if</span> (f == <span class="lbl">NULL</span>) {
+    <span class="fn">perror</span>(<span class="str">"fopen"</span>);
+    <span class="kw">return</span> <span class="num">1</span>;
+}
+
+<span class="cmt">// Lettura riga per riga</span>
+<span class="type">char</span> line[<span class="num">256</span>];
+<span class="kw">while</span> (<span class="fn">fgets</span>(line, <span class="kw">sizeof</span>(line), f)) {
+    <span class="fn">printf</span>(<span class="str">"%s"</span>, line);
+}
+
+<span class="cmt">// Lettura formattata</span>
+<span class="type">int</span> x; <span class="type">float</span> y;
+<span class="fn">fscanf</span>(f, <span class="str">"%d %f"</span>, &amp;x, &amp;y);
+
+<span class="cmt">// Scrittura</span>
+<span class="type">FILE</span> *out = <span class="fn">fopen</span>(<span class="str">"output.txt"</span>, <span class="str">"w"</span>);
+<span class="fn">fprintf</span>(out, <span class="str">"valore: %d\n"</span>, x);
+<span class="fn">fputs</span>(<span class="str">"linea di testo\n"</span>, out);
+
+<span class="cmt">// Lettura/scrittura binaria</span>
+<span class="type">int</span> arr[<span class="num">10</span>];
+<span class="fn">fwrite</span>(arr, <span class="kw">sizeof</span>(<span class="type">int</span>), <span class="num">10</span>, out);   <span class="cmt">// scrive 10 int</span>
+<span class="fn">fread</span>(arr, <span class="kw">sizeof</span>(<span class="type">int</span>), <span class="num">10</span>, f);     <span class="cmt">// legge 10 int</span>
+
+<span class="cmt">// Posizionamento</span>
+<span class="fn">fseek</span>(f, <span class="num">0</span>, <span class="lbl">SEEK_SET</span>);     <span class="cmt">// inizio file</span>
+<span class="fn">fseek</span>(f, <span class="num">0</span>, <span class="lbl">SEEK_END</span>);     <span class="cmt">// fine file</span>
+<span class="type">long</span> pos = <span class="fn">ftell</span>(f);        <span class="cmt">// posizione corrente</span>
+<span class="fn">rewind</span>(f);                  <span class="cmt">// torna all'inizio</span>
+
+<span class="fn">fclose</span>(f);
+<span class="fn">fclose</span>(out);
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Funzioni Utili</div>
+      <table>
+        <tr><th>Funzione</th><th>Descrizione</th></tr>
+        <tr><td><code>feof(f)</code></td><td>True se si è raggiunta la fine del file</td></tr>
+        <tr><td><code>ferror(f)</code></td><td>True se c'è stato un errore sullo stream</td></tr>
+        <tr><td><code>fflush(f)</code></td><td>Svuota il buffer di output</td></tr>
+        <tr><td><code>remove("file")</code></td><td>Cancella un file</td></tr>
+        <tr><td><code>rename("old","new")</code></td><td>Rinomina un file</td></tr>
+        <tr><td><code>tmpfile()</code></td><td>Crea file temporaneo (auto-delete)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FORMATTAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-format"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SPECIFICATORI DI FORMATO (printf / scanf)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">printf</div>
+      <table>
+        <tr><th>Spec.</th><th>Tipo</th><th>Descrizione</th></tr>
+        <tr><td><code>%d / %i</code></td><td>int</td><td>Intero decimale con segno</td></tr>
+        <tr><td><code>%u</code></td><td>unsigned</td><td>Intero decimale senza segno</td></tr>
+        <tr><td><code>%o</code></td><td>unsigned</td><td>Ottale</td></tr>
+        <tr><td><code>%x / %X</code></td><td>unsigned</td><td>Esadecimale min/maiuscolo</td></tr>
+        <tr><td><code>%f</code></td><td>double</td><td>Virgola mobile (default 6 decimali)</td></tr>
+        <tr><td><code>%e / %E</code></td><td>double</td><td>Notazione scientifica</td></tr>
+        <tr><td><code>%g / %G</code></td><td>double</td><td>Sceglie %f o %e (il più corto)</td></tr>
+        <tr><td><code>%c</code></td><td>int</td><td>Carattere</td></tr>
+        <tr><td><code>%s</code></td><td>char*</td><td>Stringa</td></tr>
+        <tr><td><code>%p</code></td><td>void*</td><td>Puntatore (indirizzo)</td></tr>
+        <tr><td><code>%n</code></td><td>int*</td><td>Scrive il numero di char scritti finora</td></tr>
+        <tr><td><code>%%</code></td><td>—</td><td>Stampa un % letterale</td></tr>
+        <tr><td><code>%zu</code></td><td>size_t</td><td>size_t (C99)</td></tr>
+        <tr><td><code>%lld</code></td><td>long long</td><td>long long (C99)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Modificatori di Formato</div>
+<pre>
+<span class="fn">printf</span>(<span class="str">"%10d"</span>, x);      <span class="cmt">// allineamento destra, larghezza 10</span>
+<span class="fn">printf</span>(<span class="str">"%-10d"</span>, x);     <span class="cmt">// allineamento sinistra</span>
+<span class="fn">printf</span>(<span class="str">"%010d"</span>, x);     <span class="cmt">// padding con zeri</span>
+<span class="fn">printf</span>(<span class="str">"%+d"</span>, x);       <span class="cmt">// mostra sempre il segno</span>
+<span class="fn">printf</span>(<span class="str">"%.2f"</span>, f);      <span class="cmt">// 2 cifre decimali</span>
+<span class="fn">printf</span>(<span class="str">"%.*f"</span>, n, f);   <span class="cmt">// precisione variabile (passata come argomento)</span>
+<span class="fn">printf</span>(<span class="str">"%.5s"</span>, str);    <span class="cmt">// stampa al max 5 char della stringa</span>
+<span class="fn">printf</span>(<span class="str">"%#x"</span>, x);       <span class="cmt">// prefisso 0x per esadecimale</span>
+<span class="fn">printf</span>(<span class="str">"%#o"</span>, x);       <span class="cmt">// prefisso 0 per ottale</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STDLIB.H
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stdlib"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> stdlib.h — FUNZIONI UTILITÀ</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>atoi(s) / atol(s) / atof(s)</code></td><td>Conversione stringa → int/long/double (no error check)</td></tr>
+      <tr><td><code>strtol(s, &amp;end, base)</code></td><td>String → long con error check e base variabile</td></tr>
+      <tr><td><code>strtod(s, &amp;end)</code></td><td>String → double con error check</td></tr>
+      <tr><td><code>strtoll(s, &amp;end, base)</code></td><td>String → long long (C99)</td></tr>
+      <tr><td><code>rand()</code></td><td>Pseudo-random [0, RAND_MAX]</td></tr>
+      <tr><td><code>srand(seed)</code></td><td>Seed per rand()</td></tr>
+      <tr><td><code>abs(n) / labs(n) / llabs(n)</code></td><td>Valore assoluto int/long/long long</td></tr>
+      <tr><td><code>div(a,b) / ldiv / lldiv</code></td><td>Quoziente e resto in una struct</td></tr>
+      <tr><td><code>exit(status)</code></td><td>Termina il programma (chiama atexit handlers)</td></tr>
+      <tr><td><code>_Exit(status)</code></td><td>Termina senza atexit/flush (C99)</td></tr>
+      <tr><td><code>atexit(fn)</code></td><td>Registra funzione da chiamare all'uscita</td></tr>
+      <tr><td><code>abort()</code></td><td>Termina con SIGABRT</td></tr>
+      <tr><td><code>system(cmd)</code></td><td>Esegue comando shell</td></tr>
+      <tr><td><code>getenv("VAR")</code></td><td>Legge variabile d'ambiente</td></tr>
+      <tr><td><code>qsort(arr, n, size, cmp)</code></td><td>Ordinamento generico</td></tr>
+      <tr><td><code>bsearch(key, arr, n, size, cmp)</code></td><td>Ricerca binaria su array ordinato</td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">strtol — Pattern di Conversione Sicura</div>
+<pre>
+<span class="type">char</span> *input = <span class="str">"42abc"</span>;
+<span class="type">char</span> *end;
+<span class="type">long</span> val = <span class="fn">strtol</span>(input, &amp;end, <span class="num">10</span>);
+
+<span class="kw">if</span> (end == input)
+    <span class="fn">printf</span>(<span class="str">"Nessun numero trovato\n"</span>);
+<span class="kw">else if</span> (*end != <span class="str">'\0'</span>)
+    <span class="fn">printf</span>(<span class="str">"Parziale: %ld (residuo: '%s')\n"</span>, val, end);
+<span class="kw">else</span>
+    <span class="fn">printf</span>(<span class="str">"Numero: %ld\n"</span>, val);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     MATH.H
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-math"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> math.h — FUNZIONI MATEMATICHE</div>
+  <div class="section-body">
+
+    <p>Compilare con <code>-lm</code> per linkare la libreria matematica.</p>
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>sqrt(x) / cbrt(x)</code></td><td>Radice quadrata / cubica</td></tr>
+      <tr><td><code>pow(x, y)</code></td><td>x elevato a y</td></tr>
+      <tr><td><code>exp(x) / log(x) / log10(x) / log2(x)</code></td><td>Esponenziale e logaritmi</td></tr>
+      <tr><td><code>fabs(x)</code></td><td>Valore assoluto (double)</td></tr>
+      <tr><td><code>fabsf(x) / fabsl(x)</code></td><td>float / long double (C99)</td></tr>
+      <tr><td><code>ceil(x) / floor(x)</code></td><td>Arrotondamento su / giù</td></tr>
+      <tr><td><code>round(x) / trunc(x)</code></td><td>Arrotondamento / troncamento (C99)</td></tr>
+      <tr><td><code>fmod(x, y)</code></td><td>Resto virgola mobile</td></tr>
+      <tr><td><code>remainder(x, y)</code></td><td>Resto IEEE (C99)</td></tr>
+      <tr><td><code>sin(x) / cos(x) / tan(x)</code></td><td>Trigonometria (radianti)</td></tr>
+      <tr><td><code>asin(x) / acos(x) / atan(x)</code></td><td>Inverse trigonometriche</td></tr>
+      <tr><td><code>atan2(y, x)</code></td><td>Arcotangente a 2 argomenti</td></tr>
+      <tr><td><code>sinh / cosh / tanh</code></td><td>Iperboliche</td></tr>
+      <tr><td><code>hypot(x, y)</code></td><td>√(x² + y²) (C99)</td></tr>
+      <tr><td><code>INFINITY / NAN</code></td><td>Costanti speciali (C99)</td></tr>
+      <tr><td><code>isnan(x) / isinf(x) / isfinite(x)</code></td><td>Test valori speciali (C99)</td></tr>
+    </table>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     CTYPE.H
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-ctype"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ctype.h — CLASSIFICAZIONE CARATTERI</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Funzione</th><th>True se</th></tr>
+      <tr><td><code>isalpha(c)</code></td><td>Lettera (a-z, A-Z)</td></tr>
+      <tr><td><code>isdigit(c)</code></td><td>Cifra (0-9)</td></tr>
+      <tr><td><code>isalnum(c)</code></td><td>Lettera o cifra</td></tr>
+      <tr><td><code>isspace(c)</code></td><td>Whitespace (spazio, tab, newline, ecc.)</td></tr>
+      <tr><td><code>isupper(c) / islower(c)</code></td><td>Maiuscola / minuscola</td></tr>
+      <tr><td><code>ispunct(c)</code></td><td>Punteggiatura</td></tr>
+      <tr><td><code>isprint(c)</code></td><td>Stampabile (incluso spazio)</td></tr>
+      <tr><td><code>iscntrl(c)</code></td><td>Carattere di controllo</td></tr>
+      <tr><td><code>isxdigit(c)</code></td><td>Cifra esadecimale</td></tr>
+      <tr><td><code>toupper(c) / tolower(c)</code></td><td>Conversione maiuscola/minuscola</td></tr>
+    </table>
+    <div class="note">L'argomento deve essere <code>unsigned char</code> o <code>EOF</code>. Passare <code>char</code> con valori negativi è UB.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STDINT.H & INTTYPES.H
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stdint"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> stdint.h &amp; inttypes.h (C99)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tipi a Larghezza Fissa</div>
+      <table>
+        <tr><th>Tipo</th><th>Bit</th><th>Descrizione</th></tr>
+        <tr><td><code>int8_t / uint8_t</code></td><td>8</td><td>Esattamente 8 bit</td></tr>
+        <tr><td><code>int16_t / uint16_t</code></td><td>16</td><td>Esattamente 16 bit</td></tr>
+        <tr><td><code>int32_t / uint32_t</code></td><td>32</td><td>Esattamente 32 bit</td></tr>
+        <tr><td><code>int64_t / uint64_t</code></td><td>64</td><td>Esattamente 64 bit</td></tr>
+        <tr><td><code>intptr_t / uintptr_t</code></td><td>ptr</td><td>Capace di contenere un puntatore</td></tr>
+        <tr><td><code>size_t</code></td><td>—</td><td>Risultato di sizeof (unsigned, stddef.h)</td></tr>
+        <tr><td><code>ptrdiff_t</code></td><td>—</td><td>Differenza tra puntatori (signed, stddef.h)</td></tr>
+        <tr><td><code>intmax_t / uintmax_t</code></td><td>max</td><td>Il tipo intero più grande supportato</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Costanti &amp; Macro di Formato</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdint.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;inttypes.h&gt;</span>
+
+<span class="type">int64_t</span> big = <span class="lbl">INT64_MAX</span>;           <span class="cmt">// 9223372036854775807</span>
+<span class="type">uint32_t</span> u = <span class="lbl">UINT32_MAX</span>;          <span class="cmt">// 4294967295</span>
+
+<span class="fn">printf</span>(<span class="str">"val = %"</span> <span class="lbl">PRId64</span> <span class="str">"\n"</span>, big);   <span class="cmt">// PRId64 = formato portabile per int64_t</span>
+<span class="fn">printf</span>(<span class="str">"hex = %"</span> <span class="lbl">PRIx32</span> <span class="str">"\n"</span>, u);    <span class="cmt">// PRIx32 per uint32_t in hex</span>
+
+<span class="fn">sscanf</span>(str, <span class="str">"%"</span> <span class="lbl">SCNd64</span>, &amp;big);     <span class="cmt">// SCN* per scanf</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STDBOOL.H & ALTRI C99
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stdbool"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> stdbool.h &amp; ALTRI HEADER C99</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">stdbool.h</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdbool.h&gt;</span>
+
+<span class="type">bool</span> flag = <span class="kw">true</span>;
+<span class="kw">if</span> (flag) { <span class="cmt">/* ... */</span> }
+<span class="cmt">// bool, true, false sono macro per _Bool, 1, 0</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">complex.h (C99)</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;complex.h&gt;</span>
+
+<span class="type">double complex</span> z = <span class="num">1.0</span> + <span class="num">2.0</span> * <span class="lbl">I</span>;
+<span class="type">double</span> re = <span class="fn">creal</span>(z);    <span class="cmt">// parte reale</span>
+<span class="type">double</span> im = <span class="fn">cimag</span>(z);    <span class="cmt">// parte immaginaria</span>
+<span class="type">double</span> m  = <span class="fn">cabs</span>(z);     <span class="cmt">// modulo</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">tgmath.h (C99) — Type-Generic Math</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;tgmath.h&gt;</span>
+<span class="cmt">// Usa automaticamente la versione corretta (float/double/long double)</span>
+<span class="type">float</span> f = <span class="fn">sqrt</span>(<span class="num">2.0f</span>);       <span class="cmt">// chiama sqrtf</span>
+<span class="type">double</span> d = <span class="fn">sqrt</span>(<span class="num">2.0</span>);       <span class="cmt">// chiama sqrt</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Riepilogo Header C99 Importanti</div>
+      <table>
+        <tr><th>Header</th><th>Contenuto</th></tr>
+        <tr><td><code>&lt;stdbool.h&gt;</code></td><td>bool, true, false</td></tr>
+        <tr><td><code>&lt;stdint.h&gt;</code></td><td>Tipi a larghezza fissa (int32_t, ecc.)</td></tr>
+        <tr><td><code>&lt;inttypes.h&gt;</code></td><td>Macro formato per tipi stdint (PRI*, SCN*)</td></tr>
+        <tr><td><code>&lt;complex.h&gt;</code></td><td>Numeri complessi</td></tr>
+        <tr><td><code>&lt;tgmath.h&gt;</code></td><td>Funzioni matematiche type-generic</td></tr>
+        <tr><td><code>&lt;fenv.h&gt;</code></td><td>Controllo ambiente floating-point</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     LIMITS.H & FLOAT.H
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-limits"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> limits.h &amp; float.h — LIMITI DEI TIPI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">limits.h — Tipi Interi</div>
+      <table>
+        <tr><th>Costante</th><th>Valore tipico</th><th>Descrizione</th></tr>
+        <tr><td><code>CHAR_BIT</code></td><td>8</td><td>Bit per byte</td></tr>
+        <tr><td><code>CHAR_MIN / CHAR_MAX</code></td><td>-128 / 127</td><td>Range di char (signedness impl-defined)</td></tr>
+        <tr><td><code>SCHAR_MIN / SCHAR_MAX</code></td><td>-128 / 127</td><td>signed char</td></tr>
+        <tr><td><code>UCHAR_MAX</code></td><td>255</td><td>unsigned char</td></tr>
+        <tr><td><code>SHRT_MIN / SHRT_MAX</code></td><td>-32768 / 32767</td><td>short</td></tr>
+        <tr><td><code>USHRT_MAX</code></td><td>65535</td><td>unsigned short</td></tr>
+        <tr><td><code>INT_MIN / INT_MAX</code></td><td>-2³¹ / 2³¹-1</td><td>int</td></tr>
+        <tr><td><code>UINT_MAX</code></td><td>2³²-1</td><td>unsigned int</td></tr>
+        <tr><td><code>LONG_MIN / LONG_MAX</code></td><td>almeno ±2³¹</td><td>long (4 o 8 byte)</td></tr>
+        <tr><td><code>ULONG_MAX</code></td><td>almeno 2³²-1</td><td>unsigned long</td></tr>
+        <tr><td><code>LLONG_MIN / LLONG_MAX</code></td><td>-2⁶³ / 2⁶³-1</td><td>long long (C99)</td></tr>
+        <tr><td><code>ULLONG_MAX</code></td><td>2⁶⁴-1</td><td>unsigned long long (C99)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">float.h — Virgola Mobile</div>
+      <table>
+        <tr><th>Costante</th><th>Valore tipico (double)</th><th>Descrizione</th></tr>
+        <tr><td><code>FLT_RADIX</code></td><td>2</td><td>Base dell'esponente</td></tr>
+        <tr><td><code>FLT_DIG / DBL_DIG / LDBL_DIG</code></td><td>6 / 15 / 18</td><td>Cifre decimali di precisione</td></tr>
+        <tr><td><code>FLT_EPSILON / DBL_EPSILON</code></td><td>1.19e-7 / 2.22e-16</td><td>Più piccolo ε t.c. 1.0 + ε ≠ 1.0</td></tr>
+        <tr><td><code>FLT_MIN / DBL_MIN</code></td><td>1.17e-38 / 2.22e-308</td><td>Più piccolo positivo normalizzato</td></tr>
+        <tr><td><code>FLT_MAX / DBL_MAX</code></td><td>3.4e38 / 1.8e308</td><td>Valore massimo</td></tr>
+        <tr><td><code>FLT_MIN_EXP / FLT_MAX_EXP</code></td><td>-125 / 128</td><td>Esponente min/max (base 2)</td></tr>
+        <tr><td><code>FLT_MANT_DIG / DBL_MANT_DIG</code></td><td>24 / 53</td><td>Bit della mantissa</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;limits.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;float.h&gt;</span>
+
+<span class="cmt">// Pattern: controllare overflow prima dell'operazione</span>
+<span class="kw">if</span> (a &gt; <span class="num">0</span> &amp;&amp; b &gt; <span class="lbl">INT_MAX</span> - a) {
+    <span class="cmt">// a + b causerebbe overflow!</span>
+}
+
+<span class="cmt">// Confronto float con epsilon</span>
+<span class="kw">if</span> (<span class="fn">fabs</span>(a - b) &lt; <span class="lbl">DBL_EPSILON</span> * <span class="fn">fabs</span>(a + b)) {
+    <span class="cmt">// a e b sono "uguali" (relative epsilon)</span>
+}
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TIME.H
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-time"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> time.h — DATA &amp; TEMPO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tipi</div>
+      <table>
+        <tr><th>Tipo</th><th>Descrizione</th></tr>
+        <tr><td><code>time_t</code></td><td>Tempo calendariale (secondi da epoch, tipicamente 1970-01-01)</td></tr>
+        <tr><td><code>clock_t</code></td><td>Tempo di CPU (tick)</td></tr>
+        <tr><td><code>struct tm</code></td><td>Tempo scomposto (anno, mese, giorno, ora, min, sec, ecc.)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Funzioni Principali</div>
+      <table>
+        <tr><th>Funzione</th><th>Descrizione</th></tr>
+        <tr><td><code>time(&amp;t)</code></td><td>Ottiene il tempo corrente (secondi da epoch)</td></tr>
+        <tr><td><code>clock()</code></td><td>Tempo CPU usato dal programma (clock_t)</td></tr>
+        <tr><td><code>difftime(t1, t0)</code></td><td>Differenza in secondi (double) tra due time_t</td></tr>
+        <tr><td><code>mktime(&amp;tm)</code></td><td>struct tm → time_t (normalizza i campi)</td></tr>
+        <tr><td><code>localtime(&amp;t)</code></td><td>time_t → struct tm* (ora locale)</td></tr>
+        <tr><td><code>gmtime(&amp;t)</code></td><td>time_t → struct tm* (UTC)</td></tr>
+        <tr><td><code>asctime(&amp;tm)</code></td><td>struct tm → stringa leggibile</td></tr>
+        <tr><td><code>ctime(&amp;t)</code></td><td>time_t → stringa leggibile (= asctime(localtime(&amp;t)))</td></tr>
+        <tr><td><code>strftime(buf, max, fmt, &amp;tm)</code></td><td>Formattazione personalizzata in un buffer</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;time.h&gt;</span>
+
+<span class="cmt">// Ottenere data/ora corrente</span>
+<span class="type">time_t</span> now = <span class="fn">time</span>(<span class="lbl">NULL</span>);
+<span class="kw">struct</span> <span class="type">tm</span> *lt = <span class="fn">localtime</span>(&amp;now);
+<span class="fn">printf</span>(<span class="str">"%d-%02d-%02d %02d:%02d:%02d\n"</span>,
+       lt-&gt;tm_year + <span class="num">1900</span>, lt-&gt;tm_mon + <span class="num">1</span>, lt-&gt;tm_mday,
+       lt-&gt;tm_hour, lt-&gt;tm_min, lt-&gt;tm_sec);
+
+<span class="cmt">// Formattazione con strftime</span>
+<span class="type">char</span> buf[<span class="num">64</span>];
+<span class="fn">strftime</span>(buf, <span class="kw">sizeof</span>(buf), <span class="str">"%Y-%m-%d %H:%M:%S"</span>, lt);
+<span class="fn">puts</span>(buf);   <span class="cmt">// "2024-03-15 14:30:45"</span>
+
+<span class="cmt">// Misurare tempo di esecuzione (CPU time)</span>
+<span class="type">clock_t</span> start = <span class="fn">clock</span>();
+<span class="cmt">// ... lavoro pesante ...</span>
+<span class="type">clock_t</span> end = <span class="fn">clock</span>();
+<span class="type">double</span> cpu_sec = (<span class="type">double</span>)(end - start) / <span class="lbl">CLOCKS_PER_SEC</span>;
+<span class="fn">printf</span>(<span class="str">"CPU time: %.3f s\n"</span>, cpu_sec);
+
+<span class="cmt">// Misurare tempo reale (wall time)</span>
+<span class="type">time_t</span> t0 = <span class="fn">time</span>(<span class="lbl">NULL</span>);
+<span class="cmt">// ... lavoro ...</span>
+<span class="type">time_t</span> t1 = <span class="fn">time</span>(<span class="lbl">NULL</span>);
+<span class="fn">printf</span>(<span class="str">"Elapsed: %.0f s\n"</span>, <span class="fn">difftime</span>(t1, t0));
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Campi di struct tm</div>
+      <table>
+        <tr><th>Campo</th><th>Range</th><th>Descrizione</th></tr>
+        <tr><td><code>tm_sec</code></td><td>0–60</td><td>Secondi (60 per leap second)</td></tr>
+        <tr><td><code>tm_min</code></td><td>0–59</td><td>Minuti</td></tr>
+        <tr><td><code>tm_hour</code></td><td>0–23</td><td>Ore</td></tr>
+        <tr><td><code>tm_mday</code></td><td>1–31</td><td>Giorno del mese</td></tr>
+        <tr><td><code>tm_mon</code></td><td>0–11</td><td>Mese (0 = gennaio)</td></tr>
+        <tr><td><code>tm_year</code></td><td>anni da 1900</td><td>Anno (es. 124 = 2024)</td></tr>
+        <tr><td><code>tm_wday</code></td><td>0–6</td><td>Giorno della settimana (0 = domenica)</td></tr>
+        <tr><td><code>tm_yday</code></td><td>0–365</td><td>Giorno dell'anno</td></tr>
+        <tr><td><code>tm_isdst</code></td><td>-1/0/1</td><td>Ora legale (-1 = auto)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Specificatori strftime</div>
+      <table>
+        <tr><th>Spec.</th><th>Esempio</th><th>Descrizione</th></tr>
+        <tr><td><code>%Y</code></td><td>2024</td><td>Anno a 4 cifre</td></tr>
+        <tr><td><code>%m</code></td><td>03</td><td>Mese (01-12)</td></tr>
+        <tr><td><code>%d</code></td><td>15</td><td>Giorno (01-31)</td></tr>
+        <tr><td><code>%H</code></td><td>14</td><td>Ora 24h (00-23)</td></tr>
+        <tr><td><code>%M</code></td><td>30</td><td>Minuti (00-59)</td></tr>
+        <tr><td><code>%S</code></td><td>45</td><td>Secondi (00-60)</td></tr>
+        <tr><td><code>%A / %a</code></td><td>Friday / Fri</td><td>Nome giorno</td></tr>
+        <tr><td><code>%B / %b</code></td><td>March / Mar</td><td>Nome mese</td></tr>
+        <tr><td><code>%Z</code></td><td>CET</td><td>Timezone</td></tr>
+        <tr><td><code>%s</code></td><td>1710510645</td><td>Epoch (estensione glibc)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     VOLATILE & RESTRICT
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-volatile"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> volatile &amp; restrict</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">volatile</div>
+<pre>
+<span class="cmt">// Impedisce al compilatore di ottimizzare l'accesso alla variabile</span>
+<span class="cmt">// Usato per: I/O mappato in memoria, signal handler, variabili condivise</span>
+
+<span class="kw">volatile</span> <span class="type">int</span> *<span class="lbl">hw_reg</span> = (<span class="kw">volatile</span> <span class="type">int</span> *)<span class="num">0xFFFF0000</span>;
+<span class="kw">while</span> (*<span class="lbl">hw_reg</span> == <span class="num">0</span>) { }   <span class="cmt">// il compilatore non elimina il loop</span>
+
+<span class="cmt">// Nei signal handler:</span>
+<span class="kw">volatile</span> <span class="type">sig_atomic_t</span> <span class="lbl">flag</span> = <span class="num">0</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">restrict (C99)</div>
+<pre>
+<span class="cmt">// Promessa al compilatore: il puntatore è l'unico modo di accedere a quell'area</span>
+<span class="cmt">// Permette ottimizzazioni più aggressive</span>
+
+<span class="type">void</span> <span class="fn">vec_add</span>(<span class="type">int</span> * <span class="kw">restrict</span> dst,
+            <span class="kw">const</span> <span class="type">int</span> * <span class="kw">restrict</span> a,
+            <span class="kw">const</span> <span class="type">int</span> * <span class="kw">restrict</span> b, <span class="type">size_t</span> n) {
+    <span class="kw">for</span> (<span class="type">size_t</span> i = <span class="num">0</span>; i &lt; n; i++)
+        dst[i] = a[i] + b[i];  <span class="cmt">// il compilatore sa che non c'è aliasing</span>
+}
+
+<span class="cmt">// memcpy usa restrict: src e dst non possono sovrapporsi</span>
+<span class="cmt">// memmove NON usa restrict: gestisce la sovrapposizione</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     INLINE FUNCTIONS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-inline"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> INLINE FUNCTIONS (C99)</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Suggerisce al compilatore di inserire il corpo della funzione inline</span>
+<span class="kw">static inline</span> <span class="type">int</span> <span class="fn">max</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="kw">return</span> (a &gt; b) ? a : b;
+}
+
+<span class="cmt">// "inline" in C99 ha semantica diversa dal C++:</span>
+<span class="cmt">// - "inline" nell'header → solo definizione inline (nessun simbolo esterno)</span>
+<span class="cmt">// - Serve una definizione extern in un .c per generare il simbolo</span>
+<span class="cmt">// - "static inline" è il pattern più semplice e portabile</span>
+</pre>
+    <div class="note"><code>static inline</code> nell'header è il modo più sicuro e portabile di usare inline in C99.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     VLA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-vla"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> VARIABLE-LENGTH ARRAYS — VLA (C99)</div>
+  <div class="section-body">
+
+<pre>
+<span class="type">void</span> <span class="fn">process</span>(<span class="type">int</span> n) {
+    <span class="type">int</span> arr[n];              <span class="cmt">// allocato sullo stack a runtime</span>
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        arr[i] = i * i;
+}
+
+<span class="cmt">// VLA multidimensionale</span>
+<span class="type">void</span> <span class="fn">mat_zero</span>(<span class="type">int</span> rows, <span class="type">int</span> cols, <span class="type">int</span> m[rows][cols]) {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; rows; i++)
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; cols; j++)
+            m[i][j] = <span class="num">0</span>;
+}
+</pre>
+    <div class="warn">⚠ VLA allocato sullo stack: rischio stack overflow per n grande. Non usare <code>sizeof</code> su VLA a runtime per codice portabile. C11 rende VLA opzionale.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     COMPOUND LITERALS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-compound"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMPOUND LITERALS (C99)</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Crea un oggetto anonimo del tipo specificato</span>
+
+<span class="cmt">// Passare struct temporanee a funzione</span>
+<span class="fn">draw_point</span>((<span class="kw">struct</span> <span class="type">Punto</span>){<span class="num">3.0</span>, <span class="num">4.0</span>});
+
+<span class="cmt">// Array temporanei</span>
+<span class="type">int</span> *p = (<span class="type">int</span>[]){<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>};
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, p[<span class="num">1</span>]);    <span class="cmt">// 20</span>
+
+<span class="cmt">// Con designated initializers</span>
+<span class="kw">struct</span> <span class="type">Config</span> cfg = (<span class="kw">struct</span> <span class="type">Config</span>){
+    .width = <span class="num">800</span>,
+    .height = <span class="num">600</span>,
+    .fullscreen = <span class="kw">false</span>
+};
+
+<span class="cmt">// Lifetime: fino alla fine del blocco (come variabili auto)</span>
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     DESIGNATED INITIALIZERS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-designated"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> DESIGNATED INITIALIZERS (C99)</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Array</span>
+<span class="type">int</span> a[<span class="num">10</span>] = {
+    [<span class="num">0</span>] = <span class="num">1</span>,
+    [<span class="num">5</span>] = <span class="num">50</span>,
+    [<span class="num">9</span>] = <span class="num">99</span>      <span class="cmt">// tutti gli altri = 0</span>
+};
+
+<span class="cmt">// Struct — ordine libero</span>
+<span class="kw">struct</span> <span class="type">Punto</span> p = {
+    .y = <span class="num">3.14</span>,
+    .x = <span class="num">2.71</span>
+};
+
+<span class="cmt">// Struct annidate</span>
+<span class="kw">struct</span> <span class="type">Rettangolo</span> r = {
+    .origine = {.x = <span class="num">0</span>, .y = <span class="num">0</span>},
+    .larghezza = <span class="num">100</span>,
+    .altezza = <span class="num">50</span>
+};
+
+<span class="cmt">// Array di struct</span>
+<span class="kw">struct</span> <span class="type">Punto</span> pts[] = {
+    [<span class="num">0</span>] = {.x = <span class="num">1</span>, .y = <span class="num">2</span>},
+    [<span class="num">2</span>] = {.x = <span class="num">5</span>, .y = <span class="num">6</span>}    <span class="cmt">// [1] zero-inizializzato</span>
+};
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ASSERT & DEBUGGING
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-assert"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ASSERT &amp; DEBUGGING</div>
+  <div class="section-body">
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;assert.h&gt;</span>
+
+<span class="fn">assert</span>(ptr != <span class="lbl">NULL</span>);          <span class="cmt">// se falso: stampa errore e abort()</span>
+<span class="fn">assert</span>(n &gt; <span class="num">0</span> &amp;&amp; <span class="str">"n deve essere positivo"</span>);  <span class="cmt">// messaggio nella condizione</span>
+
+<span class="cmt">// Disabilitare assert in produzione:</span>
+<span class="cmt">// gcc -DNDEBUG main.c</span>
+<span class="cmt">// oppure:</span>
+<span class="dir">#define</span> <span class="lbl">NDEBUG</span>
+<span class="dir">#include</span> <span class="str">&lt;assert.h&gt;</span>          <span class="cmt">// assert diventa no-op</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Macro di Debug Personalizzata</div>
+<pre>
+<span class="dir">#ifdef</span> <span class="lbl">DEBUG</span>
+<span class="dir">#define</span> <span class="fn">DBG</span>(fmt, ...) \
+    <span class="fn">fprintf</span>(stderr, <span class="str">"[DBG %s:%d] "</span> fmt <span class="str">"\n"</span>, \
+            <span class="lbl">__FILE__</span>, <span class="lbl">__LINE__</span>, ##__VA_ARGS__)
+<span class="dir">#else</span>
+<span class="dir">#define</span> <span class="fn">DBG</span>(fmt, ...) ((void)<span class="num">0</span>)
+<span class="dir">#endif</span>
+
+<span class="fn">DBG</span>(<span class="str">"valore di x = %d"</span>, x);
+<span class="cmt">// Compilare con: gcc -DDEBUG ...</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     GESTIONE ERRORI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-errno"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> GESTIONE ERRORI (errno)</div>
+  <div class="section-body">
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;errno.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="type">FILE</span> *f = <span class="fn">fopen</span>(<span class="str">"/path/file"</span>, <span class="str">"r"</span>);
+<span class="kw">if</span> (!f) {
+    <span class="fn">fprintf</span>(stderr, <span class="str">"Errore %d: %s\n"</span>, errno, <span class="fn">strerror</span>(errno));
+    <span class="cmt">// oppure:</span>
+    <span class="fn">perror</span>(<span class="str">"fopen"</span>);   <span class="cmt">// stampa "fopen: No such file or directory"</span>
+    <span class="fn">exit</span>(<span class="lbl">EXIT_FAILURE</span>);
+}
+</pre>
+
+    <table>
+      <tr><th>Costante</th><th>Descrizione</th></tr>
+      <tr><td><code>EACCES</code></td><td>Permesso negato</td></tr>
+      <tr><td><code>ENOENT</code></td><td>File o directory non trovato</td></tr>
+      <tr><td><code>ENOMEM</code></td><td>Memoria insufficiente</td></tr>
+      <tr><td><code>EINVAL</code></td><td>Argomento non valido</td></tr>
+      <tr><td><code>EIO</code></td><td>Errore I/O</td></tr>
+      <tr><td><code>ERANGE</code></td><td>Risultato fuori range (usato da strtol, ecc.)</td></tr>
+      <tr><td><code>EDOM</code></td><td>Argomento fuori dominio matematico</td></tr>
+    </table>
+
+    <div class="note">Settare <code>errno = 0</code> prima della chiamata. Controllare errno solo se la funzione ha segnalato errore (es. ritorno NULL o -1).</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SETJMP / LONGJMP
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-setjmp"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SETJMP / LONGJMP — SALTI NON LOCALI</div>
+  <div class="section-body">
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;setjmp.h&gt;</span>
+
+<span class="type">jmp_buf</span> <span class="lbl">env</span>;
+
+<span class="type">void</span> <span class="fn">do_work</span>(<span class="type">void</span>) {
+    <span class="cmt">// ... errore critico ...</span>
+    <span class="fn">longjmp</span>(<span class="lbl">env</span>, <span class="num">42</span>);   <span class="cmt">// salta indietro a setjmp, restituisce 42</span>
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>) {
+    <span class="type">int</span> val = <span class="fn">setjmp</span>(<span class="lbl">env</span>);   <span class="cmt">// prima chiamata: ritorna 0</span>
+    <span class="kw">if</span> (val == <span class="num">0</span>) {
+        <span class="fn">do_work</span>();             <span class="cmt">// esecuzione normale</span>
+    } <span class="kw">else</span> {
+        <span class="fn">printf</span>(<span class="str">"Errore catturato: %d\n"</span>, val);  <span class="cmt">// val = 42</span>
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>setjmp(env)</code></td><td>Salva il contesto di esecuzione. Ritorna 0 alla prima chiamata</td></tr>
+      <tr><td><code>longjmp(env, val)</code></td><td>Ripristina il contesto; setjmp ritorna val (se val=0 → ritorna 1)</td></tr>
+    </table>
+
+    <div class="warn">⚠ Le variabili locali modificate tra setjmp e longjmp hanno valore indefinito a meno che non siano <code>volatile</code>. Non usare longjmp dopo che la funzione contenente setjmp è ritornata.</div>
+
+    <div class="note">Usato raramente: pattern try/catch rudimentale, error recovery in parser, gestione errori in librerie. Preferire valori di ritorno e goto per cleanup.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCOPE & LINKAGE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-scope"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SCOPE &amp; LINKAGE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Scope (Visibilità)</div>
+      <table>
+        <tr><th>Tipo di Scope</th><th>Dove</th><th>Visibilità</th></tr>
+        <tr><td><b>Block scope</b></td><td>Variabili dentro <code>{ }</code></td><td>Dal punto di dichiarazione fino alla <code>}</code> di chiusura</td></tr>
+        <tr><td><b>File scope</b></td><td>Dichiarazioni fuori da ogni funzione</td><td>Dal punto di dichiarazione fino a fine file</td></tr>
+        <tr><td><b>Function scope</b></td><td>Solo le label di <code>goto</code></td><td>Tutta la funzione</td></tr>
+        <tr><td><b>Function prototype scope</b></td><td>Nomi parametri nel prototipo</td><td>Solo dentro le parentesi del prototipo</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Linkage</div>
+      <table>
+        <tr><th>Linkage</th><th>Significato</th><th>Quando</th></tr>
+        <tr><td><b>External</b></td><td>Lo stesso nome in più unità di traduzione si riferisce allo stesso oggetto</td><td>Funzioni e variabili globali (default)</td></tr>
+        <tr><td><b>Internal</b></td><td>Lo stesso nome in un'unità si riferisce allo stesso oggetto, ma invisibile fuori</td><td><code>static</code> a file scope</td></tr>
+        <tr><td><b>None</b></td><td>Ogni dichiarazione è un oggetto distinto</td><td>Variabili locali, parametri</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="cmt">// External linkage — visibile da altri file</span>
+<span class="type">int</span> <span class="lbl">g_visible</span> = <span class="num">10</span>;              <span class="cmt">// definizione, external linkage</span>
+<span class="kw">extern</span> <span class="type">int</span> <span class="lbl">g_visible</span>;            <span class="cmt">// dichiarazione (in altro file/header)</span>
+
+<span class="cmt">// Internal linkage — visibile solo in questo file</span>
+<span class="kw">static</span> <span class="type">int</span> <span class="lbl">s_private</span> = <span class="num">20</span>;       <span class="cmt">// non accessibile da altri file</span>
+<span class="kw">static</span> <span class="type">void</span> <span class="fn">helper</span>(<span class="type">void</span>) {}    <span class="cmt">// funzione privata al file</span>
+
+<span class="cmt">// No linkage</span>
+<span class="type">void</span> <span class="fn">foo</span>(<span class="type">void</span>) {
+    <span class="type">int</span> x = <span class="num">5</span>;          <span class="cmt">// block scope, no linkage</span>
+    <span class="kw">static</span> <span class="type">int</span> y = <span class="num">0</span>;  <span class="cmt">// block scope, no linkage, ma lifetime statico</span>
+}
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Regola One Definition Rule (ODR)</div>
+      <p>Ogni variabile/funzione con external linkage deve avere <b>esattamente una definizione</b> in tutto il programma. Più dichiarazioni (<code>extern</code>) sono permesse.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Shadowing</div>
+<pre>
+<span class="type">int</span> x = <span class="num">10</span>;                 <span class="cmt">// file scope</span>
+<span class="type">void</span> <span class="fn">foo</span>(<span class="type">void</span>) {
+    <span class="type">int</span> x = <span class="num">20</span>;             <span class="cmt">// nasconde la x globale</span>
+    {
+        <span class="type">int</span> x = <span class="num">30</span>;         <span class="cmt">// nasconde la x locale esterna</span>
+        <span class="fn">printf</span>(<span class="str">"%d\n"</span>, x); <span class="cmt">// 30</span>
+    }
+    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, x);     <span class="cmt">// 20</span>
+}
+</pre>
+      <div class="note">Usare <code>-Wshadow</code> per ricevere warning su variabili che ne nascondono altre.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BITWISE TRICKS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bitwise"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> BITWISE TRICKS</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">// Settare il bit n</span>
+x |= (<span class="num">1U</span> &lt;&lt; n);
+
+<span class="cmt">// Cancellare il bit n</span>
+x &amp;= ~(<span class="num">1U</span> &lt;&lt; n);
+
+<span class="cmt">// Toggleare il bit n</span>
+x ^= (<span class="num">1U</span> &lt;&lt; n);
+
+<span class="cmt">// Testare il bit n</span>
+<span class="kw">if</span> (x &amp; (<span class="num">1U</span> &lt;&lt; n)) { <span class="cmt">/* bit è 1 */</span> }
+
+<span class="cmt">// Controllare se x è potenza di 2</span>
+<span class="type">bool</span> is_pow2 = x &amp;&amp; !(x &amp; (x - <span class="num">1</span>));
+
+<span class="cmt">// Swap senza temp</span>
+a ^= b; b ^= a; a ^= b;
+
+<span class="cmt">// Valore assoluto (per int, evita branch)</span>
+<span class="type">int</span> mask = x &gt;&gt; <span class="num">31</span>;
+<span class="type">int</span> abs_x = (x + mask) ^ mask;
+
+<span class="cmt">// Arrotondamento alla prossima potenza di 2</span>
+<span class="type">uint32_t</span> <span class="fn">next_pow2</span>(<span class="type">uint32_t</span> v) {
+    v--;
+    v |= v &gt;&gt; <span class="num">1</span>;  v |= v &gt;&gt; <span class="num">2</span>;
+    v |= v &gt;&gt; <span class="num">4</span>;  v |= v &gt;&gt; <span class="num">8</span>;
+    v |= v &gt;&gt; <span class="num">16</span>;
+    <span class="kw">return</span> v + <span class="num">1</span>;
+}
+
+<span class="cmt">// Contare bit a 1 (popcount) — GCC built-in</span>
+<span class="type">int</span> bits = <span class="fn">__builtin_popcount</span>(x);       <span class="cmt">// per unsigned int</span>
+<span class="type">int</span> bits = <span class="fn">__builtin_popcountll</span>(x);     <span class="cmt">// per unsigned long long</span>
+
+<span class="cmt">// Contare zeri iniziali / finali</span>
+<span class="type">int</span> lz = <span class="fn">__builtin_clz</span>(x);   <span class="cmt">// count leading zeros</span>
+<span class="type">int</span> tz = <span class="fn">__builtin_ctz</span>(x);   <span class="cmt">// count trailing zeros</span>
+
+<span class="cmt">// Bit fields come mask</span>
+<span class="dir">#define</span> <span class="fn">BIT</span>(n)        (<span class="num">1U</span> &lt;&lt; (n))
+<span class="dir">#define</span> <span class="fn">BITS</span>(h, l)    (((<span class="num">1U</span> &lt;&lt; ((h)-(l)+<span class="num">1</span>)) - <span class="num">1</span>) &lt;&lt; (l))
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     UNDEFINED BEHAVIOR
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-ub"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> UNDEFINED BEHAVIOR (UB)</div>
+  <div class="section-body">
+
+    <p>Il comportamento indefinito (UB) permette al compilatore di assumere che non accada mai. Il codice con UB può funzionare, crashare, o produrre risultati arbitrari — anche in modo diverso con livelli di ottimizzazione diversi.</p>
+
+    <div class="sub">
+      <div class="sub-title">Casistica Principale</div>
+      <table>
+        <tr><th>UB</th><th>Esempio</th><th>Cosa succede</th></tr>
+        <tr><td><b>Signed integer overflow</b></td><td><code>INT_MAX + 1</code></td><td>Il compilatore può eliminare branch, loop, ecc.</td></tr>
+        <tr><td><b>Null pointer deref</b></td><td><code>*((int*)NULL)</code></td><td>Crash o comportamento imprevedibile</td></tr>
+        <tr><td><b>Accesso fuori bounds</b></td><td><code>arr[10]</code> su arr[5]</td><td>Corruzione memoria, crash, silenzioso</td></tr>
+        <tr><td><b>Use after free</b></td><td><code>free(p); *p = 1;</code></td><td>Corruzione heap</td></tr>
+        <tr><td><b>Double free</b></td><td><code>free(p); free(p);</code></td><td>Corruzione allocatore</td></tr>
+        <tr><td><b>Variabile non inizializzata</b></td><td><code>int x; printf("%d", x);</code></td><td>Valore indeterminato (non "garbage")</td></tr>
+        <tr><td><b>Modifica di string literal</b></td><td><code>char *s = "hi"; s[0] = 'H';</code></td><td>Segfault tipico</td></tr>
+        <tr><td><b>Divisione per zero</b></td><td><code>x / 0</code></td><td>UB (non solo eccezione)</td></tr>
+        <tr><td><b>Shift eccessivo</b></td><td><code>1 &lt;&lt; 32</code> (su int 32bit)</td><td>UB, anche con unsigned</td></tr>
+        <tr><td><b>Shift negativo</b></td><td><code>1 &lt;&lt; -1</code></td><td>UB</td></tr>
+        <tr><td><b>Violazione strict aliasing</b></td><td>Cast <code>int*</code> a <code>float*</code> e deref</td><td>Ottimizzatore assume tipi distinti</td></tr>
+        <tr><td><b>Sequence point violation</b></td><td><code>i = i++ + ++i;</code></td><td>Ordine valutazione indefinito</td></tr>
+        <tr><td><b>Ritorno senza valore</b></td><td>Funzione non-void senza <code>return</code></td><td>Valore di ritorno indeterminato</td></tr>
+        <tr><td><b>Modifica const</b></td><td>Cast via const e modifica</td><td>UB se l'oggetto è veramente const</td></tr>
+        <tr><td><b>memcpy overlap</b></td><td><code>memcpy(p, p+2, 10)</code></td><td>Usare memmove per aree sovrapposte</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Strumenti di Rilevamento</div>
+<pre>
+<span class="cmt"># Sanitizer a compile-time (GCC/Clang)</span>
+<span class="fn">gcc</span> <span class="str">-fsanitize=undefined</span> <span class="str">-fsanitize=address</span> <span class="str">-g</span> main.c
+<span class="cmt"># UBSan: signed overflow, shift, null deref, alignment, ecc.</span>
+<span class="cmt"># ASan: buffer overflow, use-after-free, double free, leak</span>
+
+<span class="cmt"># Valgrind (a runtime, no ricompilazione)</span>
+<span class="fn">valgrind</span> <span class="str">--leak-check=full</span> <span class="str">--track-origins=yes</span> ./app
+
+<span class="cmt"># Flag warning utili</span>
+<span class="fn">gcc</span> <span class="str">-Wall -Wextra -Wpedantic -Wshadow -Wconversion</span> \
+    <span class="str">-Wstrict-aliasing=2 -Wformat=2 -Wnull-dereference</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Overflow Signed — Come Evitare</div>
+<pre>
+<span class="cmt">// ❌ UB: signed overflow</span>
+<span class="kw">if</span> (a + b &gt; <span class="lbl">INT_MAX</span>) { ... }   <span class="cmt">// l'overflow è già avvenuto!</span>
+
+<span class="cmt">// ✓ Controllare PRIMA dell'operazione</span>
+<span class="kw">if</span> (b &gt; <span class="num">0</span> &amp;&amp; a &gt; <span class="lbl">INT_MAX</span> - b) { <span class="cmt">/* overflow */</span> }
+<span class="kw">if</span> (b &lt; <span class="num">0</span> &amp;&amp; a &lt; <span class="lbl">INT_MIN</span> - b) { <span class="cmt">/* underflow */</span> }
+
+<span class="cmt">// ✓ Usare unsigned per operazioni dove l'overflow è intenzionale</span>
+<span class="type">uint32_t</span> hash = (hash * <span class="num">31</span>) + c;  <span class="cmt">// overflow unsigned = wrap-around (definito)</span>
+
+<span class="cmt">// ✓ GCC/Clang built-in</span>
+<span class="type">int</span> result;
+<span class="kw">if</span> (<span class="fn">__builtin_add_overflow</span>(a, b, &amp;result)) {
+    <span class="cmt">// overflow rilevato</span>
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRICT ALIASING
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-aliasing"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRICT ALIASING</div>
+  <div class="section-body">
+
+    <p>La regola di strict aliasing dice che un oggetto di tipo T può essere acceduto solo tramite puntatori a: T, T con qualificatori (const T, volatile T), un tipo firmato/non firmato compatibile, un tipo aggregato che contiene T, o <code>char</code>/<code>unsigned char</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">Violazione — Tipo Punning Illegale</div>
+<pre>
+<span class="cmt">// ❌ UNDEFINED BEHAVIOR — strict aliasing violation</span>
+<span class="type">float</span> f = <span class="num">3.14f</span>;
+<span class="type">int</span> bits = *(<span class="type">int</span> *)&amp;f;      <span class="cmt">// UB! float* → int* deref</span>
+
+<span class="cmt">// ❌ Anche questo è UB</span>
+<span class="type">int</span> i = <span class="num">42</span>;
+<span class="type">short</span> *sp = (<span class="type">short</span> *)&amp;i;
+*sp = <span class="num">7</span>;                     <span class="cmt">// UB! int* → short* write</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Alternative Legali per Type Punning</div>
+<pre>
+<span class="cmt">// ✓ Metodo 1: memcpy (il più portabile e sicuro)</span>
+<span class="type">float</span> f = <span class="num">3.14f</span>;
+<span class="type">uint32_t</span> bits;
+<span class="fn">memcpy</span>(&amp;bits, &amp;f, <span class="kw">sizeof</span>(bits));   <span class="cmt">// OK! nessuna violazione</span>
+
+<span class="cmt">// ✓ Metodo 2: union (definito in C99, UB in C++)</span>
+<span class="kw">union</span> {
+    <span class="type">float</span>    f;
+    <span class="type">uint32_t</span> u;
+} pun;
+pun.f = <span class="num">3.14f</span>;
+<span class="type">uint32_t</span> bits = pun.u;          <span class="cmt">// OK in C99 (type punning via union)</span>
+
+<span class="cmt">// ✓ Metodo 3: accesso via char* (sempre legale)</span>
+<span class="type">float</span> f = <span class="num">3.14f</span>;
+<span class="type">unsigned char</span> *bytes = (<span class="type">unsigned char</span> *)&amp;f;
+<span class="kw">for</span> (<span class="type">size_t</span> i = <span class="num">0</span>; i &lt; <span class="kw">sizeof</span>(f); i++)
+    <span class="fn">printf</span>(<span class="str">"%02x "</span>, bytes[i]);   <span class="cmt">// OK! char* può aliasare qualunque tipo</span>
+</pre>
+    </div>
+
+    <div class="note">Per disabilitare strict aliasing: <code>gcc -fno-strict-aliasing</code>. Il kernel Linux compila con questo flag.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     OPAQUE TYPES & ADT
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-opaque"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OPAQUE TYPES &amp; ABSTRACT DATA TYPES</div>
+  <div class="section-body">
+
+    <p>Pattern per incapsulamento in C: l'utente vede solo un puntatore; i dettagli interni sono nascosti nel <code>.c</code>.</p>
+
+<pre>
+<span class="cmt">/* ─── stack.h (interfaccia pubblica) ─── */</span>
+<span class="dir">#ifndef</span> <span class="lbl">STACK_H</span>
+<span class="dir">#define</span> <span class="lbl">STACK_H</span>
+
+<span class="dir">#include</span> <span class="str">&lt;stddef.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;stdbool.h&gt;</span>
+
+<span class="cmt">// Tipo opaco: l'utente non conosce la struttura interna</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">Stack</span> <span class="type">Stack</span>;
+
+<span class="type">Stack</span> *<span class="fn">stack_create</span>(<span class="type">size_t</span> capacity);
+<span class="type">void</span>   <span class="fn">stack_destroy</span>(<span class="type">Stack</span> *s);
+<span class="type">bool</span>   <span class="fn">stack_push</span>(<span class="type">Stack</span> *s, <span class="type">int</span> val);
+<span class="type">bool</span>   <span class="fn">stack_pop</span>(<span class="type">Stack</span> *s, <span class="type">int</span> *out);
+<span class="type">size_t</span> <span class="fn">stack_size</span>(<span class="kw">const</span> <span class="type">Stack</span> *s);
+<span class="type">bool</span>   <span class="fn">stack_empty</span>(<span class="kw">const</span> <span class="type">Stack</span> *s);
+
+<span class="dir">#endif</span>
+</pre>
+
+<pre>
+<span class="cmt">/* ─── stack.c (implementazione privata) ─── */</span>
+<span class="dir">#include</span> <span class="str">"stack.h"</span>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">Stack</span> {
+    <span class="type">int</span>    *data;
+    <span class="type">size_t</span>  top;
+    <span class="type">size_t</span>  capacity;
+};
+
+<span class="type">Stack</span> *<span class="fn">stack_create</span>(<span class="type">size_t</span> capacity) {
+    <span class="type">Stack</span> *s = <span class="fn">malloc</span>(<span class="kw">sizeof</span>(*s));
+    <span class="kw">if</span> (!s) <span class="kw">return</span> <span class="lbl">NULL</span>;
+    s-&gt;data = <span class="fn">malloc</span>(capacity * <span class="kw">sizeof</span>(*s-&gt;data));
+    <span class="kw">if</span> (!s-&gt;data) { <span class="fn">free</span>(s); <span class="kw">return</span> <span class="lbl">NULL</span>; }
+    s-&gt;top = <span class="num">0</span>;
+    s-&gt;capacity = capacity;
+    <span class="kw">return</span> s;
+}
+
+<span class="type">void</span> <span class="fn">stack_destroy</span>(<span class="type">Stack</span> *s) {
+    <span class="kw">if</span> (s) { <span class="fn">free</span>(s-&gt;data); <span class="fn">free</span>(s); }
+}
+
+<span class="type">bool</span> <span class="fn">stack_push</span>(<span class="type">Stack</span> *s, <span class="type">int</span> val) {
+    <span class="kw">if</span> (s-&gt;top &gt;= s-&gt;capacity) <span class="kw">return</span> <span class="kw">false</span>;
+    s-&gt;data[s-&gt;top++] = val;
+    <span class="kw">return</span> <span class="kw">true</span>;
+}
+
+<span class="type">bool</span> <span class="fn">stack_pop</span>(<span class="type">Stack</span> *s, <span class="type">int</span> *out) {
+    <span class="kw">if</span> (s-&gt;top == <span class="num">0</span>) <span class="kw">return</span> <span class="kw">false</span>;
+    *out = s-&gt;data[--s-&gt;top];
+    <span class="kw">return</span> <span class="kw">true</span>;
+}
+
+<span class="type">size_t</span> <span class="fn">stack_size</span>(<span class="kw">const</span> <span class="type">Stack</span> *s) { <span class="kw">return</span> s-&gt;top; }
+<span class="type">bool</span>   <span class="fn">stack_empty</span>(<span class="kw">const</span> <span class="type">Stack</span> *s) { <span class="kw">return</span> s-&gt;top == <span class="num">0</span>; }
+</pre>
+
+<pre>
+<span class="cmt">/* ─── main.c (l'utente non vede struct Stack) ─── */</span>
+<span class="dir">#include</span> <span class="str">"stack.h"</span>
+
+<span class="type">Stack</span> *s = <span class="fn">stack_create</span>(<span class="num">100</span>);
+<span class="fn">stack_push</span>(s, <span class="num">42</span>);
+<span class="type">int</span> val;
+<span class="fn">stack_pop</span>(s, &amp;val);
+<span class="fn">stack_destroy</span>(s);
+</pre>
+
+    <div class="note">Vantaggi: modifica interna senza ricompilare il codice client, nascondere dettagli implementativi, impedire accesso diretto ai campi. Svantaggio: ogni oggetto è allocato nello heap.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     X-MACROS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-xmacros"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> X-MACROS</div>
+  <div class="section-body">
+
+    <p>Tecnica per generare codice ripetitivo da un'unica tabella di definizioni. Elimina la duplicazione e previene disallineamenti.</p>
+
+<pre>
+<span class="cmt">// Definire la tabella una sola volta</span>
+<span class="dir">#define</span> <span class="fn">ERROR_TABLE</span>(X) \
+    X(<span class="lbl">ERR_NONE</span>,     <span class="str">"Nessun errore"</span>) \
+    X(<span class="lbl">ERR_IO</span>,       <span class="str">"Errore I/O"</span>) \
+    X(<span class="lbl">ERR_MEMORY</span>,   <span class="str">"Memoria esaurita"</span>) \
+    X(<span class="lbl">ERR_PARSE</span>,    <span class="str">"Errore di parsing"</span>) \
+    X(<span class="lbl">ERR_TIMEOUT</span>,  <span class="str">"Timeout"</span>)
+
+<span class="cmt">// Generare l'enum automaticamente</span>
+<span class="kw">enum</span> <span class="type">ErrorCode</span> {
+<span class="dir">#define</span> <span class="fn">X_ENUM</span>(code, msg) code,
+    <span class="fn">ERROR_TABLE</span>(<span class="fn">X_ENUM</span>)
+<span class="dir">#undef</span> <span class="fn">X_ENUM</span>
+    <span class="lbl">ERR_COUNT</span>   <span class="cmt">// totale errori</span>
+};
+
+<span class="cmt">// Generare la tabella stringhe automaticamente</span>
+<span class="kw">static</span> <span class="kw">const</span> <span class="type">char</span> *<span class="lbl">error_strings</span>[] = {
+<span class="dir">#define</span> <span class="fn">X_STR</span>(code, msg) [code] = msg,
+    <span class="fn">ERROR_TABLE</span>(<span class="fn">X_STR</span>)
+<span class="dir">#undef</span> <span class="fn">X_STR</span>
+};
+
+<span class="cmt">// Uso</span>
+<span class="fn">printf</span>(<span class="str">"Errore: %s\n"</span>, <span class="lbl">error_strings</span>[<span class="lbl">ERR_MEMORY</span>]);
+<span class="cmt">// → "Errore: Memoria esaurita"</span>
+</pre>
+
+    <div class="note">Aggiungere un nuovo errore richiede modifica in un solo punto (la tabella). L'enum e le stringhe restano automaticamente sincronizzati.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ERROR HANDLING PATTERNS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-errcodes"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ERROR HANDLING PATTERNS</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Pattern 1: Return Code + errno</div>
+<pre>
+<span class="cmt">// La funzione ritorna 0 = successo, -1 = errore (setta errno)</span>
+<span class="type">int</span> <span class="fn">read_config</span>(<span class="kw">const</span> <span class="type">char</span> *path, <span class="kw">struct</span> <span class="type">Config</span> *out) {
+    <span class="type">FILE</span> *f = <span class="fn">fopen</span>(path, <span class="str">"r"</span>);
+    <span class="kw">if</span> (!f) <span class="kw">return</span> <span class="num">-1</span>;     <span class="cmt">// errno già settato da fopen</span>
+    <span class="cmt">// ...</span>
+    <span class="fn">fclose</span>(f);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern 2: Enum Error Code</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">enum</span> {
+    <span class="lbl">RESULT_OK</span> = <span class="num">0</span>,
+    <span class="lbl">RESULT_ERR_NULL</span>,
+    <span class="lbl">RESULT_ERR_RANGE</span>,
+    <span class="lbl">RESULT_ERR_IO</span>,
+} <span class="type">Result</span>;
+
+<span class="type">Result</span> <span class="fn">parse_int</span>(<span class="kw">const</span> <span class="type">char</span> *s, <span class="type">int</span> *out) {
+    <span class="kw">if</span> (!s)   <span class="kw">return</span> <span class="lbl">RESULT_ERR_NULL</span>;
+    <span class="type">char</span> *end;
+    <span class="type">long</span> val = <span class="fn">strtol</span>(s, &amp;end, <span class="num">10</span>);
+    <span class="kw">if</span> (*end != <span class="str">'\0'</span>) <span class="kw">return</span> <span class="lbl">RESULT_ERR_RANGE</span>;
+    *out = (<span class="type">int</span>)val;
+    <span class="kw">return</span> <span class="lbl">RESULT_OK</span>;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern 3: Output via Puntatore, Errore nel Return</div>
+<pre>
+<span class="cmt">// La funzione ritorna il puntatore (NULL = errore)</span>
+<span class="type">char</span> *<span class="fn">read_file</span>(<span class="kw">const</span> <span class="type">char</span> *path, <span class="type">size_t</span> *out_len) {
+    <span class="type">FILE</span> *f = <span class="fn">fopen</span>(path, <span class="str">"rb"</span>);
+    <span class="kw">if</span> (!f) <span class="kw">return</span> <span class="lbl">NULL</span>;
+
+    <span class="fn">fseek</span>(f, <span class="num">0</span>, <span class="lbl">SEEK_END</span>);
+    <span class="type">long</span> len = <span class="fn">ftell</span>(f);
+    <span class="fn">rewind</span>(f);
+
+    <span class="type">char</span> *buf = <span class="fn">malloc</span>(len + <span class="num">1</span>);
+    <span class="kw">if</span> (!buf) { <span class="fn">fclose</span>(f); <span class="kw">return</span> <span class="lbl">NULL</span>; }
+
+    <span class="fn">fread</span>(buf, <span class="num">1</span>, len, f);
+    buf[len] = <span class="str">'\0'</span>;
+    <span class="fn">fclose</span>(f);
+
+    <span class="kw">if</span> (out_len) *out_len = len;
+    <span class="kw">return</span> buf;   <span class="cmt">// il chiamante deve fare free()</span>
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern 4: goto Cleanup (Multi-risorsa)</div>
+<pre>
+<span class="type">int</span> <span class="fn">process</span>(<span class="kw">const</span> <span class="type">char</span> *path) {
+    <span class="type">int</span> ret = <span class="num">-1</span>;
+    <span class="type">FILE</span> *f = <span class="lbl">NULL</span>;
+    <span class="type">char</span> *buf = <span class="lbl">NULL</span>;
+
+    f = <span class="fn">fopen</span>(path, <span class="str">"r"</span>);
+    <span class="kw">if</span> (!f) <span class="kw">goto</span> <span class="lbl">out</span>;
+
+    buf = <span class="fn">malloc</span>(<span class="num">4096</span>);
+    <span class="kw">if</span> (!buf) <span class="kw">goto</span> <span class="lbl">out</span>;
+
+    <span class="cmt">// ... lavoro con f e buf ...</span>
+    ret = <span class="num">0</span>;   <span class="cmt">// successo</span>
+
+<span class="lbl">out</span>:
+    <span class="fn">free</span>(buf);     <span class="cmt">// free(NULL) è safe</span>
+    <span class="kw">if</span> (f) <span class="fn">fclose</span>(f);
+    <span class="kw">return</span> ret;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRUTTURE DATI GENERICHE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-generic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRUTTURE DATI GENERICHE IN C</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Approccio 1: void* (Runtime Generics)</div>
+<pre>
+<span class="cmt">// Lista generica con void*</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">void</span>   **items;
+    <span class="type">size_t</span>   count;
+    <span class="type">size_t</span>   capacity;
+} <span class="type">Vec</span>;
+
+<span class="type">void</span> <span class="fn">vec_push</span>(<span class="type">Vec</span> *v, <span class="type">void</span> *item) {
+    <span class="kw">if</span> (v-&gt;count &gt;= v-&gt;capacity) {
+        v-&gt;capacity = v-&gt;capacity ? v-&gt;capacity * <span class="num">2</span> : <span class="num">8</span>;
+        v-&gt;items = <span class="fn">realloc</span>(v-&gt;items, v-&gt;capacity * <span class="kw">sizeof</span>(<span class="type">void</span> *));
+    }
+    v-&gt;items[v-&gt;count++] = item;
+}
+
+<span class="cmt">// Uso — nessuna type-safety</span>
+<span class="type">Vec</span> v = {<span class="num">0</span>};
+<span class="type">int</span> x = <span class="num">42</span>;
+<span class="fn">vec_push</span>(&amp;v, &amp;x);
+<span class="type">int</span> *p = (<span class="type">int</span> *)v.items[<span class="num">0</span>];
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Approccio 2: Copia Byte con memcpy</div>
+<pre>
+<span class="cmt">// Vettore che copia gli elementi per valore</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">char</span>   *data;       <span class="cmt">// buffer di byte</span>
+    <span class="type">size_t</span>  elem_size;  <span class="cmt">// sizeof di un elemento</span>
+    <span class="type">size_t</span>  count;
+    <span class="type">size_t</span>  capacity;
+} <span class="type">GVec</span>;
+
+<span class="type">void</span> <span class="fn">gvec_push</span>(<span class="type">GVec</span> *v, <span class="kw">const</span> <span class="type">void</span> *elem) {
+    <span class="kw">if</span> (v-&gt;count &gt;= v-&gt;capacity) {
+        v-&gt;capacity = v-&gt;capacity ? v-&gt;capacity * <span class="num">2</span> : <span class="num">8</span>;
+        v-&gt;data = <span class="fn">realloc</span>(v-&gt;data, v-&gt;capacity * v-&gt;elem_size);
+    }
+    <span class="fn">memcpy</span>(v-&gt;data + v-&gt;count * v-&gt;elem_size, elem, v-&gt;elem_size);
+    v-&gt;count++;
+}
+
+<span class="type">void</span> *<span class="fn">gvec_get</span>(<span class="kw">const</span> <span class="type">GVec</span> *v, <span class="type">size_t</span> i) {
+    <span class="kw">return</span> v-&gt;data + i * v-&gt;elem_size;
+}
+
+<span class="cmt">// Uso</span>
+<span class="type">GVec</span> v = {.elem_size = <span class="kw">sizeof</span>(<span class="type">double</span>)};
+<span class="type">double</span> val = <span class="num">3.14</span>;
+<span class="fn">gvec_push</span>(&amp;v, &amp;val);
+<span class="type">double</span> *p = (<span class="type">double</span> *)<span class="fn">gvec_get</span>(&amp;v, <span class="num">0</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Approccio 3: Macro Type-Safe (Compile-time Generics)</div>
+<pre>
+<span class="cmt">// Genera un tipo vettore specifico per ogni tipo</span>
+<span class="dir">#define</span> <span class="fn">DEFINE_VEC</span>(T, Name) \
+    <span class="kw">typedef</span> <span class="kw">struct</span> { \
+        T      *data; \
+        <span class="type">size_t</span>  count; \
+        <span class="type">size_t</span>  capacity; \
+    } Name; \
+    \
+    <span class="kw">static inline</span> <span class="type">void</span> Name##_push(Name *v, T val) { \
+        <span class="kw">if</span> (v-&gt;count &gt;= v-&gt;capacity) { \
+            v-&gt;capacity = v-&gt;capacity ? v-&gt;capacity * <span class="num">2</span> : <span class="num">8</span>; \
+            v-&gt;data = <span class="fn">realloc</span>(v-&gt;data, v-&gt;capacity * <span class="kw">sizeof</span>(T)); \
+        } \
+        v-&gt;data[v-&gt;count++] = val; \
+    } \
+    <span class="kw">static inline</span> T Name##_get(Name *v, <span class="type">size_t</span> i) { \
+        <span class="kw">return</span> v-&gt;data[i]; \
+    }
+
+<span class="cmt">// Istanziare per i tipi necessari</span>
+<span class="fn">DEFINE_VEC</span>(<span class="type">int</span>,    <span class="type">IntVec</span>)
+<span class="fn">DEFINE_VEC</span>(<span class="type">double</span>, <span class="type">DoubleVec</span>)
+
+<span class="cmt">// Uso — completamente type-safe</span>
+<span class="type">IntVec</span> v = {<span class="num">0</span>};
+<span class="fn">IntVec_push</span>(&amp;v, <span class="num">42</span>);
+<span class="type">int</span> x = <span class="fn">IntVec_get</span>(&amp;v, <span class="num">0</span>);   <span class="cmt">// type-safe, nessun cast</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Approccio 4: Intrusive Linked List (stile kernel)</div>
+<pre>
+<span class="cmt">// Il nodo di lista è DENTRO la struttura dell'utente</span>
+<span class="kw">struct</span> <span class="type">list_node</span> {
+    <span class="kw">struct</span> <span class="type">list_node</span> *next;
+    <span class="kw">struct</span> <span class="type">list_node</span> *prev;
+};
+
+<span class="cmt">// Macro per risalire al contenitore</span>
+<span class="dir">#define</span> <span class="fn">container_of</span>(ptr, type, member) \
+    ((<span class="type">type</span> *)((char *)(ptr) - <span class="fn">offsetof</span>(<span class="type">type</span>, member)))
+
+<span class="cmt">// Struttura utente che CONTIENE il nodo</span>
+<span class="kw">struct</span> <span class="type">Task</span> {
+    <span class="type">int</span>              id;
+    <span class="type">char</span>             name[<span class="num">32</span>];
+    <span class="kw">struct</span> <span class="type">list_node</span> link;    <span class="cmt">// embedded</span>
+};
+
+<span class="cmt">// Risalire da list_node a Task</span>
+<span class="kw">struct</span> <span class="type">list_node</span> *n = <span class="cmt">/* ... */</span>;
+<span class="kw">struct</span> <span class="type">Task</span> *t = <span class="fn">container_of</span>(n, <span class="kw">struct</span> <span class="type">Task</span>, link);
+</pre>
+      <div class="note"><code>container_of</code> e le liste intrusive sono usati estensivamente nel kernel Linux e in molti progetti C ad alte prestazioni. Vantaggi: nessun'allocazione extra per il nodo, un oggetto può stare in più liste contemporaneamente.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Confronto Approcci</div>
+      <table>
+        <tr><th>Approccio</th><th>Type-safety</th><th>Overhead</th><th>Complessità</th></tr>
+        <tr><td>void*</td><td>Nessuna</td><td>Indirezione puntatore</td><td>Bassa</td></tr>
+        <tr><td>memcpy + elem_size</td><td>Nessuna</td><td>Copia byte</td><td>Media</td></tr>
+        <tr><td>Macro generative</td><td>Completa</td><td>Zero (inline)</td><td>Alta (debug macro)</td></tr>
+        <tr><td>Intrusive list</td><td>Via container_of</td><td>Zero alloc extra</td><td>Media</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
