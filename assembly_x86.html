@@ -90,6 +90,28 @@
     box-shadow: 0 0 30px rgba(255,102,0,0.15);
   }
 
+  .back-btn {
+    position: absolute;
+    top: 14px; right: 24px;
+    color: var(--glow);
+    text-decoration: none;
+    font-family: 'VT323', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    border: 1px solid var(--glow-dim);
+    padding: 4px 14px;
+    border-radius: 2px;
+    transition: all 0.15s;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .back-btn:hover {
+    background: var(--glow-dim);
+    border-color: var(--glow);
+    text-shadow: 0 0 8px var(--glow2);
+    color: var(--bright);
+  }
+
   #header h1 {
     font-family: 'VT323', monospace;
     font-size: 2.4rem;
@@ -390,6 +412,7 @@
 <body>
 
 <div id="header">
+  <a class="back-btn" href="index.html">&larr; INDEX</a>
   <h1>&gt; x86/x86_64 ASSEMBLY REFERENCE MANUAL <span class="cursor"></span></h1>
   <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>AT&amp;T Syntax / GNU Assembler / Linux</span> &mdash; v1.3</div>
 </div>
