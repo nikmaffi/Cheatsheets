@@ -710,18 +710,18 @@
         <tr><td><code>1</code></td><td><code>STDOUT_FILENO</code></td><td><code>stdout</code></td><td>Standard output</td></tr>
         <tr><td><code>2</code></td><td><code>STDERR_FILENO</code></td><td><code>stderr</code></td><td>Standard error</td></tr>
       </table>
-<pre>
+<pre style="font-family:'Courier New',Courier,'Share Tech Mono',monospace">
 <span class="cmt">/* Struttura kernel (semplificata) */</span>
 
   <span class="hd">Per-process fd table</span>        <span class="hd">System open file table</span>     <span class="hd">Inode table</span>
   ┌────┬──────────┐          ┌──────────────────┐        ┌───────────┐
-  │ 0  │ ──────── │─────────→│ offset, flags    │──────→ │ inode     │
+  │ 0  │ ──────── │─────────>│ offset, flags    │──────> │ inode     │
   │ 1  │ ──────── │─────┐    │ ref count        │        │ type,size │
   │ 2  │ ──────── │──┐  │    └──────────────────┘        │ perms     │
-  │ 3  │ ──────── │  │  └──→ ┌──────────────────┐        └───────────┘
+  │ 3  │ ──────── │  │  └──> ┌──────────────────┐        └───────────┘
   │... │          │  │       │ offset, flags    │
-  └────┴──────────┘  └─────→ │ ref count        │
-                              └──────────────────┘
+  └────┴──────────┘  └─────> │ ref count        │
+                             └──────────────────┘
 </pre>
     </div>
 
