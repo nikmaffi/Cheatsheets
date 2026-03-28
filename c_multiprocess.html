@@ -1,0 +1,3200 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C Multiprocess & IPC CHEATSHEET</title>
+<link rel="icon" type="image/png" href="./res/icons/icon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+  :root {
+    --bg:        #060810;
+    --bg2:       #080b14;
+    --panel:     #0c1018;
+    --panel2:    #10141c;
+    --border:    #141c2a;
+    --border2:   #203050;
+    --glow:      #4488ff;
+    --glow2:     #66aaff;
+    --glow-dim:  #0a1a3b;
+    --dim:       #203060;
+    --text:      #a0b0c8;
+    --text2:     #c0d0e8;
+    --bright:    #c0ddff;
+    --accent:    #3366cc;
+    --accent2:   #5599ff;
+    --key:       #5588cc;
+    --kw:        #4488ff;
+    --fn:        #66ccaa;
+    --str:       #88cc66;
+    --num:       #dd8844;
+    --cmt:       #445577;
+    --type:      #cc77dd;
+    --dir:       #ddaa44;
+    --lbl:       #88aadd;
+    --head:      #c0ddff;
+    --hr:        #141c2a;
+    --scan:      rgba(68,136,255,0.025);
+    --warn-bg:   rgba(120,30,10,0.25);
+    --warn-brd:  #ff4422;
+    --warn-txt:  #ffaa88;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* CRT scanlines overlay */
+  body::before {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scan) 2px,
+      var(--scan) 4px
+    );
+    pointer-events:none;
+    z-index:9999;
+  }
+
+  /* CRT vignette */
+  body::after {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: radial-gradient(ellipse at center,
+      transparent 60%,
+      rgba(0,2,10,0.7) 100%
+    );
+    pointer-events:none;
+    z-index:9998;
+  }
+
+  /* ─── HEADER ─────────────────────────────────── */
+  #header {
+    background: linear-gradient(180deg, #0a1020 0%, var(--bg2) 100%);
+    border-bottom: 2px solid var(--glow);
+    padding: 18px 24px 14px;
+    position: sticky; top:0; z-index:100;
+    box-shadow: 0 0 30px rgba(68,136,255,0.15);
+  }
+
+  #header h1 {
+    font-family: 'VT323', monospace;
+    font-size: 2.4rem;
+    color: var(--bright);
+    text-shadow: 0 0 12px var(--glow2), 0 0 30px var(--glow);
+    letter-spacing: 3px;
+  }
+
+  #header .subtitle {
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  #header .subtitle span { color: var(--accent); }
+
+  /* ─── LAYOUT ─────────────────────────────────── */
+  #layout { display:flex; gap:0; }
+
+  /* ─── SIDEBAR / INDEX ────────────────────────── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    position: sticky;
+    top: 70px;
+    padding: 12px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+
+  #sidebar::-webkit-scrollbar { width:5px; }
+  #sidebar::-webkit-scrollbar-track { background: var(--bg); }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+
+  .nav-head {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    color: var(--accent2);
+    padding: 6px 14px 4px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px var(--glow-dim);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .nav-section { margin-bottom: 2px; }
+
+  .nav-section-title {
+    color: var(--kw);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 6px 14px 2px;
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  #sidebar a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: 3px 14px 3px 20px;
+    font-size: 11.5px;
+    transition: all 0.12s;
+    border-left: 2px solid transparent;
+  }
+
+  #sidebar a::before { content:'> '; color:var(--dim); }
+
+  #sidebar a:hover {
+    color: var(--bright);
+    background: rgba(68,136,255,0.08);
+    border-left-color: var(--glow);
+    text-shadow: 0 0 6px var(--glow2);
+  }
+
+  /* ─── MAIN CONTENT ───────────────────────────── */
+  #main {
+    flex:1;
+    padding: 20px 28px 60px;
+    overflow-x: hidden;
+    max-width: calc(100vw - 260px);
+  }
+
+  /* ─── SECTION ────────────────────────────────── */
+  .section {
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--panel2);
+    box-shadow: 0 0 18px rgba(20,40,80,0.5);
+    overflow: hidden;
+  }
+
+  .section-header {
+    background: linear-gradient(90deg, var(--glow-dim) 0%, var(--panel) 100%);
+    padding: 7px 14px;
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: var(--bright);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--glow2);
+    border-bottom: 1px solid var(--border2);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .section-header .icon { opacity:0.7; font-size:0.95rem; }
+
+  .section-body { padding: 12px 14px; }
+
+  /* ─── SUB-SECTION ────────────────────────────── */
+  .sub { margin: 10px 0; }
+
+  .sub-title {
+    color: var(--lbl);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    border-bottom: 1px dashed var(--hr);
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ─── CODE BLOCKS ────────────────────────────── */
+  pre, code {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  pre {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--glow-dim);
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text2);
+    border-radius: 1px;
+    margin: 6px 0;
+    white-space: pre;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+
+  pre::-webkit-scrollbar { height:4px; }
+  pre::-webkit-scrollbar-track { background:var(--bg); }
+  pre::-webkit-scrollbar-thumb { background:var(--glow-dim); }
+
+  .kw   { color: var(--kw);  }
+  .fn   { color: var(--fn);  }
+  .type { color: var(--type); }
+  .dir  { color: var(--dir); }
+  .str  { color: var(--str); }
+  .num  { color: var(--num); }
+  .cmt  { color: var(--cmt); font-style: italic; }
+  .lbl  { color: var(--lbl); }
+  .hd   { color: var(--head); font-weight:bold; }
+  .dim  { color: var(--dim); }
+
+  /* ─── TABLES ──────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 6px 0;
+  }
+
+  th {
+    background: rgba(68,136,255,0.12);
+    color: var(--accent2);
+    text-align: left;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  td {
+    padding: 4px 8px;
+    border: 1px solid var(--hr);
+    vertical-align: top;
+    color: var(--text2);
+  }
+
+  tr:nth-child(even) td { background: rgba(10,20,50,0.3); }
+  tr:hover td { background: rgba(68,136,255,0.06); }
+
+  td code, th code {
+    color: var(--kw);
+    background: rgba(0,0,0,0.25);
+    padding: 1px 4px;
+    border-radius: 1px;
+  }
+
+  /* ─── INLINE ──────────────────────────────────── */
+  p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
+
+  .note {
+    background: rgba(68,136,255,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: var(--text);
+  }
+
+  .warn {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn-brd);
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 11.5px;
+    color: var(--warn-txt);
+  }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+  /* ─── MEMORY MAP ──────────────────────────────── */
+  .mem-map {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0;
+    max-width: 500px;
+  }
+
+  .mem-seg {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    min-height: 44px;
+    transition: background 0.15s;
+  }
+
+  .mem-seg:last-child { border-bottom: none; }
+  .mem-seg:hover { background: rgba(68,136,255,0.06); }
+
+  .mem-addr {
+    width: 120px;
+    min-width: 120px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--num);
+    text-align: right;
+    border-right: 1px dashed var(--border2);
+  }
+
+  .mem-label {
+    flex: 1;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--bright);
+    letter-spacing: 1px;
+  }
+
+  .mem-label small {
+    display: block;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0;
+    margin-top: 1px;
+  }
+
+  .mem-seg.seg-kernel { background: rgba(100,60,120,0.15); }
+  .mem-seg.seg-stack  { background: rgba(60,100,255,0.12); }
+  .mem-seg.seg-heap   { background: rgba(80,180,120,0.10); }
+  .mem-seg.seg-bss    { background: rgba(80,100,140,0.10); }
+  .mem-seg.seg-data   { background: rgba(80,120,160,0.10); }
+  .mem-seg.seg-text   { background: rgba(40,80,200,0.10); }
+
+  /* ─── RESPONSIVE ─────────────────────────────── */
+  @media(max-width:900px) {
+    .grid2, .grid3 { grid-template-columns:1fr; }
+    #sidebar { display:none; }
+    #main { max-width:100vw; padding:14px; }
+  }
+
+  /* Cursor blink */
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  .cursor::after { content:'█'; animation:blink 1s infinite; color:var(--accent); }
+
+  /* anchor offset for sticky header */
+  .anchor { display:block; height:70px; margin-top:-70px; visibility:hidden; }
+
+  /* ─── SCROLLBAR ──────────────────────────────── */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>&gt; C MULTIPROCESS &amp; IPC REFERENCE <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>UNIX/POSIX &mdash; System V &amp; POSIX IPC</span> &mdash; v1.3</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Processi</div>
+    <a href="#s-process-model">Modello di Processo</a>
+    <a href="#s-fork">fork()</a>
+    <a href="#s-exec">exec()</a>
+    <a href="#s-wait">wait() &amp; waitpid()</a>
+    <a href="#s-exit">exit() &amp; _exit()</a>
+    <a href="#s-process-groups">Gruppi &amp; Sessioni</a>
+    <a href="#s-daemon">Daemon</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">File Descriptor &amp; I/O</div>
+    <a href="#s-fd">File Descriptor</a>
+    <a href="#s-open-close">open() &amp; close()</a>
+    <a href="#s-read-write">read() &amp; write()</a>
+    <a href="#s-dup">dup() &amp; dup2()</a>
+    <a href="#s-fcntl">fcntl()</a>
+    <a href="#s-select-poll">select() &amp; poll()</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Pipe &amp; FIFO</div>
+    <a href="#s-pipe">Pipe Anonime</a>
+    <a href="#s-fifo">FIFO (Named Pipe)</a>
+    <a href="#s-popen">popen() &amp; pclose()</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Segnali</div>
+    <a href="#s-signals">Segnali POSIX</a>
+    <a href="#s-sigaction">sigaction()</a>
+    <a href="#s-sigmask">Maschere &amp; sigprocmask()</a>
+    <a href="#s-sigqueue">Segnali Real-Time</a>
+    <a href="#s-sig-patterns">Pattern &amp; Idiomi</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">System V IPC</div>
+    <a href="#s-sysv-overview">Panoramica System V</a>
+    <a href="#s-sysv-shm">Shared Memory (shmget)</a>
+    <a href="#s-sysv-sem">Semafori (semget)</a>
+    <a href="#s-sysv-msg">Code Messaggi (msgget)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">POSIX IPC</div>
+    <a href="#s-posix-shm">Shared Memory (shm_open)</a>
+    <a href="#s-posix-sem">Semafori (sem_open)</a>
+    <a href="#s-posix-mq">Code Messaggi (mq_open)</a>
+    <a href="#s-mmap">mmap() &amp; munmap()</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Socket (IPC Locale)</div>
+    <a href="#s-unix-socket">Unix Domain Socket</a>
+    <a href="#s-socketpair">socketpair()</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">File Locking</div>
+    <a href="#s-flock">flock() &amp; fcntl lock</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-environ">Variabili d'Ambiente</a>
+    <a href="#s-resource">Limiti &amp; Risorse</a>
+    <a href="#s-ptrace">ptrace()</a>
+    <a href="#s-patterns">Pattern Architetturali</a>
+    <a href="#s-errors">Gestione Errori</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ────────────────────────────────────────────────────────────
+     PROCESSI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-process-model"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> MODELLO DI PROCESSO UNIX</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Struttura di un Processo</div>
+      <p>Ogni processo UNIX ha: PID, PPID, UID/GID, tabella file descriptor, spazio di indirizzamento virtuale, segnali pendenti, priority/nice, environment.</p>
+      <div class="mem-map">
+        <div class="mem-seg seg-kernel">
+          <div class="mem-addr">0xFFFF...FFFF</div>
+          <div class="mem-label">KERNEL SPACE<small>Mappato nello spazio virtuale ma inaccessibile da user mode. Syscall tramite trap.</small></div>
+        </div>
+        <div class="mem-seg seg-stack">
+          <div class="mem-addr">0x7FFF...FFFF</div>
+          <div class="mem-label">STACK<small>Cresce verso il basso (&darr;). Variabili locali, indirizzi di ritorno, argomenti, environ.</small></div>
+        </div>
+        <div class="mem-seg">
+          <div class="mem-addr">&darr; &darr; &darr;</div>
+          <div class="mem-label" style="color:var(--dim);font-size:11px;">... spazio libero (stack cresce verso heap) ...</div>
+        </div>
+        <div class="mem-seg seg-heap">
+          <div class="mem-addr">&uarr; &uarr; &uarr;</div>
+          <div class="mem-label">HEAP<small>Cresce verso l'alto (&uarr;). Allocazione dinamica (malloc/brk/mmap).</small></div>
+        </div>
+        <div class="mem-seg seg-bss">
+          <div class="mem-addr"></div>
+          <div class="mem-label">BSS<small>Variabili globali/statiche non inizializzate (azzerato a runtime).</small></div>
+        </div>
+        <div class="mem-seg seg-data">
+          <div class="mem-addr"></div>
+          <div class="mem-label">DATA<small>Variabili globali inizializzate, stringhe costanti (.data / .rodata).</small></div>
+        </div>
+        <div class="mem-seg seg-text">
+          <div class="mem-addr">0x0040 0000</div>
+          <div class="mem-label">TEXT<small>Codice eseguibile (read-only). Condivisibile tra processi dopo fork (COW).</small></div>
+        </div>
+        <div class="mem-seg">
+          <div class="mem-addr">0x0000 0000</div>
+          <div class="mem-label" style="color:var(--dim);font-size:11px;">NULL page (unmapped, accesso = SIGSEGV)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Header Principali</div>
+      <table>
+        <tr><th>Header</th><th>Funzionalità</th></tr>
+        <tr><td><code>&lt;unistd.h&gt;</code></td><td>fork, exec, pipe, dup, read, write, close, getpid, ...</td></tr>
+        <tr><td><code>&lt;sys/types.h&gt;</code></td><td>pid_t, uid_t, gid_t, off_t, size_t, key_t, ...</td></tr>
+        <tr><td><code>&lt;sys/wait.h&gt;</code></td><td>wait, waitpid, macro WIFEXITED, WEXITSTATUS, ...</td></tr>
+        <tr><td><code>&lt;signal.h&gt;</code></td><td>signal, sigaction, kill, sigprocmask, sigset_t, ...</td></tr>
+        <tr><td><code>&lt;fcntl.h&gt;</code></td><td>open, fcntl, flag O_RDONLY, O_CREAT, ...</td></tr>
+        <tr><td><code>&lt;sys/stat.h&gt;</code></td><td>mkfifo, stat, fstat, chmod, mode_t, ...</td></tr>
+        <tr><td><code>&lt;sys/ipc.h&gt;</code></td><td>ftok, IPC_CREAT, IPC_RMID, IPC_EXCL, ...</td></tr>
+        <tr><td><code>&lt;sys/shm.h&gt;</code></td><td>shmget, shmat, shmdt, shmctl (System V)</td></tr>
+        <tr><td><code>&lt;sys/sem.h&gt;</code></td><td>semget, semop, semctl (System V)</td></tr>
+        <tr><td><code>&lt;sys/msg.h&gt;</code></td><td>msgget, msgsnd, msgrcv, msgctl (System V)</td></tr>
+        <tr><td><code>&lt;sys/mman.h&gt;</code></td><td>mmap, munmap, shm_open, shm_unlink (POSIX)</td></tr>
+        <tr><td><code>&lt;semaphore.h&gt;</code></td><td>sem_open, sem_wait, sem_post (POSIX)</td></tr>
+        <tr><td><code>&lt;mqueue.h&gt;</code></td><td>mq_open, mq_send, mq_receive (POSIX)</td></tr>
+        <tr><td><code>&lt;sys/socket.h&gt;</code></td><td>socket, bind, listen, accept, connect, ...</td></tr>
+        <tr><td><code>&lt;sys/un.h&gt;</code></td><td>struct sockaddr_un (Unix domain socket)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Identificativi di Processo</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sys/types.h&gt;</span>
+
+<span class="type">pid_t</span> <span class="fn">getpid</span>(<span class="kw">void</span>);    <span class="cmt">// PID del processo corrente</span>
+<span class="type">pid_t</span> <span class="fn">getppid</span>(<span class="kw">void</span>);   <span class="cmt">// PID del padre</span>
+<span class="type">uid_t</span> <span class="fn">getuid</span>(<span class="kw">void</span>);    <span class="cmt">// UID reale</span>
+<span class="type">uid_t</span> <span class="fn">geteuid</span>(<span class="kw">void</span>);   <span class="cmt">// UID effettivo</span>
+<span class="type">gid_t</span> <span class="fn">getgid</span>(<span class="kw">void</span>);    <span class="cmt">// GID reale</span>
+<span class="type">gid_t</span> <span class="fn">getegid</span>(<span class="kw">void</span>);   <span class="cmt">// GID effettivo</span>
+<span class="type">pid_t</span> <span class="fn">getpgrp</span>(<span class="kw">void</span>);   <span class="cmt">// Process Group ID</span>
+<span class="type">pid_t</span> <span class="fn">getsid</span>(<span class="type">pid_t</span> pid); <span class="cmt">// Session ID</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── fork() -->
+<span class="anchor" id="s-fork"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> fork()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Semantica</div>
+      <p><code>fork()</code> crea una copia esatta del processo chiamante. Il figlio riceve una copia dello spazio di indirizzamento (copy-on-write), della tabella dei file descriptor, dei gestori di segnale e dell'ambiente.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+
+<span class="type">pid_t</span> <span class="fn">fork</span>(<span class="kw">void</span>);
+<span class="cmt">// Ritorna:
+//   nel padre  → PID del figlio (> 0)
+//   nel figlio → 0
+//   errore     → -1 (errno settato)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Base</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sys/wait.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+
+    <span class="kw">if</span> (pid &lt; <span class="num">0</span>) {
+        <span class="fn">perror</span>(<span class="str">"fork"</span>);
+        <span class="fn">exit</span>(EXIT_FAILURE);
+    }
+
+    <span class="kw">if</span> (pid == <span class="num">0</span>) {
+        <span class="cmt">/* ─── PROCESSO FIGLIO ─── */</span>
+        <span class="fn">printf</span>(<span class="str">"Figlio: PID=%d, PPID=%d\n"</span>, <span class="fn">getpid</span>(), <span class="fn">getppid</span>());
+        <span class="fn">exit</span>(EXIT_SUCCESS);
+    }
+
+    <span class="cmt">/* ─── PROCESSO PADRE ─── */</span>
+    <span class="fn">printf</span>(<span class="str">"Padre: PID=%d, figlio=%d\n"</span>, <span class="fn">getpid</span>(), pid);
+
+    <span class="type">int</span> status;
+    <span class="fn">waitpid</span>(pid, &amp;status, <span class="num">0</span>);
+
+    <span class="kw">if</span> (<span class="fn">WIFEXITED</span>(status))
+        <span class="fn">printf</span>(<span class="str">"Figlio uscito con codice %d\n"</span>, <span class="fn">WEXITSTATUS</span>(status));
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Cosa Eredita il Figlio</div>
+      <div class="grid2">
+        <div>
+          <p><span class="hd">Ereditato (copia):</span></p>
+          <p>&#8226; Spazio di indirizzamento (COW)<br>
+             &#8226; Tabella file descriptor aperti<br>
+             &#8226; UID/GID reale ed effettivo<br>
+             &#8226; Process group, session ID<br>
+             &#8226; Ambiente (environ)<br>
+             &#8226; Gestori di segnale<br>
+             &#8226; Maschera segnali (signal mask)<br>
+             &#8226; umask, directory corrente, root dir<br>
+             &#8226; Limiti risorse (rlimit)</p>
+        </div>
+        <div>
+          <p><span class="hd">NON ereditato / diverso:</span></p>
+          <p>&#8226; PID (nuovo, unico)<br>
+             &#8226; PPID (= PID del padre)<br>
+             &#8226; Segnali pendenti (azzerati)<br>
+             &#8226; Lock sui file (non ereditati)<br>
+             &#8226; Timer (alarm azzerato)<br>
+             &#8226; Contatori CPU (azzerati)<br>
+             &#8226; File lock POSIX (non ereditati)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Fork Multiplo</div>
+<pre>
+<span class="cmt">/* Creare N processi figli */</span>
+<span class="dir">#define</span> <span class="lbl">N_CHILDREN</span> <span class="num">5</span>
+
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="lbl">N_CHILDREN</span>; i++) {
+    <span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+    <span class="kw">if</span> (pid == <span class="num">0</span>) {
+        <span class="cmt">/* Codice del figlio i-esimo */</span>
+        <span class="fn">printf</span>(<span class="str">"Figlio %d (PID %d)\n"</span>, i, <span class="fn">getpid</span>());
+        <span class="fn">exit</span>(i);  <span class="cmt">// ogni figlio esce subito</span>
+    }
+    <span class="kw">if</span> (pid &lt; <span class="num">0</span>) { <span class="fn">perror</span>(<span class="str">"fork"</span>); <span class="fn">exit</span>(<span class="num">1</span>); }
+}
+
+<span class="cmt">/* Padre attende tutti i figli */</span>
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="lbl">N_CHILDREN</span>; i++) {
+    <span class="type">int</span> status;
+    <span class="type">pid_t</span> w = <span class="fn">wait</span>(&amp;status);
+    <span class="fn">printf</span>(<span class="str">"Figlio %d terminato\n"</span>, w);
+}
+</pre>
+      <div class="warn">Attenzione: senza l'<code>exit()</code> nel figlio, ogni figlio continuerebbe il loop e creerebbe a sua volta altri figli (fork bomb).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">vfork()</div>
+      <p><code>vfork()</code> crea un processo figlio che condivide lo spazio di indirizzamento del padre. Il padre è sospeso finché il figlio non chiama <code>exec()</code> o <code>_exit()</code>. Da usare <strong>solo</strong> se seguita immediatamente da <code>exec()</code>. In pratica, su sistemi moderni con COW, <code>fork()</code> è quasi altrettanto efficiente.</p>
+<pre>
+<span class="type">pid_t</span> pid = <span class="fn">vfork</span>();
+<span class="kw">if</span> (pid == <span class="num">0</span>) {
+    <span class="fn">execl</span>(<span class="str">"/bin/ls"</span>, <span class="str">"ls"</span>, <span class="str">"-la"</span>, (<span class="type">char</span> *)<span class="num">NULL</span>);
+    <span class="fn">_exit</span>(<span class="num">127</span>);  <span class="cmt">// MAI usare exit() dopo vfork, solo _exit</span>
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── exec() -->
+<span class="anchor" id="s-exec"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> exec() — Famiglia di Funzioni</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Varianti exec</div>
+      <p>Le funzioni exec sostituiscono l'immagine del processo corrente con un nuovo programma. Non ritornano in caso di successo.</p>
+      <table>
+        <tr><th>Funzione</th><th>Path/Name</th><th>Argomenti</th><th>Ambiente</th></tr>
+        <tr><td><code>execl()</code></td><td>Pathname</td><td>Lista (variadic)</td><td>Ereditato</td></tr>
+        <tr><td><code>execlp()</code></td><td>Cerca in PATH</td><td>Lista (variadic)</td><td>Ereditato</td></tr>
+        <tr><td><code>execle()</code></td><td>Pathname</td><td>Lista (variadic)</td><td>Esplicito (envp)</td></tr>
+        <tr><td><code>execv()</code></td><td>Pathname</td><td>Array argv[]</td><td>Ereditato</td></tr>
+        <tr><td><code>execvp()</code></td><td>Cerca in PATH</td><td>Array argv[]</td><td>Ereditato</td></tr>
+        <tr><td><code>execvpe()</code></td><td>Cerca in PATH</td><td>Array argv[]</td><td>Esplicito (envp)</td></tr>
+        <tr><td><code>execve()</code></td><td>Pathname</td><td>Array argv[]</td><td>Esplicito (envp)</td></tr>
+      </table>
+      <div class="note">Mnemonico: <code>l</code>=list, <code>v</code>=vector, <code>p</code>=PATH, <code>e</code>=environment. <code>execve()</code> è la syscall reale, le altre sono wrapper libc.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempi</div>
+<pre>
+<span class="cmt">/* execl — lista argomenti terminata da NULL */</span>
+<span class="fn">execl</span>(<span class="str">"/bin/ls"</span>, <span class="str">"ls"</span>, <span class="str">"-l"</span>, <span class="str">"/tmp"</span>, (<span class="type">char</span> *)<span class="num">NULL</span>);
+
+<span class="cmt">/* execlp — cerca in PATH */</span>
+<span class="fn">execlp</span>(<span class="str">"gcc"</span>, <span class="str">"gcc"</span>, <span class="str">"-o"</span>, <span class="str">"prog"</span>, <span class="str">"main.c"</span>, (<span class="type">char</span> *)<span class="num">NULL</span>);
+
+<span class="cmt">/* execv — array di argomenti */</span>
+<span class="type">char</span> *argv[] = {<span class="str">"ls"</span>, <span class="str">"-la"</span>, <span class="str">"/home"</span>, <span class="num">NULL</span>};
+<span class="fn">execv</span>(<span class="str">"/bin/ls"</span>, argv);
+
+<span class="cmt">/* execve — con ambiente esplicito */</span>
+<span class="type">char</span> *envp[] = {<span class="str">"HOME=/tmp"</span>, <span class="str">"PATH=/bin:/usr/bin"</span>, <span class="num">NULL</span>};
+<span class="fn">execve</span>(<span class="str">"/bin/env"</span>, (<span class="type">char</span> *[]){<span class="str">"env"</span>, <span class="num">NULL</span>}, envp);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern fork + exec</div>
+<pre>
+<span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="num">0</span>) {
+    <span class="cmt">/* Nel figlio: esegui un altro programma */</span>
+    <span class="fn">execlp</span>(<span class="str">"sort"</span>, <span class="str">"sort"</span>, <span class="str">"data.txt"</span>, (<span class="type">char</span> *)<span class="num">NULL</span>);
+    <span class="cmt">/* Se exec ritorna, c'è stato un errore */</span>
+    <span class="fn">perror</span>(<span class="str">"execlp"</span>);
+    <span class="fn">_exit</span>(<span class="num">127</span>);
+}
+<span class="cmt">/* Padre continua... */</span>
+<span class="fn">waitpid</span>(pid, <span class="num">NULL</span>, <span class="num">0</span>);
+</pre>
+      <div class="warn">Dopo <code>fork()</code>, nel figlio usare <code>_exit()</code> (non <code>exit()</code>) per evitare il flush dei buffer stdio ereditati dal padre.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Cosa Preserva exec</div>
+      <p>PID, PPID, UID/GID, session/process group, fd aperti (senza FD_CLOEXEC), segnali con azione default/ignore, signal mask, umask, cwd, rlimit.</p>
+      <p>Cosa <strong>resetta</strong>: gestori segnale custom → SIG_DFL, memory mapping, memory lock, pending signals, timer.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── wait() & waitpid() -->
+<span class="anchor" id="s-wait"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> wait() &amp; waitpid()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipi</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/wait.h&gt;</span>
+
+<span class="type">pid_t</span> <span class="fn">wait</span>(<span class="type">int</span> *status);
+<span class="cmt">// Blocca finché un qualsiasi figlio termina
+// Ritorna PID del figlio, -1 se errore (o nessun figlio)</span>
+
+<span class="type">pid_t</span> <span class="fn">waitpid</span>(<span class="type">pid_t</span> pid, <span class="type">int</span> *status, <span class="type">int</span> options);
+<span class="cmt">// pid > 0  : attende il figlio con quel PID
+// pid == -1: attende un qualsiasi figlio (come wait)
+// pid == 0 : attende un figlio nel proprio group
+// pid < -1 : attende un figlio nel group |pid|</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Opzioni waitpid</div>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>0</code></td><td>Bloccante (attende terminazione)</td></tr>
+        <tr><td><code>WNOHANG</code></td><td>Non bloccante: ritorna 0 se nessun figlio terminato</td></tr>
+        <tr><td><code>WUNTRACED</code></td><td>Ritorna anche per figli stoppati (non solo terminati)</td></tr>
+        <tr><td><code>WCONTINUED</code></td><td>Ritorna anche per figli riavviati con SIGCONT</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Macro di Analisi Status</div>
+      <table>
+        <tr><th>Macro</th><th>Descrizione</th></tr>
+        <tr><td><code>WIFEXITED(s)</code></td><td>Vero se terminato normalmente (exit/return)</td></tr>
+        <tr><td><code>WEXITSTATUS(s)</code></td><td>Codice di uscita (solo se WIFEXITED)</td></tr>
+        <tr><td><code>WIFSIGNALED(s)</code></td><td>Vero se terminato da un segnale</td></tr>
+        <tr><td><code>WTERMSIG(s)</code></td><td>Numero segnale (solo se WIFSIGNALED)</td></tr>
+        <tr><td><code>WCOREDUMP(s)</code></td><td>Vero se ha generato core dump</td></tr>
+        <tr><td><code>WIFSTOPPED(s)</code></td><td>Vero se stoppato (WUNTRACED)</td></tr>
+        <tr><td><code>WSTOPSIG(s)</code></td><td>Segnale di stop (solo se WIFSTOPPED)</td></tr>
+        <tr><td><code>WIFCONTINUED(s)</code></td><td>Vero se riavviato con SIGCONT</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Completo</div>
+<pre>
+<span class="type">int</span> status;
+<span class="type">pid_t</span> w = <span class="fn">waitpid</span>(pid, &amp;status, <span class="num">0</span>);
+
+<span class="kw">if</span> (w == -<span class="num">1</span>) {
+    <span class="fn">perror</span>(<span class="str">"waitpid"</span>);
+} <span class="kw">else if</span> (<span class="fn">WIFEXITED</span>(status)) {
+    <span class="fn">printf</span>(<span class="str">"Exit code: %d\n"</span>, <span class="fn">WEXITSTATUS</span>(status));
+} <span class="kw">else if</span> (<span class="fn">WIFSIGNALED</span>(status)) {
+    <span class="fn">printf</span>(<span class="str">"Killed by signal %d%s\n"</span>,
+           <span class="fn">WTERMSIG</span>(status),
+           <span class="fn">WCOREDUMP</span>(status) ? <span class="str">" (core dumped)"</span> : <span class="str">""</span>);
+} <span class="kw">else if</span> (<span class="fn">WIFSTOPPED</span>(status)) {
+    <span class="fn">printf</span>(<span class="str">"Stopped by signal %d\n"</span>, <span class="fn">WSTOPSIG</span>(status));
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Processo Zombie e Orfano</div>
+      <p><strong>Zombie</strong>: processo terminato ma il padre non ha ancora chiamato <code>wait()</code>. Occupa un entry nella tabella dei processi (PID, exit status). Soluzione: il padre deve chiamare <code>wait()</code> o installare <code>SIGCHLD</code> con <code>SA_NOCLDWAIT</code>.</p>
+      <p><strong>Orfano</strong>: processo il cui padre è terminato. Viene adottato da <code>init</code> (PID 1) che chiama <code>wait()</code> automaticamente.</p>
+<pre>
+<span class="cmt">/* Evitare zombie: ignorare SIGCHLD */</span>
+<span class="kw">struct</span> <span class="type">sigaction</span> sa = {
+    .sa_handler = SIG_IGN,
+    .sa_flags   = SA_NOCLDWAIT
+};
+<span class="fn">sigaction</span>(SIGCHLD, &amp;sa, <span class="num">NULL</span>);
+
+<span class="cmt">/* Oppure: double-fork per evitare zombie */</span>
+<span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="num">0</span>) {
+    <span class="type">pid_t</span> pid2 = <span class="fn">fork</span>();
+    <span class="kw">if</span> (pid2 == <span class="num">0</span>) {
+        <span class="cmt">/* Nipote: il vero worker. Sarà orfano → adottato da init */</span>
+        <span class="fn">execl</span>(<span class="str">"/usr/bin/worker"</span>, <span class="str">"worker"</span>, (<span class="type">char</span>*)<span class="num">NULL</span>);
+        <span class="fn">_exit</span>(<span class="num">127</span>);
+    }
+    <span class="fn">_exit</span>(<span class="num">0</span>);  <span class="cmt">// primo figlio esce subito</span>
+}
+<span class="fn">waitpid</span>(pid, <span class="num">NULL</span>, <span class="num">0</span>);  <span class="cmt">// attende solo il primo figlio</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── exit() & _exit() -->
+<span class="anchor" id="s-exit"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> exit() &amp; _exit()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Differenze</div>
+      <table>
+        <tr><th>Funzione</th><th>Header</th><th>Flush stdio</th><th>atexit()</th><th>Uso</th></tr>
+        <tr><td><code>exit(status)</code></td><td><code>&lt;stdlib.h&gt;</code></td><td>Sì</td><td>Esegue</td><td>Terminazione normale</td></tr>
+        <tr><td><code>_exit(status)</code></td><td><code>&lt;unistd.h&gt;</code></td><td>No</td><td>No</td><td>Dopo fork(), in caso di errore exec</td></tr>
+        <tr><td><code>_Exit(status)</code></td><td><code>&lt;stdlib.h&gt;</code></td><td>No</td><td>No</td><td>Equivalente C99 di _exit</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">atexit() — Cleanup Handler</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">cleanup1</span>(<span class="kw">void</span>) { <span class="fn">printf</span>(<span class="str">"cleanup 1\n"</span>); }
+<span class="kw">void</span> <span class="fn">cleanup2</span>(<span class="kw">void</span>) { <span class="fn">printf</span>(<span class="str">"cleanup 2\n"</span>); }
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">atexit</span>(cleanup1);  <span class="cmt">// registrate in ordine LIFO</span>
+    <span class="fn">atexit</span>(cleanup2);  <span class="cmt">// cleanup2 eseguita per prima</span>
+    <span class="fn">exit</span>(EXIT_SUCCESS);
+    <span class="cmt">// Output: "cleanup 2" poi "cleanup 1"</span>
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Process Groups & Sessions -->
+<span class="anchor" id="s-process-groups"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> GRUPPI DI PROCESSI &amp; SESSIONI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetti</div>
+      <p><strong>Process Group</strong>: insieme di processi correlati (es. pipeline shell). Il leader ha PGID == PID. I segnali possono essere inviati a tutto il gruppo.</p>
+      <p><strong>Session</strong>: insieme di process group. Il session leader è il processo che ha chiamato <code>setsid()</code>. Ogni sessione può avere un terminale di controllo.</p>
+<pre>
+<span class="cmt">/* Gerarchia: Session → Process Group → Process */</span>
+
+  Session (SID=100)
+  ├── Foreground group (PGID=100)
+  │   └── bash (PID=100, leader)
+  ├── Background group (PGID=200)
+  │   ├── find (PID=200, leader)
+  │   └── grep (PID=201)
+  └── Background group (PGID=300)
+      └── daemon (PID=300, leader)
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Funzioni</div>
+<pre>
+<span class="type">int</span>   <span class="fn">setpgid</span>(<span class="type">pid_t</span> pid, <span class="type">pid_t</span> pgid);  <span class="cmt">// Imposta PGID</span>
+<span class="type">pid_t</span> <span class="fn">getpgrp</span>(<span class="kw">void</span>);                  <span class="cmt">// Ottiene PGID corrente</span>
+<span class="type">pid_t</span> <span class="fn">setsid</span>(<span class="kw">void</span>);                   <span class="cmt">// Crea nuova sessione</span>
+<span class="type">pid_t</span> <span class="fn">getsid</span>(<span class="type">pid_t</span> pid);              <span class="cmt">// Ottiene SID</span>
+<span class="type">pid_t</span> <span class="fn">tcgetpgrp</span>(<span class="type">int</span> fd);              <span class="cmt">// Foreground group del terminale</span>
+<span class="type">int</span>   <span class="fn">tcsetpgrp</span>(<span class="type">int</span> fd, <span class="type">pid_t</span> pgrp);  <span class="cmt">// Imposta foreground group</span>
+
+<span class="cmt">/* Inviare segnale a tutto il group */</span>
+<span class="fn">kill</span>(-pgid, SIGTERM);  <span class="cmt">// PID negativo = intero group</span>
+<span class="fn">killpg</span>(pgid, SIGTERM); <span class="cmt">// equivalente</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Daemon -->
+<span class="anchor" id="s-daemon"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> DAEMON</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Creazione di un Daemon (Classica)</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;fcntl.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sys/stat.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">daemonize</span>(<span class="kw">void</span>) {
+    <span class="cmt">/* 1. Fork e termina il padre */</span>
+    <span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+    <span class="kw">if</span> (pid &lt; <span class="num">0</span>) <span class="fn">exit</span>(<span class="num">1</span>);
+    <span class="kw">if</span> (pid &gt; <span class="num">0</span>) <span class="fn">exit</span>(<span class="num">0</span>);  <span class="cmt">// padre esce</span>
+
+    <span class="cmt">/* 2. Nuova sessione (diventa session leader) */</span>
+    <span class="kw">if</span> (<span class="fn">setsid</span>() &lt; <span class="num">0</span>) <span class="fn">exit</span>(<span class="num">1</span>);
+
+    <span class="cmt">/* 3. Secondo fork: non più session leader → nessun terminale */</span>
+    pid = <span class="fn">fork</span>();
+    <span class="kw">if</span> (pid &lt; <span class="num">0</span>) <span class="fn">exit</span>(<span class="num">1</span>);
+    <span class="kw">if</span> (pid &gt; <span class="num">0</span>) <span class="fn">exit</span>(<span class="num">0</span>);
+
+    <span class="cmt">/* 4. Cambia directory e umask */</span>
+    <span class="fn">chdir</span>(<span class="str">"/"</span>);
+    <span class="fn">umask</span>(<span class="num">0</span>);
+
+    <span class="cmt">/* 5. Chiudi e redireziona fd standard */</span>
+    <span class="fn">close</span>(STDIN_FILENO);
+    <span class="fn">close</span>(STDOUT_FILENO);
+    <span class="fn">close</span>(STDERR_FILENO);
+    <span class="fn">open</span>(<span class="str">"/dev/null"</span>, O_RDONLY);  <span class="cmt">// stdin  → /dev/null (fd 0)</span>
+    <span class="fn">open</span>(<span class="str">"/dev/null"</span>, O_WRONLY);  <span class="cmt">// stdout → /dev/null (fd 1)</span>
+    <span class="fn">open</span>(<span class="str">"/dev/null"</span>, O_WRONLY);  <span class="cmt">// stderr → /dev/null (fd 2)</span>
+}
+</pre>
+      <div class="note">Su GNU/Linux, <code>daemon(0, 0)</code> (non-standard) esegue gli step 1-5 automaticamente.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     FILE DESCRIPTOR & I/O
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-fd"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> FILE DESCRIPTOR</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetti</div>
+      <p>Un file descriptor (fd) è un intero non negativo che identifica un file aperto nel kernel. Ogni processo ha una tabella di fd. I primi tre sono riservati:</p>
+      <table>
+        <tr><th>fd</th><th>Costante</th><th>Stream C</th><th>Descrizione</th></tr>
+        <tr><td><code>0</code></td><td><code>STDIN_FILENO</code></td><td><code>stdin</code></td><td>Standard input</td></tr>
+        <tr><td><code>1</code></td><td><code>STDOUT_FILENO</code></td><td><code>stdout</code></td><td>Standard output</td></tr>
+        <tr><td><code>2</code></td><td><code>STDERR_FILENO</code></td><td><code>stderr</code></td><td>Standard error</td></tr>
+      </table>
+<pre>
+<span class="cmt">/* Struttura kernel (semplificata) */</span>
+
+  <span class="hd">Per-process fd table</span>        <span class="hd">System open file table</span>     <span class="hd">Inode table</span>
+  ┌────┬──────────┐          ┌──────────────────┐        ┌───────────┐
+  │ 0  │ ──────── │─────────→│ offset, flags    │──────→ │ inode     │
+  │ 1  │ ──────── │─────┐    │ ref count        │        │ type,size │
+  │ 2  │ ──────── │──┐  │    └──────────────────┘        │ perms     │
+  │ 3  │ ──────── │  │  └──→ ┌──────────────────┐        └───────────┘
+  │... │          │  │       │ offset, flags    │
+  └────┴──────────┘  └─────→ │ ref count        │
+                              └──────────────────┘
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── open() & close() -->
+<span class="anchor" id="s-open-close"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> open() &amp; close()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipi</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;fcntl.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sys/stat.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">open</span>(<span class="kw">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> flags);
+<span class="type">int</span> <span class="fn">open</span>(<span class="kw">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> flags, <span class="type">mode_t</span> mode);
+<span class="type">int</span> <span class="fn">creat</span>(<span class="kw">const</span> <span class="type">char</span> *pathname, <span class="type">mode_t</span> mode);  <span class="cmt">// = open(path, O_WRONLY|O_CREAT|O_TRUNC, mode)</span>
+<span class="type">int</span> <span class="fn">close</span>(<span class="type">int</span> fd);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flag di open()</div>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>O_RDONLY</code></td><td>Sola lettura</td></tr>
+        <tr><td><code>O_WRONLY</code></td><td>Sola scrittura</td></tr>
+        <tr><td><code>O_RDWR</code></td><td>Lettura e scrittura</td></tr>
+        <tr><td><code>O_CREAT</code></td><td>Crea il file se non esiste (richiede mode)</td></tr>
+        <tr><td><code>O_EXCL</code></td><td>Con O_CREAT: fallisce se il file esiste (atomico)</td></tr>
+        <tr><td><code>O_TRUNC</code></td><td>Tronca a 0 byte se esiste</td></tr>
+        <tr><td><code>O_APPEND</code></td><td>Scrittura atomica in append</td></tr>
+        <tr><td><code>O_NONBLOCK</code></td><td>I/O non bloccante</td></tr>
+        <tr><td><code>O_CLOEXEC</code></td><td>Chiudi automaticamente su exec (atomico)</td></tr>
+        <tr><td><code>O_SYNC</code></td><td>Scrittura sincrona (flush su disco)</td></tr>
+        <tr><td><code>O_DIRECTORY</code></td><td>Fallisce se non è una directory</td></tr>
+        <tr><td><code>O_NOFOLLOW</code></td><td>Non seguire symlink</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Permessi (mode)</div>
+<pre>
+<span class="cmt">/* mode_t: combinazione OR di costanti */</span>
+<span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"file.txt"</span>, O_WRONLY | O_CREAT | O_TRUNC, <span class="num">0644</span>);
+<span class="cmt">//                                                         ^^^^
+//  0644 = rw-r--r--
+//  S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH  (equivalente)</span>
+
+<span class="cmt">/* Costanti simboliche */</span>
+S_IRWXU  <span class="num">0700</span>   <span class="cmt">// user: rwx</span>
+S_IRUSR  <span class="num">0400</span>   <span class="cmt">// user: r</span>
+S_IWUSR  <span class="num">0200</span>   <span class="cmt">// user: w</span>
+S_IXUSR  <span class="num">0100</span>   <span class="cmt">// user: x</span>
+S_IRWXG  <span class="num">0070</span>   <span class="cmt">// group: rwx</span>
+S_IRWXO  <span class="num">0007</span>   <span class="cmt">// other: rwx</span>
+
+<span class="cmt">/* Il mode effettivo è: mode & ~umask */</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">lseek()</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+
+<span class="type">off_t</span> <span class="fn">lseek</span>(<span class="type">int</span> fd, <span class="type">off_t</span> offset, <span class="type">int</span> whence);
+<span class="cmt">// whence: SEEK_SET (inizio), SEEK_CUR (corrente), SEEK_END (fine)
+// Ritorna: nuova posizione, -1 se errore</span>
+
+<span class="type">off_t</span> pos = <span class="fn">lseek</span>(fd, <span class="num">0</span>, SEEK_CUR);   <span class="cmt">// posizione corrente</span>
+<span class="type">off_t</span> sz  = <span class="fn">lseek</span>(fd, <span class="num">0</span>, SEEK_END);   <span class="cmt">// dimensione file</span>
+<span class="fn">lseek</span>(fd, <span class="num">100</span>, SEEK_SET);               <span class="cmt">// posiziona a byte 100</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── read() & write() -->
+<span class="anchor" id="s-read-write"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> read() &amp; write()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipi</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+
+<span class="type">ssize_t</span> <span class="fn">read</span>(<span class="type">int</span> fd, <span class="kw">void</span> *buf, <span class="type">size_t</span> count);
+<span class="cmt">// Ritorna: byte letti (0 = EOF), -1 se errore
+// Può leggere MENO di count byte (short read)</span>
+
+<span class="type">ssize_t</span> <span class="fn">write</span>(<span class="type">int</span> fd, <span class="kw">const</span> <span class="kw">void</span> *buf, <span class="type">size_t</span> count);
+<span class="cmt">// Ritorna: byte scritti, -1 se errore
+// Può scrivere MENO di count byte (short write)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Lettura/Scrittura Completa (Robusta)</div>
+<pre>
+<span class="cmt">/* Legge esattamente n byte (gestisce short read e EINTR) */</span>
+<span class="type">ssize_t</span> <span class="fn">read_all</span>(<span class="type">int</span> fd, <span class="kw">void</span> *buf, <span class="type">size_t</span> n) {
+    <span class="type">size_t</span> total = <span class="num">0</span>;
+    <span class="kw">while</span> (total &lt; n) {
+        <span class="type">ssize_t</span> r = <span class="fn">read</span>(fd, (<span class="type">char</span>*)buf + total, n - total);
+        <span class="kw">if</span> (r &lt; <span class="num">0</span>) {
+            <span class="kw">if</span> (errno == EINTR) <span class="kw">continue</span>;  <span class="cmt">// interrotto da segnale</span>
+            <span class="kw">return</span> -<span class="num">1</span>;
+        }
+        <span class="kw">if</span> (r == <span class="num">0</span>) <span class="kw">break</span>;  <span class="cmt">// EOF</span>
+        total += r;
+    }
+    <span class="kw">return</span> total;
+}
+
+<span class="cmt">/* Scrive esattamente n byte (gestisce short write e EINTR) */</span>
+<span class="type">ssize_t</span> <span class="fn">write_all</span>(<span class="type">int</span> fd, <span class="kw">const</span> <span class="kw">void</span> *buf, <span class="type">size_t</span> n) {
+    <span class="type">size_t</span> total = <span class="num">0</span>;
+    <span class="kw">while</span> (total &lt; n) {
+        <span class="type">ssize_t</span> w = <span class="fn">write</span>(fd, (<span class="kw">const</span> <span class="type">char</span>*)buf + total, n - total);
+        <span class="kw">if</span> (w &lt; <span class="num">0</span>) {
+            <span class="kw">if</span> (errno == EINTR) <span class="kw">continue</span>;
+            <span class="kw">return</span> -<span class="num">1</span>;
+        }
+        total += w;
+    }
+    <span class="kw">return</span> total;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Scatter/Gather I/O</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/uio.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">iovec</span> iov[<span class="num">3</span>];
+iov[<span class="num">0</span>].iov_base = header;  iov[<span class="num">0</span>].iov_len = hdr_len;
+iov[<span class="num">1</span>].iov_base = data;    iov[<span class="num">1</span>].iov_len = data_len;
+iov[<span class="num">2</span>].iov_base = trailer; iov[<span class="num">2</span>].iov_len = trl_len;
+
+<span class="type">ssize_t</span> n = <span class="fn">writev</span>(fd, iov, <span class="num">3</span>);  <span class="cmt">// scrittura atomica di più buffer</span>
+<span class="type">ssize_t</span> m = <span class="fn">readv</span>(fd, iov, <span class="num">3</span>);   <span class="cmt">// lettura distribuita su più buffer</span>
+
+<span class="cmt">/* pread/pwrite — lettura/scrittura a offset senza modificare posizione */</span>
+<span class="type">ssize_t</span> <span class="fn">pread</span>(<span class="type">int</span> fd, <span class="kw">void</span> *buf, <span class="type">size_t</span> count, <span class="type">off_t</span> offset);
+<span class="type">ssize_t</span> <span class="fn">pwrite</span>(<span class="type">int</span> fd, <span class="kw">const</span> <span class="kw">void</span> *buf, <span class="type">size_t</span> count, <span class="type">off_t</span> offset);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── dup() & dup2() -->
+<span class="anchor" id="s-dup"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> dup() &amp; dup2()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipi</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">dup</span>(<span class="type">int</span> oldfd);
+<span class="cmt">// Duplica oldfd sul più basso fd disponibile
+// Ritorna: nuovo fd, -1 se errore</span>
+
+<span class="type">int</span> <span class="fn">dup2</span>(<span class="type">int</span> oldfd, <span class="type">int</span> newfd);
+<span class="cmt">// Duplica oldfd su newfd (chiude newfd se aperto)
+// Atomico: close(newfd) + dup(oldfd) in una sola operazione
+// Ritorna: newfd, -1 se errore</span>
+
+<span class="type">int</span> <span class="fn">dup3</span>(<span class="type">int</span> oldfd, <span class="type">int</span> newfd, <span class="type">int</span> flags);  <span class="cmt">// Linux: O_CLOEXEC</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Redirezione I/O</div>
+<pre>
+<span class="cmt">/* Redirezionare stdout su un file */</span>
+<span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"output.txt"</span>, O_WRONLY | O_CREAT | O_TRUNC, <span class="num">0644</span>);
+<span class="type">int</span> saved_stdout = <span class="fn">dup</span>(STDOUT_FILENO);  <span class="cmt">// salva stdout</span>
+<span class="fn">dup2</span>(fd, STDOUT_FILENO);                 <span class="cmt">// stdout → file</span>
+<span class="fn">close</span>(fd);
+
+<span class="fn">printf</span>(<span class="str">"Questo va nel file\n"</span>);
+
+<span class="cmt">/* Ripristinare stdout */</span>
+<span class="fn">dup2</span>(saved_stdout, STDOUT_FILENO);
+<span class="fn">close</span>(saved_stdout);
+
+<span class="fn">printf</span>(<span class="str">"Questo va sul terminale\n"</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Redirezione stderr su stdout</div>
+<pre>
+<span class="cmt">/* Equivalente shell: 2>&amp;1 */</span>
+<span class="fn">dup2</span>(STDOUT_FILENO, STDERR_FILENO);
+
+<span class="cmt">/* Equivalente shell: cmd > file 2>&amp;1 */</span>
+<span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"log.txt"</span>, O_WRONLY | O_CREAT | O_TRUNC, <span class="num">0644</span>);
+<span class="fn">dup2</span>(fd, STDOUT_FILENO);
+<span class="fn">dup2</span>(fd, STDERR_FILENO);
+<span class="fn">close</span>(fd);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── fcntl() -->
+<span class="anchor" id="s-fcntl"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> fcntl()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipi e Comandi</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;fcntl.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">fcntl</span>(<span class="type">int</span> fd, <span class="type">int</span> cmd, ... );
+</pre>
+      <table>
+        <tr><th>Comando</th><th>Argomento</th><th>Descrizione</th></tr>
+        <tr><td><code>F_DUPFD</code></td><td><code>int minfd</code></td><td>Duplica fd (≥ minfd)</td></tr>
+        <tr><td><code>F_DUPFD_CLOEXEC</code></td><td><code>int minfd</code></td><td>Duplica con O_CLOEXEC</td></tr>
+        <tr><td><code>F_GETFD</code></td><td>—</td><td>Ottiene fd flags (FD_CLOEXEC)</td></tr>
+        <tr><td><code>F_SETFD</code></td><td><code>int flags</code></td><td>Imposta fd flags</td></tr>
+        <tr><td><code>F_GETFL</code></td><td>—</td><td>Ottiene file status flags</td></tr>
+        <tr><td><code>F_SETFL</code></td><td><code>int flags</code></td><td>Imposta file status flags (O_NONBLOCK, O_APPEND)</td></tr>
+        <tr><td><code>F_SETLK</code></td><td><code>struct flock*</code></td><td>Lock non bloccante (file locking)</td></tr>
+        <tr><td><code>F_SETLKW</code></td><td><code>struct flock*</code></td><td>Lock bloccante (attende)</td></tr>
+        <tr><td><code>F_GETLK</code></td><td><code>struct flock*</code></td><td>Testa se un lock è possibile</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Impostare Non-Blocking</div>
+<pre>
+<span class="cmt">/* Attivare O_NONBLOCK su un fd */</span>
+<span class="type">int</span> flags = <span class="fn">fcntl</span>(fd, F_GETFL);
+<span class="fn">fcntl</span>(fd, F_SETFL, flags | O_NONBLOCK);
+
+<span class="cmt">/* Disattivare O_NONBLOCK */</span>
+<span class="fn">fcntl</span>(fd, F_SETFL, flags &amp; ~O_NONBLOCK);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── select() & poll() -->
+<span class="anchor" id="s-select-poll"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> select() &amp; poll() — I/O Multiplexing</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">select()</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/select.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">select</span>(<span class="type">int</span> nfds, <span class="type">fd_set</span> *readfds, <span class="type">fd_set</span> *writefds,
+           <span class="type">fd_set</span> *exceptfds, <span class="kw">struct</span> <span class="type">timeval</span> *timeout);
+
+<span class="cmt">/* Macro per manipolare fd_set */</span>
+<span class="fn">FD_ZERO</span>(&amp;set);        <span class="cmt">// azzera il set</span>
+<span class="fn">FD_SET</span>(fd, &amp;set);     <span class="cmt">// aggiunge fd al set</span>
+<span class="fn">FD_CLR</span>(fd, &amp;set);     <span class="cmt">// rimuove fd dal set</span>
+<span class="fn">FD_ISSET</span>(fd, &amp;set);   <span class="cmt">// testa se fd è nel set</span>
+</pre>
+<pre>
+<span class="cmt">/* Esempio: attende dati da stdin o da una pipe */</span>
+<span class="type">fd_set</span> readfds;
+<span class="fn">FD_ZERO</span>(&amp;readfds);
+<span class="fn">FD_SET</span>(STDIN_FILENO, &amp;readfds);
+<span class="fn">FD_SET</span>(pipe_fd, &amp;readfds);
+
+<span class="type">int</span> maxfd = (pipe_fd &gt; STDIN_FILENO) ? pipe_fd : STDIN_FILENO;
+<span class="kw">struct</span> <span class="type">timeval</span> tv = { .tv_sec = <span class="num">5</span>, .tv_usec = <span class="num">0</span> };
+
+<span class="type">int</span> ret = <span class="fn">select</span>(maxfd + <span class="num">1</span>, &amp;readfds, <span class="num">NULL</span>, <span class="num">NULL</span>, &amp;tv);
+<span class="kw">if</span> (ret &gt; <span class="num">0</span>) {
+    <span class="kw">if</span> (<span class="fn">FD_ISSET</span>(STDIN_FILENO, &amp;readfds))
+        <span class="cmt">/* dati disponibili su stdin */</span>;
+    <span class="kw">if</span> (<span class="fn">FD_ISSET</span>(pipe_fd, &amp;readfds))
+        <span class="cmt">/* dati disponibili sulla pipe */</span>;
+} <span class="kw">else if</span> (ret == <span class="num">0</span>) {
+    <span class="cmt">/* timeout */</span>
+} <span class="kw">else</span> {
+    <span class="fn">perror</span>(<span class="str">"select"</span>);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">poll()</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;poll.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">poll</span>(<span class="kw">struct</span> <span class="type">pollfd</span> *fds, <span class="type">nfds_t</span> nfds, <span class="type">int</span> timeout_ms);
+
+<span class="kw">struct</span> <span class="type">pollfd</span> {
+    <span class="type">int</span>   fd;       <span class="cmt">// file descriptor</span>
+    <span class="type">short</span> events;   <span class="cmt">// eventi richiesti</span>
+    <span class="type">short</span> revents;  <span class="cmt">// eventi occorsi (output)</span>
+};
+
+<span class="cmt">/* Eventi */</span>
+POLLIN    <span class="cmt">// dati in lettura disponibili</span>
+POLLOUT   <span class="cmt">// scrittura possibile</span>
+POLLERR   <span class="cmt">// errore (solo revents)</span>
+POLLHUP   <span class="cmt">// hang up (solo revents)</span>
+POLLNVAL  <span class="cmt">// fd non valido (solo revents)</span>
+</pre>
+<pre>
+<span class="cmt">/* Esempio: monitorare due fd */</span>
+<span class="kw">struct</span> <span class="type">pollfd</span> fds[<span class="num">2</span>] = {
+    { .fd = STDIN_FILENO, .events = POLLIN },
+    { .fd = pipe_fd,      .events = POLLIN },
+};
+
+<span class="type">int</span> ret = <span class="fn">poll</span>(fds, <span class="num">2</span>, <span class="num">5000</span>);  <span class="cmt">// timeout 5 secondi</span>
+<span class="kw">if</span> (ret &gt; <span class="num">0</span>) {
+    <span class="kw">if</span> (fds[<span class="num">0</span>].revents &amp; POLLIN) { <span class="cmt">/* stdin pronto */</span> }
+    <span class="kw">if</span> (fds[<span class="num">1</span>].revents &amp; POLLIN) { <span class="cmt">/* pipe pronta */</span> }
+    <span class="kw">if</span> (fds[<span class="num">1</span>].revents &amp; POLLHUP) { <span class="cmt">/* pipe chiusa */</span> }
+}
+</pre>
+      <div class="note"><code>poll()</code> è preferibile a <code>select()</code>: nessun limite FD_SETSIZE, non modifica la struttura timeout, interfaccia più pulita. Su Linux, <code>epoll</code> è ancora più efficiente per molti fd (O(1) invece di O(n)).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">epoll (Linux-specific)</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/epoll.h&gt;</span>
+
+<span class="type">int</span> epfd = <span class="fn">epoll_create1</span>(<span class="num">0</span>);
+
+<span class="kw">struct</span> <span class="type">epoll_event</span> ev = { .events = EPOLLIN, .data.fd = fd };
+<span class="fn">epoll_ctl</span>(epfd, EPOLL_CTL_ADD, fd, &amp;ev);
+
+<span class="kw">struct</span> <span class="type">epoll_event</span> events[<span class="num">10</span>];
+<span class="type">int</span> n = <span class="fn">epoll_wait</span>(epfd, events, <span class="num">10</span>, <span class="num">5000</span>);
+
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+    <span class="kw">if</span> (events[i].events &amp; EPOLLIN)
+        <span class="fn">handle_read</span>(events[i].data.fd);
+}
+<span class="fn">close</span>(epfd);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     PIPE & FIFO
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-pipe"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PIPE ANONIME</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetti</div>
+      <p>Una pipe è un canale unidirezionale (FIFO) tra processi correlati (padre-figlio). Capacità tipica: 64KB (Linux). Lettura da pipe vuota blocca; scrittura su pipe senza lettori genera SIGPIPE.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">pipe</span>(<span class="type">int</span> pipefd[<span class="num">2</span>]);
+<span class="cmt">// pipefd[0] = fd lettura
+// pipefd[1] = fd scrittura
+// Ritorna: 0 successo, -1 errore</span>
+
+<span class="type">int</span> <span class="fn">pipe2</span>(<span class="type">int</span> pipefd[<span class="num">2</span>], <span class="type">int</span> flags);  <span class="cmt">// Linux: O_CLOEXEC, O_NONBLOCK</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Comunicazione Padre → Figlio</div>
+<pre>
+<span class="type">int</span> pfd[<span class="num">2</span>];
+<span class="fn">pipe</span>(pfd);
+
+<span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="num">0</span>) {
+    <span class="cmt">/* FIGLIO: legge dalla pipe */</span>
+    <span class="fn">close</span>(pfd[<span class="num">1</span>]);  <span class="cmt">// chiude lato scrittura</span>
+
+    <span class="type">char</span> buf[<span class="num">256</span>];
+    <span class="type">ssize_t</span> n = <span class="fn">read</span>(pfd[<span class="num">0</span>], buf, <span class="kw">sizeof</span>(buf) - <span class="num">1</span>);
+    buf[n] = <span class="str">'\0'</span>;
+    <span class="fn">printf</span>(<span class="str">"Figlio riceve: %s\n"</span>, buf);
+
+    <span class="fn">close</span>(pfd[<span class="num">0</span>]);
+    <span class="fn">_exit</span>(<span class="num">0</span>);
+}
+
+<span class="cmt">/* PADRE: scrive nella pipe */</span>
+<span class="fn">close</span>(pfd[<span class="num">0</span>]);  <span class="cmt">// chiude lato lettura</span>
+
+<span class="kw">const</span> <span class="type">char</span> *msg = <span class="str">"Ciao dal padre!"</span>;
+<span class="fn">write</span>(pfd[<span class="num">1</span>], msg, <span class="fn">strlen</span>(msg));
+
+<span class="fn">close</span>(pfd[<span class="num">1</span>]);
+<span class="fn">waitpid</span>(pid, <span class="num">NULL</span>, <span class="num">0</span>);
+</pre>
+      <div class="warn">Chiudere sempre il lato non usato della pipe in ogni processo! Altrimenti <code>read()</code> non riceverà mai EOF e il processo resterà bloccato.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pipeline: Equivalente di "ls | sort"</div>
+<pre>
+<span class="type">int</span> pfd[<span class="num">2</span>];
+<span class="fn">pipe</span>(pfd);
+
+<span class="type">pid_t</span> pid1 = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid1 == <span class="num">0</span>) {
+    <span class="cmt">/* Primo comando: ls (scrive su pipe) */</span>
+    <span class="fn">close</span>(pfd[<span class="num">0</span>]);
+    <span class="fn">dup2</span>(pfd[<span class="num">1</span>], STDOUT_FILENO);
+    <span class="fn">close</span>(pfd[<span class="num">1</span>]);
+    <span class="fn">execlp</span>(<span class="str">"ls"</span>, <span class="str">"ls"</span>, (<span class="type">char</span>*)<span class="num">NULL</span>);
+    <span class="fn">_exit</span>(<span class="num">127</span>);
+}
+
+<span class="type">pid_t</span> pid2 = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid2 == <span class="num">0</span>) {
+    <span class="cmt">/* Secondo comando: sort (legge da pipe) */</span>
+    <span class="fn">close</span>(pfd[<span class="num">1</span>]);
+    <span class="fn">dup2</span>(pfd[<span class="num">0</span>], STDIN_FILENO);
+    <span class="fn">close</span>(pfd[<span class="num">0</span>]);
+    <span class="fn">execlp</span>(<span class="str">"sort"</span>, <span class="str">"sort"</span>, (<span class="type">char</span>*)<span class="num">NULL</span>);
+    <span class="fn">_exit</span>(<span class="num">127</span>);
+}
+
+<span class="cmt">/* Padre: chiude entrambi i lati e attende */</span>
+<span class="fn">close</span>(pfd[<span class="num">0</span>]);
+<span class="fn">close</span>(pfd[<span class="num">1</span>]);
+<span class="fn">waitpid</span>(pid1, <span class="num">NULL</span>, <span class="num">0</span>);
+<span class="fn">waitpid</span>(pid2, <span class="num">NULL</span>, <span class="num">0</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pipe Bidirezionale (Due Pipe)</div>
+<pre>
+<span class="cmt">/* Per comunicazione bidirezionale servono 2 pipe */</span>
+<span class="type">int</span> p2c[<span class="num">2</span>];  <span class="cmt">// padre → figlio</span>
+<span class="type">int</span> c2p[<span class="num">2</span>];  <span class="cmt">// figlio → padre</span>
+<span class="fn">pipe</span>(p2c);
+<span class="fn">pipe</span>(c2p);
+
+<span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="num">0</span>) {
+    <span class="fn">close</span>(p2c[<span class="num">1</span>]);  <span class="cmt">// figlio non scrive su p2c</span>
+    <span class="fn">close</span>(c2p[<span class="num">0</span>]);  <span class="cmt">// figlio non legge da c2p</span>
+    <span class="cmt">// legge da p2c[0], scrive su c2p[1]</span>
+    ...
+} <span class="kw">else</span> {
+    <span class="fn">close</span>(p2c[<span class="num">0</span>]);  <span class="cmt">// padre non legge da p2c</span>
+    <span class="fn">close</span>(c2p[<span class="num">1</span>]);  <span class="cmt">// padre non scrive su c2p</span>
+    <span class="cmt">// scrive su p2c[1], legge da c2p[0]</span>
+    ...
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── FIFO -->
+<span class="anchor" id="s-fifo"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> FIFO (NAMED PIPE)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetti</div>
+      <p>Una FIFO è una pipe con nome nel filesystem. Permette comunicazione tra processi non correlati. Creata con <code>mkfifo()</code> o <code>mknod()</code>. Si apre con <code>open()</code>. <code>open()</code> blocca finché l'altro lato non apre.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/stat.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">mkfifo</span>(<span class="kw">const</span> <span class="type">char</span> *pathname, <span class="type">mode_t</span> mode);
+<span class="cmt">// Crea un file FIFO nel filesystem
+// Ritorna: 0 successo, -1 errore (EEXIST se già esiste)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Processo Scrittore e Lettore</div>
+      <div class="grid2">
+<div>
+<pre>
+<span class="cmt">/* ─── SCRITTORE ─── */</span>
+<span class="fn">mkfifo</span>(<span class="str">"/tmp/myfifo"</span>, <span class="num">0666</span>);
+
+<span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"/tmp/myfifo"</span>,
+              O_WRONLY);
+<span class="cmt">// blocca fino a che un lettore apre</span>
+
+<span class="fn">write</span>(fd, <span class="str">"Hello FIFO\n"</span>, <span class="num">11</span>);
+<span class="fn">close</span>(fd);
+</pre>
+</div>
+<div>
+<pre>
+<span class="cmt">/* ─── LETTORE ─── */</span>
+<span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"/tmp/myfifo"</span>,
+              O_RDONLY);
+<span class="cmt">// blocca fino a che uno scrittore apre</span>
+
+<span class="type">char</span> buf[<span class="num">128</span>];
+<span class="type">ssize_t</span> n = <span class="fn">read</span>(fd, buf,
+                 <span class="kw">sizeof</span>(buf));
+<span class="fn">close</span>(fd);
+<span class="fn">unlink</span>(<span class="str">"/tmp/myfifo"</span>);
+</pre>
+</div>
+      </div>
+      <div class="note">Per evitare il blocco su <code>open()</code>, usare <code>O_NONBLOCK</code>. Con O_RDONLY|O_NONBLOCK, <code>open()</code> ritorna subito; con O_WRONLY|O_NONBLOCK, <code>open()</code> fallisce con ENXIO se nessun lettore.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── popen() & pclose() -->
+<span class="anchor" id="s-popen"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> popen() &amp; pclose()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Interfaccia di Alto Livello</div>
+      <p><code>popen()</code> combina fork+exec+pipe in una singola chiamata. Esegue un comando shell e ritorna un FILE* collegato alla pipe.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">FILE</span> *<span class="fn">popen</span>(<span class="kw">const</span> <span class="type">char</span> *command, <span class="kw">const</span> <span class="type">char</span> *type);
+<span class="cmt">// type "r" → legge stdout del comando
+// type "w" → scrive su stdin del comando</span>
+
+<span class="type">int</span> <span class="fn">pclose</span>(<span class="type">FILE</span> *stream);
+<span class="cmt">// Chiude la pipe e attende la terminazione del processo
+// Ritorna: exit status del comando (come waitpid)</span>
+</pre>
+<pre>
+<span class="cmt">/* Leggere output di un comando */</span>
+<span class="type">FILE</span> *fp = <span class="fn">popen</span>(<span class="str">"ls -la /tmp"</span>, <span class="str">"r"</span>);
+<span class="kw">if</span> (fp == <span class="num">NULL</span>) { <span class="fn">perror</span>(<span class="str">"popen"</span>); <span class="fn">exit</span>(<span class="num">1</span>); }
+
+<span class="type">char</span> line[<span class="num">512</span>];
+<span class="kw">while</span> (<span class="fn">fgets</span>(line, <span class="kw">sizeof</span>(line), fp) != <span class="num">NULL</span>) {
+    <span class="fn">printf</span>(<span class="str">">> %s"</span>, line);
+}
+<span class="type">int</span> status = <span class="fn">pclose</span>(fp);
+</pre>
+<pre>
+<span class="cmt">/* Scrivere su stdin di un comando */</span>
+<span class="type">FILE</span> *fp = <span class="fn">popen</span>(<span class="str">"sort > sorted.txt"</span>, <span class="str">"w"</span>);
+<span class="fn">fprintf</span>(fp, <span class="str">"banana\napple\ncherry\n"</span>);
+<span class="fn">pclose</span>(fp);
+</pre>
+      <div class="warn"><code>popen()</code> invoca <code>/bin/sh -c command</code>: attenzione all'injection se <code>command</code> contiene input utente non sanitizzato!</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     SEGNALI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-signals"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SEGNALI POSIX</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tabella Segnali Principali</div>
+      <table>
+        <tr><th>Segnale</th><th>N°</th><th>Azione Default</th><th>Descrizione</th></tr>
+        <tr><td><code>SIGHUP</code></td><td>1</td><td>Term</td><td>Hangup / terminale chiuso</td></tr>
+        <tr><td><code>SIGINT</code></td><td>2</td><td>Term</td><td>Interrupt (Ctrl+C)</td></tr>
+        <tr><td><code>SIGQUIT</code></td><td>3</td><td>Core</td><td>Quit (Ctrl+\)</td></tr>
+        <tr><td><code>SIGILL</code></td><td>4</td><td>Core</td><td>Istruzione illegale</td></tr>
+        <tr><td><code>SIGTRAP</code></td><td>5</td><td>Core</td><td>Trap (breakpoint)</td></tr>
+        <tr><td><code>SIGABRT</code></td><td>6</td><td>Core</td><td>Abort (abort())</td></tr>
+        <tr><td><code>SIGBUS</code></td><td>7</td><td>Core</td><td>Bus error (allineamento)</td></tr>
+        <tr><td><code>SIGFPE</code></td><td>8</td><td>Core</td><td>Floating-point exception</td></tr>
+        <tr><td><code>SIGKILL</code></td><td>9</td><td>Term</td><td>Kill (non intercettabile)</td></tr>
+        <tr><td><code>SIGUSR1</code></td><td>10</td><td>Term</td><td>User-defined signal 1</td></tr>
+        <tr><td><code>SIGSEGV</code></td><td>11</td><td>Core</td><td>Segmentation fault</td></tr>
+        <tr><td><code>SIGUSR2</code></td><td>12</td><td>Term</td><td>User-defined signal 2</td></tr>
+        <tr><td><code>SIGPIPE</code></td><td>13</td><td>Term</td><td>Scrittura su pipe senza lettori</td></tr>
+        <tr><td><code>SIGALRM</code></td><td>14</td><td>Term</td><td>Timer (alarm())</td></tr>
+        <tr><td><code>SIGTERM</code></td><td>15</td><td>Term</td><td>Terminazione (educata)</td></tr>
+        <tr><td><code>SIGCHLD</code></td><td>17</td><td>Ign</td><td>Figlio terminato/stoppato</td></tr>
+        <tr><td><code>SIGCONT</code></td><td>18</td><td>Cont</td><td>Continua se stoppato</td></tr>
+        <tr><td><code>SIGSTOP</code></td><td>19</td><td>Stop</td><td>Stop (non intercettabile)</td></tr>
+        <tr><td><code>SIGTSTP</code></td><td>20</td><td>Stop</td><td>Stop da terminale (Ctrl+Z)</td></tr>
+        <tr><td><code>SIGTTIN</code></td><td>21</td><td>Stop</td><td>Background process legge da tty</td></tr>
+        <tr><td><code>SIGTTOU</code></td><td>22</td><td>Stop</td><td>Background process scrive su tty</td></tr>
+        <tr><td><code>SIGURG</code></td><td>23</td><td>Ign</td><td>Dati urgenti su socket</td></tr>
+        <tr><td><code>SIGXCPU</code></td><td>24</td><td>Core</td><td>Limite CPU superato</td></tr>
+        <tr><td><code>SIGXFSZ</code></td><td>25</td><td>Core</td><td>Limite dimensione file superato</td></tr>
+        <tr><td><code>SIGVTALRM</code></td><td>26</td><td>Term</td><td>Virtual timer</td></tr>
+        <tr><td><code>SIGPROF</code></td><td>27</td><td>Term</td><td>Profiling timer</td></tr>
+        <tr><td><code>SIGWINCH</code></td><td>28</td><td>Ign</td><td>Ridimensionamento finestra</td></tr>
+        <tr><td><code>SIGIO</code></td><td>29</td><td>Term</td><td>I/O asincrono</td></tr>
+      </table>
+      <div class="note"><code>SIGKILL</code> e <code>SIGSTOP</code> non possono essere intercettati, ignorati o bloccati.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Invio Segnali</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;signal.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">kill</span>(<span class="type">pid_t</span> pid, <span class="type">int</span> sig);
+<span class="cmt">// pid > 0  : segnale al processo pid
+// pid == 0 : segnale a tutto il process group
+// pid == -1: segnale a tutti i processi (tranne PID 1)
+// pid < -1 : segnale al group |pid|</span>
+
+<span class="type">int</span> <span class="fn">raise</span>(<span class="type">int</span> sig);           <span class="cmt">// segnale a se stesso</span>
+<span class="type">int</span> <span class="fn">killpg</span>(<span class="type">pid_t</span> pgrp, <span class="type">int</span> sig); <span class="cmt">// segnale al group</span>
+<span class="type">unsigned</span> <span class="fn">alarm</span>(<span class="type">unsigned</span> sec);   <span class="cmt">// SIGALRM dopo sec secondi</span>
+
+<span class="cmt">/* Testare se un processo esiste */</span>
+<span class="kw">if</span> (<span class="fn">kill</span>(pid, <span class="num">0</span>) == <span class="num">0</span>)
+    <span class="fn">printf</span>(<span class="str">"Processo %d esiste\n"</span>, pid);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">signal() — Interfaccia Semplificata (Obsoleta)</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;signal.h&gt;</span>
+
+<span class="kw">typedef</span> <span class="kw">void</span> (*<span class="type">sighandler_t</span>)(<span class="type">int</span>);
+<span class="type">sighandler_t</span> <span class="fn">signal</span>(<span class="type">int</span> signum, <span class="type">sighandler_t</span> handler);
+<span class="cmt">// handler: SIG_DFL (default), SIG_IGN (ignora), o funzione</span>
+
+<span class="kw">void</span> <span class="fn">handler</span>(<span class="type">int</span> sig) {
+    <span class="cmt">/* ATTENZIONE: poche funzioni sono async-signal-safe! */</span>
+    <span class="fn">write</span>(STDOUT_FILENO, <span class="str">"Segnale!\n"</span>, <span class="num">9</span>);
+}
+<span class="fn">signal</span>(SIGINT, handler);
+</pre>
+      <div class="warn">Usare <code>sigaction()</code> invece di <code>signal()</code>. Il comportamento di <code>signal()</code> varia tra sistemi (reset o non-reset del handler, restart o no delle syscall).</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── sigaction() -->
+<span class="anchor" id="s-sigaction"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sigaction()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Struttura e Prototipo</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;signal.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">sigaction</span> {
+    <span class="kw">void</span>     (*<span class="fn">sa_handler</span>)(<span class="type">int</span>);           <span class="cmt">// handler semplice</span>
+    <span class="kw">void</span>     (*<span class="fn">sa_sigaction</span>)(<span class="type">int</span>, <span class="type">siginfo_t</span>*, <span class="kw">void</span>*); <span class="cmt">// handler esteso</span>
+    <span class="type">sigset_t</span> <span class="fn">sa_mask</span>;    <span class="cmt">// segnali bloccati durante handler</span>
+    <span class="type">int</span>      <span class="fn">sa_flags</span>;   <span class="cmt">// flag di comportamento</span>
+};
+
+<span class="type">int</span> <span class="fn">sigaction</span>(<span class="type">int</span> signum, <span class="kw">const</span> <span class="kw">struct</span> <span class="type">sigaction</span> *act,
+              <span class="kw">struct</span> <span class="type">sigaction</span> *oldact);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flag sa_flags</div>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>SA_RESTART</code></td><td>Riavvia automaticamente syscall interrotte (read, write, ...)</td></tr>
+        <tr><td><code>SA_NOCLDSTOP</code></td><td>SIGCHLD solo alla terminazione, non allo stop</td></tr>
+        <tr><td><code>SA_NOCLDWAIT</code></td><td>Non creare zombie per i figli</td></tr>
+        <tr><td><code>SA_SIGINFO</code></td><td>Usa sa_sigaction invece di sa_handler (info estese)</td></tr>
+        <tr><td><code>SA_RESETHAND</code></td><td>Reset handler a SIG_DFL dopo prima invocazione</td></tr>
+        <tr><td><code>SA_NODEFER</code></td><td>Non bloccare il segnale durante il proprio handler</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Handler Semplice</div>
+<pre>
+<span class="kw">volatile</span> <span class="type">sig_atomic_t</span> got_signal = <span class="num">0</span>;
+
+<span class="kw">void</span> <span class="fn">handler</span>(<span class="type">int</span> sig) {
+    got_signal = <span class="num">1</span>;
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="kw">struct</span> <span class="type">sigaction</span> sa = {
+        .sa_handler = handler,
+        .sa_flags   = SA_RESTART  <span class="cmt">// riavvia syscall interrotte</span>
+    };
+    <span class="fn">sigemptyset</span>(&amp;sa.sa_mask);
+    <span class="fn">sigaction</span>(SIGINT, &amp;sa, <span class="num">NULL</span>);
+    <span class="fn">sigaction</span>(SIGTERM, &amp;sa, <span class="num">NULL</span>);
+
+    <span class="kw">while</span> (!got_signal) {
+        <span class="fn">pause</span>();  <span class="cmt">// sospende fino a un segnale</span>
+    }
+    <span class="fn">printf</span>(<span class="str">"Segnale ricevuto, cleanup...\n"</span>);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Handler con SA_SIGINFO</div>
+<pre>
+<span class="kw">void</span> <span class="fn">handler_info</span>(<span class="type">int</span> sig, <span class="type">siginfo_t</span> *info, <span class="kw">void</span> *ctx) {
+    <span class="cmt">/* siginfo_t contiene:
+       si_signo  — numero segnale
+       si_code   — codice (SI_USER, SI_QUEUE, CLD_EXITED, ...)
+       si_pid    — PID del mittente
+       si_uid    — UID del mittente
+       si_status — exit status (SIGCHLD)
+       si_value  — valore allegato (sigqueue)
+       si_addr   — indirizzo fault (SIGSEGV, SIGBUS)  */</span>
+}
+
+<span class="kw">struct</span> <span class="type">sigaction</span> sa = {
+    .sa_sigaction = handler_info,
+    .sa_flags     = SA_SIGINFO | SA_RESTART
+};
+<span class="fn">sigemptyset</span>(&amp;sa.sa_mask);
+<span class="fn">sigaction</span>(SIGCHLD, &amp;sa, <span class="num">NULL</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Gestione SIGCHLD (Reap Figli)</div>
+<pre>
+<span class="kw">void</span> <span class="fn">sigchld_handler</span>(<span class="type">int</span> sig) {
+    <span class="type">int</span> saved_errno = errno;  <span class="cmt">// salvare errno!</span>
+
+    <span class="cmt">/* Raccogliere TUTTI i figli terminati (possono arrivarne più di uno) */</span>
+    <span class="type">pid_t</span> pid;
+    <span class="type">int</span> status;
+    <span class="kw">while</span> ((pid = <span class="fn">waitpid</span>(-<span class="num">1</span>, &amp;status, WNOHANG)) &gt; <span class="num">0</span>) {
+        <span class="cmt">/* gestisci terminazione di pid */</span>
+    }
+
+    errno = saved_errno;  <span class="cmt">// ripristinare errno!</span>
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Signal Masks -->
+<span class="anchor" id="s-sigmask"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> MASCHERE SEGNALI &amp; sigprocmask()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Manipolazione sigset_t</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;signal.h&gt;</span>
+
+<span class="type">sigset_t</span> set;
+
+<span class="fn">sigemptyset</span>(&amp;set);         <span class="cmt">// set vuoto</span>
+<span class="fn">sigfillset</span>(&amp;set);          <span class="cmt">// set con tutti i segnali</span>
+<span class="fn">sigaddset</span>(&amp;set, SIGINT);   <span class="cmt">// aggiunge SIGINT</span>
+<span class="fn">sigdelset</span>(&amp;set, SIGINT);   <span class="cmt">// rimuove SIGINT</span>
+<span class="fn">sigismember</span>(&amp;set, SIGINT); <span class="cmt">// testa appartenenza</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">sigprocmask()</div>
+<pre>
+<span class="type">int</span> <span class="fn">sigprocmask</span>(<span class="type">int</span> how, <span class="kw">const</span> <span class="type">sigset_t</span> *set, <span class="type">sigset_t</span> *oldset);
+<span class="cmt">// how:
+//   SIG_BLOCK   — aggiunge set alla maschera corrente
+//   SIG_UNBLOCK — rimuove set dalla maschera corrente
+//   SIG_SETMASK — imposta maschera = set</span>
+
+<span class="cmt">/* Sezione critica: bloccare SIGINT e SIGTERM */</span>
+<span class="type">sigset_t</span> block, old;
+<span class="fn">sigemptyset</span>(&amp;block);
+<span class="fn">sigaddset</span>(&amp;block, SIGINT);
+<span class="fn">sigaddset</span>(&amp;block, SIGTERM);
+
+<span class="fn">sigprocmask</span>(SIG_BLOCK, &amp;block, &amp;old);  <span class="cmt">// blocca</span>
+
+<span class="cmt">/* ... sezione critica ... */</span>
+
+<span class="fn">sigprocmask</span>(SIG_SETMASK, &amp;old, <span class="num">NULL</span>);  <span class="cmt">// ripristina</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">sigpending() &amp; sigsuspend()</div>
+<pre>
+<span class="cmt">/* Verificare segnali pendenti (bloccati ma ricevuti) */</span>
+<span class="type">sigset_t</span> pending;
+<span class="fn">sigpending</span>(&amp;pending);
+<span class="kw">if</span> (<span class="fn">sigismember</span>(&amp;pending, SIGINT))
+    <span class="fn">printf</span>(<span class="str">"SIGINT pendente!\n"</span>);
+
+<span class="cmt">/* sigsuspend — pausa atomica con maschera temporanea */</span>
+<span class="type">sigset_t</span> empty;
+<span class="fn">sigemptyset</span>(&amp;empty);
+<span class="fn">sigsuspend</span>(&amp;empty);  <span class="cmt">// sospende, tutti i segnali sbloccati</span>
+<span class="cmt">// Atomico: imposta maschera e sospende in un colpo
+// Risolve la race condition di: sigprocmask() ... pause()</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">signalfd() (Linux-specific)</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/signalfd.h&gt;</span>
+
+<span class="type">sigset_t</span> mask;
+<span class="fn">sigemptyset</span>(&amp;mask);
+<span class="fn">sigaddset</span>(&amp;mask, SIGINT);
+<span class="fn">sigaddset</span>(&amp;mask, SIGTERM);
+<span class="fn">sigprocmask</span>(SIG_BLOCK, &amp;mask, <span class="num">NULL</span>);  <span class="cmt">// blocca prima!</span>
+
+<span class="type">int</span> sfd = <span class="fn">signalfd</span>(-<span class="num">1</span>, &amp;mask, SFD_CLOEXEC);
+
+<span class="cmt">/* Ora leggi i segnali come dati da un fd */</span>
+<span class="kw">struct</span> <span class="type">signalfd_siginfo</span> info;
+<span class="fn">read</span>(sfd, &amp;info, <span class="kw">sizeof</span>(info));
+<span class="fn">printf</span>(<span class="str">"Ricevuto segnale %d da PID %d\n"</span>,
+       info.ssi_signo, info.ssi_pid);
+</pre>
+      <div class="note"><code>signalfd</code> permette di gestire segnali nel loop principale (con poll/epoll) senza handler asincroni — molto più sicuro e prevedibile.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Real-Time Signals -->
+<span class="anchor" id="s-sigqueue"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SEGNALI REAL-TIME &amp; sigqueue()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Caratteristiche</div>
+      <p>I segnali real-time (SIGRTMIN..SIGRTMAX, tipicamente 34-64) rispetto ai segnali standard:</p>
+      <p>&#8226; Sono <strong>accodati</strong> (non persi se multipli)<br>
+         &#8226; Possono trasportare un <strong>dato intero o puntatore</strong> (union sigval)<br>
+         &#8226; Sono consegnati in <strong>ordine di numero</strong> (SIGRTMIN prima)</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;signal.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">sigqueue</span>(<span class="type">pid_t</span> pid, <span class="type">int</span> sig, <span class="kw">const</span> <span class="kw">union</span> <span class="type">sigval</span> value);
+
+<span class="kw">union</span> <span class="type">sigval</span> {
+    <span class="type">int</span>   sival_int;   <span class="cmt">// valore intero</span>
+    <span class="kw">void</span> *sival_ptr;   <span class="cmt">// valore puntatore</span>
+};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="cmt">/* ─── MITTENTE ─── */</span>
+<span class="kw">union</span> <span class="type">sigval</span> val = { .sival_int = <span class="num">42</span> };
+<span class="fn">sigqueue</span>(target_pid, SIGRTMIN, val);
+
+<span class="cmt">/* ─── RICEVENTE (con SA_SIGINFO) ─── */</span>
+<span class="kw">void</span> <span class="fn">rt_handler</span>(<span class="type">int</span> sig, <span class="type">siginfo_t</span> *info, <span class="kw">void</span> *ctx) {
+    <span class="fn">printf</span>(<span class="str">"RT signal %d, valore=%d, da PID=%d\n"</span>,
+           sig, info-&gt;si_value.sival_int, info-&gt;si_pid);
+}
+
+<span class="kw">struct</span> <span class="type">sigaction</span> sa = {
+    .sa_sigaction = rt_handler,
+    .sa_flags     = SA_SIGINFO | SA_RESTART
+};
+<span class="fn">sigemptyset</span>(&amp;sa.sa_mask);
+<span class="fn">sigaction</span>(SIGRTMIN, &amp;sa, <span class="num">NULL</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Signal Patterns -->
+<span class="anchor" id="s-sig-patterns"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN &amp; IDIOMI SEGNALI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Funzioni Async-Signal-Safe</div>
+      <p>All'interno di un signal handler si possono chiamare <strong>solo</strong> funzioni async-signal-safe. Le principali:</p>
+      <p><code>_exit, write, read, open, close, fork, execve, waitpid, kill, signal, sigaction, sigprocmask, sigemptyset, sigaddset, alarm, sleep, getpid, getppid</code></p>
+      <div class="warn"><code>printf</code>, <code>malloc</code>, <code>free</code>, <code>exit</code> NON sono async-signal-safe! Usarle in un handler può causare deadlock o corruzione.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Self-Pipe Trick</div>
+      <p>Pattern per gestire segnali nel loop principale (con select/poll) senza race condition.</p>
+<pre>
+<span class="type">int</span> selfpipe[<span class="num">2</span>];
+
+<span class="kw">void</span> <span class="fn">sig_handler</span>(<span class="type">int</span> sig) {
+    <span class="type">int</span> saved_errno = errno;
+    <span class="type">char</span> c = sig;
+    <span class="fn">write</span>(selfpipe[<span class="num">1</span>], &amp;c, <span class="num">1</span>);  <span class="cmt">// write è async-signal-safe</span>
+    errno = saved_errno;
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">pipe2</span>(selfpipe, O_NONBLOCK | O_CLOEXEC);
+
+    <span class="kw">struct</span> <span class="type">sigaction</span> sa = { .sa_handler = sig_handler, .sa_flags = SA_RESTART };
+    <span class="fn">sigemptyset</span>(&amp;sa.sa_mask);
+    <span class="fn">sigaction</span>(SIGTERM, &amp;sa, <span class="num">NULL</span>);
+
+    <span class="cmt">/* Nel main loop, monitora selfpipe[0] con poll/select */</span>
+    <span class="kw">struct</span> <span class="type">pollfd</span> fds[] = {
+        { .fd = selfpipe[<span class="num">0</span>], .events = POLLIN },
+        <span class="cmt">/* ... altri fd ... */</span>
+    };
+    <span class="fn">poll</span>(fds, <span class="num">1</span>, -<span class="num">1</span>);
+    <span class="kw">if</span> (fds[<span class="num">0</span>].revents &amp; POLLIN) {
+        <span class="type">char</span> c;
+        <span class="fn">read</span>(selfpipe[<span class="num">0</span>], &amp;c, <span class="num">1</span>);
+        <span class="cmt">/* gestisci segnale (qui è sicuro usare printf, malloc, etc.) */</span>
+    }
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Timer con setitimer()</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/time.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">itimerval</span> timer = {
+    .it_value    = { .tv_sec = <span class="num">2</span>, .tv_usec = <span class="num">0</span> },  <span class="cmt">// primo scatto: 2s</span>
+    .it_interval = { .tv_sec = <span class="num">1</span>, .tv_usec = <span class="num">0</span> },  <span class="cmt">// intervallo: 1s</span>
+};
+<span class="fn">setitimer</span>(ITIMER_REAL, &amp;timer, <span class="num">NULL</span>);  <span class="cmt">// genera SIGALRM</span>
+
+<span class="cmt">/* ITIMER_REAL    → SIGALRM  (tempo reale)
+   ITIMER_VIRTUAL → SIGVTALRM (tempo CPU user)
+   ITIMER_PROF    → SIGPROF   (tempo CPU user+sys) */</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     SYSTEM V IPC
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-sysv-overview"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SYSTEM V IPC — PANORAMICA</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Architettura Comune</div>
+      <p>Tutti gli oggetti System V IPC condividono lo stesso pattern: una <strong>chiave</strong> (<code>key_t</code>) identifica la risorsa; <code>xxxget()</code> crea/accede; <code>xxxctl()</code> controlla; <code>xxxop()</code> opera.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/ipc.h&gt;</span>
+
+<span class="type">key_t</span> <span class="fn">ftok</span>(<span class="kw">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> proj_id);
+<span class="cmt">// Genera una chiave IPC da un pathname esistente e un intero (0-255)
+// Stesso pathname + proj_id → stessa chiave
+// Il file deve esistere e avere lo stesso i-node</span>
+
+<span class="type">key_t</span> key = <span class="fn">ftok</span>(<span class="str">"/tmp/myapp"</span>, <span class="str">'A'</span>);
+<span class="kw">if</span> (key == -<span class="num">1</span>) { <span class="fn">perror</span>(<span class="str">"ftok"</span>); <span class="fn">exit</span>(<span class="num">1</span>); }
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flag Comuni</div>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>IPC_CREAT</code></td><td>Crea l'oggetto se non esiste</td></tr>
+        <tr><td><code>IPC_EXCL</code></td><td>Con IPC_CREAT: fallisce se già esiste</td></tr>
+        <tr><td><code>IPC_RMID</code></td><td>Rimuovi l'oggetto (xxxctl)</td></tr>
+        <tr><td><code>IPC_STAT</code></td><td>Leggi struttura di stato (xxxctl)</td></tr>
+        <tr><td><code>IPC_SET</code></td><td>Imposta parametri (xxxctl)</td></tr>
+        <tr><td><code>IPC_PRIVATE</code></td><td>Chiave speciale: crea sempre un nuovo oggetto</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Comandi Shell di Ispezione</div>
+<pre>
+<span class="fn">ipcs</span>           <span class="cmt"># mostra tutte le risorse IPC</span>
+<span class="fn">ipcs</span> -m        <span class="cmt"># solo shared memory</span>
+<span class="fn">ipcs</span> -s        <span class="cmt"># solo semafori</span>
+<span class="fn">ipcs</span> -q        <span class="cmt"># solo code messaggi</span>
+<span class="fn">ipcrm</span> -m shmid <span class="cmt"># rimuove shared memory</span>
+<span class="fn">ipcrm</span> -s semid <span class="cmt"># rimuove semaforo</span>
+<span class="fn">ipcrm</span> -q msqid <span class="cmt"># rimuove coda messaggi</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">System V vs POSIX IPC</div>
+      <table>
+        <tr><th>Aspetto</th><th>System V</th><th>POSIX</th></tr>
+        <tr><td>Identificazione</td><td>key_t (ftok)</td><td>Nome stringa ("/nome")</td></tr>
+        <tr><td>API</td><td>xxxget/xxxctl/xxxop</td><td>xxx_open/xxx_close/xxx_unlink</td></tr>
+        <tr><td>Namespace</td><td>Kernel-global</td><td>Filesystem-like</td></tr>
+        <tr><td>Portabilità</td><td>Più vecchia, ubiqua</td><td>Standard POSIX, API migliore</td></tr>
+        <tr><td>Pulizia</td><td>Manuale (xxxctl IPC_RMID)</td><td>unlink + ultima close</td></tr>
+        <tr><td>Notifica</td><td>No</td><td>mq: mq_notify</td></tr>
+        <tr><td>Link</td><td>Nessuno</td><td>-lrt (su alcuni sistemi)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── System V Shared Memory -->
+<span class="anchor" id="s-sysv-shm"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SYSTEM V — SHARED MEMORY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/shm.h&gt;</span>
+
+<span class="type">int</span>   <span class="fn">shmget</span>(<span class="type">key_t</span> key, <span class="type">size_t</span> size, <span class="type">int</span> shmflg);
+<span class="kw">void</span> *<span class="fn">shmat</span>(<span class="type">int</span> shmid, <span class="kw">const</span> <span class="kw">void</span> *shmaddr, <span class="type">int</span> shmflg);
+<span class="type">int</span>   <span class="fn">shmdt</span>(<span class="kw">const</span> <span class="kw">void</span> *shmaddr);
+<span class="type">int</span>   <span class="fn">shmctl</span>(<span class="type">int</span> shmid, <span class="type">int</span> cmd, <span class="kw">struct</span> <span class="type">shmid_ds</span> *buf);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Completo</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/ipc.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sys/shm.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="dir">#define</span> <span class="lbl">SHM_SIZE</span> <span class="num">4096</span>
+
+<span class="type">key_t</span> key = <span class="fn">ftok</span>(<span class="str">"/tmp/myapp"</span>, <span class="str">'S'</span>);
+
+<span class="cmt">/* ─── PROCESSO 1: crea e scrive ─── */</span>
+<span class="type">int</span> shmid = <span class="fn">shmget</span>(key, <span class="lbl">SHM_SIZE</span>, IPC_CREAT | <span class="num">0666</span>);
+<span class="type">char</span> *ptr = (<span class="type">char</span> *)<span class="fn">shmat</span>(shmid, <span class="num">NULL</span>, <span class="num">0</span>);  <span class="cmt">// NULL = kernel sceglie indirizzo</span>
+
+<span class="fn">strcpy</span>(ptr, <span class="str">"Hello shared memory!"</span>);
+<span class="fn">shmdt</span>(ptr);  <span class="cmt">// detach (non distrugge)</span>
+
+<span class="cmt">/* ─── PROCESSO 2: legge ─── */</span>
+<span class="type">int</span> shmid = <span class="fn">shmget</span>(key, <span class="lbl">SHM_SIZE</span>, <span class="num">0666</span>);  <span class="cmt">// senza IPC_CREAT</span>
+<span class="type">char</span> *ptr = (<span class="type">char</span> *)<span class="fn">shmat</span>(shmid, <span class="num">NULL</span>, SHM_RDONLY);
+<span class="fn">printf</span>(<span class="str">"%s\n"</span>, ptr);
+<span class="fn">shmdt</span>(ptr);
+
+<span class="cmt">/* ─── CLEANUP ─── */</span>
+<span class="fn">shmctl</span>(shmid, IPC_RMID, <span class="num">NULL</span>);  <span class="cmt">// distrugge il segmento</span>
+</pre>
+      <div class="warn">La shared memory non ha sincronizzazione integrata. Serve un meccanismo esterno (semaforo, mutex) per evitare race condition.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── System V Semaphores -->
+<span class="anchor" id="s-sysv-sem"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SYSTEM V — SEMAFORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/sem.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">semget</span>(<span class="type">key_t</span> key, <span class="type">int</span> nsems, <span class="type">int</span> semflg);
+<span class="type">int</span> <span class="fn">semop</span>(<span class="type">int</span> semid, <span class="kw">struct</span> <span class="type">sembuf</span> *sops, <span class="type">size_t</span> nsops);
+<span class="type">int</span> <span class="fn">semctl</span>(<span class="type">int</span> semid, <span class="type">int</span> semnum, <span class="type">int</span> cmd, ...);
+
+<span class="kw">struct</span> <span class="type">sembuf</span> {
+    <span class="type">unsigned short</span> sem_num;  <span class="cmt">// indice semaforo nel set</span>
+    <span class="type">short</span>          sem_op;   <span class="cmt">// operazione</span>
+    <span class="type">short</span>          sem_flg;  <span class="cmt">// IPC_NOWAIT, SEM_UNDO</span>
+};
+<span class="cmt">// sem_op > 0 : incrementa (V / signal / release)
+// sem_op < 0 : decrementa se possibile, altrimenti blocca (P / wait / acquire)
+// sem_op = 0 : attende che il valore diventi 0</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Mutex con Semaforo</div>
+<pre>
+<span class="cmt">/* Unione necessaria per semctl su alcuni sistemi */</span>
+<span class="kw">union</span> <span class="type">semun</span> {
+    <span class="type">int</span>              val;
+    <span class="kw">struct</span> <span class="type">semid_ds</span> *buf;
+    <span class="type">unsigned short</span>  *array;
+};
+
+<span class="type">key_t</span> key = <span class="fn">ftok</span>(<span class="str">"/tmp/myapp"</span>, <span class="str">'M'</span>);
+<span class="type">int</span> semid = <span class="fn">semget</span>(key, <span class="num">1</span>, IPC_CREAT | <span class="num">0666</span>);
+
+<span class="cmt">/* Inizializzare a 1 (mutex) */</span>
+<span class="kw">union</span> <span class="type">semun</span> arg = { .val = <span class="num">1</span> };
+<span class="fn">semctl</span>(semid, <span class="num">0</span>, SETVAL, arg);
+
+<span class="cmt">/* P (wait / lock) */</span>
+<span class="kw">struct</span> <span class="type">sembuf</span> p_op = { .sem_num = <span class="num">0</span>, .sem_op = -<span class="num">1</span>, .sem_flg = SEM_UNDO };
+<span class="fn">semop</span>(semid, &amp;p_op, <span class="num">1</span>);
+
+<span class="cmt">/* ... sezione critica ... */</span>
+
+<span class="cmt">/* V (signal / unlock) */</span>
+<span class="kw">struct</span> <span class="type">sembuf</span> v_op = { .sem_num = <span class="num">0</span>, .sem_op = <span class="num">1</span>, .sem_flg = SEM_UNDO };
+<span class="fn">semop</span>(semid, &amp;v_op, <span class="num">1</span>);
+
+<span class="cmt">/* Cleanup */</span>
+<span class="fn">semctl</span>(semid, <span class="num">0</span>, IPC_RMID);
+</pre>
+      <div class="note"><code>SEM_UNDO</code>: il kernel ripristina automaticamente le operazioni se il processo termina senza rilasciare il semaforo. Fondamentale per la robustezza.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operazioni Multiple (Atomiche)</div>
+<pre>
+<span class="cmt">/* Operare su più semafori atomicamente */</span>
+<span class="kw">struct</span> <span class="type">sembuf</span> ops[<span class="num">2</span>] = {
+    { .sem_num = <span class="num">0</span>, .sem_op = -<span class="num">1</span>, .sem_flg = SEM_UNDO },  <span class="cmt">// lock sem 0</span>
+    { .sem_num = <span class="num">1</span>, .sem_op = -<span class="num">1</span>, .sem_flg = SEM_UNDO },  <span class="cmt">// lock sem 1</span>
+};
+<span class="fn">semop</span>(semid, ops, <span class="num">2</span>);  <span class="cmt">// entrambe o nessuna (atomico)</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── System V Message Queues -->
+<span class="anchor" id="s-sysv-msg"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SYSTEM V — CODE MESSAGGI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/msg.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">msgget</span>(<span class="type">key_t</span> key, <span class="type">int</span> msgflg);
+<span class="type">int</span> <span class="fn">msgsnd</span>(<span class="type">int</span> msqid, <span class="kw">const</span> <span class="kw">void</span> *msgp, <span class="type">size_t</span> msgsz, <span class="type">int</span> msgflg);
+<span class="type">ssize_t</span> <span class="fn">msgrcv</span>(<span class="type">int</span> msqid, <span class="kw">void</span> *msgp, <span class="type">size_t</span> msgsz, <span class="type">long</span> msgtyp, <span class="type">int</span> msgflg);
+<span class="type">int</span> <span class="fn">msgctl</span>(<span class="type">int</span> msqid, <span class="type">int</span> cmd, <span class="kw">struct</span> <span class="type">msqid_ds</span> *buf);
+
+<span class="cmt">// msgtyp in msgrcv:
+//   == 0 : primo messaggio in coda
+//   > 0  : primo messaggio con tipo == msgtyp
+//   < 0  : primo messaggio con tipo ≤ |msgtyp| (priorità)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Struttura Messaggio</div>
+<pre>
+<span class="cmt">/* Il messaggio DEVE iniziare con un long per il tipo */</span>
+<span class="kw">struct</span> <span class="type">msgbuf</span> {
+    <span class="type">long</span> mtype;       <span class="cmt">// tipo messaggio (> 0)</span>
+    <span class="type">char</span> mtext[<span class="num">256</span>];  <span class="cmt">// dati (dimensione a piacere)</span>
+};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Completo</div>
+<pre>
+<span class="type">key_t</span> key = <span class="fn">ftok</span>(<span class="str">"/tmp/myapp"</span>, <span class="str">'Q'</span>);
+<span class="type">int</span> msqid = <span class="fn">msgget</span>(key, IPC_CREAT | <span class="num">0666</span>);
+
+<span class="cmt">/* ─── MITTENTE ─── */</span>
+<span class="kw">struct</span> <span class="type">msgbuf</span> msg;
+msg.mtype = <span class="num">1</span>;  <span class="cmt">// tipo del messaggio</span>
+<span class="fn">snprintf</span>(msg.mtext, <span class="kw">sizeof</span>(msg.mtext), <span class="str">"Ciao coda!"</span>);
+<span class="fn">msgsnd</span>(msqid, &amp;msg, <span class="fn">strlen</span>(msg.mtext) + <span class="num">1</span>, <span class="num">0</span>);
+
+<span class="cmt">/* ─── RICEVENTE ─── */</span>
+<span class="kw">struct</span> <span class="type">msgbuf</span> rmsg;
+<span class="type">ssize_t</span> n = <span class="fn">msgrcv</span>(msqid, &amp;rmsg, <span class="kw">sizeof</span>(rmsg.mtext), <span class="num">1</span>, <span class="num">0</span>);
+<span class="cmt">//                                  tipo 1 ──┘</span>
+<span class="fn">printf</span>(<span class="str">"Ricevuto (tipo %ld): %s\n"</span>, rmsg.mtype, rmsg.mtext);
+
+<span class="cmt">/* Cleanup */</span>
+<span class="fn">msgctl</span>(msqid, IPC_RMID, <span class="num">NULL</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern: Multiplexing con Tipi</div>
+<pre>
+<span class="cmt">/* Usare il tipo come ID destinatario (es. PID) */</span>
+<span class="dir">#define</span> <span class="lbl">MSG_SERVER</span>  <span class="num">1</span>
+<span class="dir">#define</span> <span class="lbl">MSG_CLIENT</span>  <span class="num">2</span>
+
+<span class="cmt">/* Server riceve solo messaggi tipo 1 */</span>
+<span class="fn">msgrcv</span>(msqid, &amp;msg, size, <span class="lbl">MSG_SERVER</span>, <span class="num">0</span>);
+
+<span class="cmt">/* Client riceve solo messaggi tipo 2 */</span>
+<span class="fn">msgrcv</span>(msqid, &amp;msg, size, <span class="lbl">MSG_CLIENT</span>, <span class="num">0</span>);
+
+<span class="cmt">/* Oppure: usare il PID come tipo */</span>
+msg.mtype = <span class="fn">getpid</span>();  <span class="cmt">// risposte indirizzate al client</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     POSIX IPC
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-posix-shm"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> POSIX — SHARED MEMORY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/mman.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;fcntl.h&gt;</span>
+
+<span class="type">int</span>  <span class="fn">shm_open</span>(<span class="kw">const</span> <span class="type">char</span> *name, <span class="type">int</span> oflag, <span class="type">mode_t</span> mode);
+<span class="type">int</span>  <span class="fn">shm_unlink</span>(<span class="kw">const</span> <span class="type">char</span> *name);
+<span class="cmt">// name: deve iniziare con "/" (es. "/myshm")
+// Ritorna un fd da usare con ftruncate + mmap
+// Compilare con -lrt (su alcuni sistemi)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Completo</div>
+<pre>
+<span class="dir">#define</span> <span class="lbl">SHM_NAME</span> <span class="str">"/my_shared_mem"</span>
+<span class="dir">#define</span> <span class="lbl">SHM_SIZE</span> <span class="num">4096</span>
+
+<span class="cmt">/* ─── PROCESSO 1: crea e scrive ─── */</span>
+<span class="type">int</span> fd = <span class="fn">shm_open</span>(<span class="lbl">SHM_NAME</span>, O_CREAT | O_RDWR, <span class="num">0666</span>);
+<span class="fn">ftruncate</span>(fd, <span class="lbl">SHM_SIZE</span>);  <span class="cmt">// imposta dimensione</span>
+
+<span class="type">char</span> *ptr = <span class="fn">mmap</span>(<span class="num">NULL</span>, <span class="lbl">SHM_SIZE</span>, PROT_READ | PROT_WRITE,
+                 MAP_SHARED, fd, <span class="num">0</span>);
+<span class="fn">close</span>(fd);  <span class="cmt">// fd non più necessario dopo mmap</span>
+
+<span class="fn">strcpy</span>(ptr, <span class="str">"Hello POSIX shm!"</span>);
+<span class="fn">munmap</span>(ptr, <span class="lbl">SHM_SIZE</span>);
+
+<span class="cmt">/* ─── PROCESSO 2: legge ─── */</span>
+<span class="type">int</span> fd = <span class="fn">shm_open</span>(<span class="lbl">SHM_NAME</span>, O_RDONLY, <span class="num">0</span>);
+<span class="type">char</span> *ptr = <span class="fn">mmap</span>(<span class="num">NULL</span>, <span class="lbl">SHM_SIZE</span>, PROT_READ, MAP_SHARED, fd, <span class="num">0</span>);
+<span class="fn">close</span>(fd);
+
+<span class="fn">printf</span>(<span class="str">"%s\n"</span>, ptr);
+<span class="fn">munmap</span>(ptr, <span class="lbl">SHM_SIZE</span>);
+
+<span class="cmt">/* ─── CLEANUP ─── */</span>
+<span class="fn">shm_unlink</span>(<span class="lbl">SHM_NAME</span>);  <span class="cmt">// rimuove dal filesystem</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── POSIX Semaphores -->
+<span class="anchor" id="s-posix-sem"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> POSIX — SEMAFORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Semafori Named (tra processi)</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;semaphore.h&gt;</span>
+
+<span class="type">sem_t</span> *<span class="fn">sem_open</span>(<span class="kw">const</span> <span class="type">char</span> *name, <span class="type">int</span> oflag, <span class="type">mode_t</span> mode, <span class="type">unsigned</span> value);
+<span class="type">int</span>    <span class="fn">sem_close</span>(<span class="type">sem_t</span> *sem);
+<span class="type">int</span>    <span class="fn">sem_unlink</span>(<span class="kw">const</span> <span class="type">char</span> *name);
+
+<span class="type">int</span>    <span class="fn">sem_wait</span>(<span class="type">sem_t</span> *sem);       <span class="cmt">// P (decrementa, blocca se 0)</span>
+<span class="type">int</span>    <span class="fn">sem_trywait</span>(<span class="type">sem_t</span> *sem);    <span class="cmt">// P non bloccante (EAGAIN)</span>
+<span class="type">int</span>    <span class="fn">sem_timedwait</span>(<span class="type">sem_t</span> *sem, <span class="kw">const</span> <span class="kw">struct</span> <span class="type">timespec</span> *abs_timeout);
+<span class="type">int</span>    <span class="fn">sem_post</span>(<span class="type">sem_t</span> *sem);       <span class="cmt">// V (incrementa)</span>
+<span class="type">int</span>    <span class="fn">sem_getvalue</span>(<span class="type">sem_t</span> *sem, <span class="type">int</span> *sval);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Mutex POSIX tra Processi</div>
+<pre>
+<span class="dir">#define</span> <span class="lbl">SEM_NAME</span> <span class="str">"/my_mutex"</span>
+
+<span class="cmt">/* Creatore */</span>
+<span class="type">sem_t</span> *sem = <span class="fn">sem_open</span>(<span class="lbl">SEM_NAME</span>, O_CREAT, <span class="num">0666</span>, <span class="num">1</span>);  <span class="cmt">// valore iniziale 1</span>
+
+<span class="cmt">/* In ogni processo: */</span>
+<span class="type">sem_t</span> *sem = <span class="fn">sem_open</span>(<span class="lbl">SEM_NAME</span>, <span class="num">0</span>);  <span class="cmt">// apre esistente</span>
+
+<span class="fn">sem_wait</span>(sem);    <span class="cmt">// lock</span>
+<span class="cmt">/* ... sezione critica ... */</span>
+<span class="fn">sem_post</span>(sem);    <span class="cmt">// unlock</span>
+
+<span class="fn">sem_close</span>(sem);
+<span class="fn">sem_unlink</span>(<span class="lbl">SEM_NAME</span>);  <span class="cmt">// rimuove (solo un processo)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Semafori Unnamed (in shared memory)</div>
+<pre>
+<span class="cmt">/* Semaforo unnamed: vive in memoria condivisa */</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">sem_t</span> sem;
+    <span class="type">int</span>   data;
+} <span class="type">shared_t</span>;
+
+<span class="cmt">/* In shared memory (mmap o shm_open) */</span>
+<span class="type">shared_t</span> *shm = <span class="fn">mmap</span>(...);
+<span class="fn">sem_init</span>(&amp;shm-&gt;sem, <span class="num">1</span>, <span class="num">1</span>);  <span class="cmt">// pshared=1 per tra processi</span>
+
+<span class="fn">sem_wait</span>(&amp;shm-&gt;sem);
+shm-&gt;data = <span class="num">42</span>;
+<span class="fn">sem_post</span>(&amp;shm-&gt;sem);
+
+<span class="fn">sem_destroy</span>(&amp;shm-&gt;sem);  <span class="cmt">// cleanup</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── POSIX Message Queues -->
+<span class="anchor" id="s-posix-mq"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> POSIX — CODE MESSAGGI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;mqueue.h&gt;</span>
+
+<span class="type">mqd_t</span> <span class="fn">mq_open</span>(<span class="kw">const</span> <span class="type">char</span> *name, <span class="type">int</span> oflag, <span class="type">mode_t</span> mode,
+               <span class="kw">struct</span> <span class="type">mq_attr</span> *attr);
+<span class="type">int</span>   <span class="fn">mq_close</span>(<span class="type">mqd_t</span> mqdes);
+<span class="type">int</span>   <span class="fn">mq_unlink</span>(<span class="kw">const</span> <span class="type">char</span> *name);
+
+<span class="type">int</span>     <span class="fn">mq_send</span>(<span class="type">mqd_t</span> mqdes, <span class="kw">const</span> <span class="type">char</span> *msg, <span class="type">size_t</span> len, <span class="type">unsigned</span> prio);
+<span class="type">ssize_t</span> <span class="fn">mq_receive</span>(<span class="type">mqd_t</span> mqdes, <span class="type">char</span> *msg, <span class="type">size_t</span> len, <span class="type">unsigned</span> *prio);
+<span class="type">int</span>     <span class="fn">mq_notify</span>(<span class="type">mqd_t</span> mqdes, <span class="kw">const</span> <span class="kw">struct</span> <span class="type">sigevent</span> *notification);
+
+<span class="kw">struct</span> <span class="type">mq_attr</span> {
+    <span class="type">long</span> mq_flags;    <span class="cmt">// 0 o O_NONBLOCK</span>
+    <span class="type">long</span> mq_maxmsg;   <span class="cmt">// max messaggi in coda</span>
+    <span class="type">long</span> mq_msgsize;  <span class="cmt">// max dimensione messaggio</span>
+    <span class="type">long</span> mq_curmsgs;  <span class="cmt">// messaggi attualmente in coda</span>
+};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="dir">#define</span> <span class="lbl">MQ_NAME</span> <span class="str">"/my_queue"</span>
+
+<span class="kw">struct</span> <span class="type">mq_attr</span> attr = {
+    .mq_maxmsg  = <span class="num">10</span>,
+    .mq_msgsize = <span class="num">256</span>
+};
+
+<span class="cmt">/* ─── MITTENTE ─── */</span>
+<span class="type">mqd_t</span> mq = <span class="fn">mq_open</span>(<span class="lbl">MQ_NAME</span>, O_CREAT | O_WRONLY, <span class="num">0666</span>, &amp;attr);
+<span class="fn">mq_send</span>(mq, <span class="str">"Hello MQ!"</span>, <span class="num">10</span>, <span class="num">0</span>);  <span class="cmt">// priorità 0</span>
+<span class="fn">mq_close</span>(mq);
+
+<span class="cmt">/* ─── RICEVENTE ─── */</span>
+<span class="type">mqd_t</span> mq = <span class="fn">mq_open</span>(<span class="lbl">MQ_NAME</span>, O_RDONLY);
+
+<span class="kw">struct</span> <span class="type">mq_attr</span> a;
+<span class="fn">mq_getattr</span>(mq, &amp;a);
+
+<span class="type">char</span> *buf = <span class="fn">malloc</span>(a.mq_msgsize);
+<span class="type">unsigned</span> prio;
+<span class="type">ssize_t</span> n = <span class="fn">mq_receive</span>(mq, buf, a.mq_msgsize, &amp;prio);
+<span class="fn">printf</span>(<span class="str">"Ricevuto (prio %u): %s\n"</span>, prio, buf);
+
+<span class="fn">free</span>(buf);
+<span class="fn">mq_close</span>(mq);
+<span class="fn">mq_unlink</span>(<span class="lbl">MQ_NAME</span>);
+</pre>
+      <div class="note">Compilare con <code>-lrt</code>. Le POSIX mq supportano notifica asincrona tramite <code>mq_notify()</code> (segnale o thread).</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── mmap() -->
+<span class="anchor" id="s-mmap"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> mmap() &amp; munmap()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipo</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/mman.h&gt;</span>
+
+<span class="kw">void</span> *<span class="fn">mmap</span>(<span class="kw">void</span> *addr, <span class="type">size_t</span> length, <span class="type">int</span> prot, <span class="type">int</span> flags,
+           <span class="type">int</span> fd, <span class="type">off_t</span> offset);
+<span class="type">int</span>   <span class="fn">munmap</span>(<span class="kw">void</span> *addr, <span class="type">size_t</span> length);
+<span class="type">int</span>   <span class="fn">msync</span>(<span class="kw">void</span> *addr, <span class="type">size_t</span> length, <span class="type">int</span> flags);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flag</div>
+      <table>
+        <tr><th>Protezione</th><th>Descrizione</th></tr>
+        <tr><td><code>PROT_NONE</code></td><td>Nessun accesso</td></tr>
+        <tr><td><code>PROT_READ</code></td><td>Lettura</td></tr>
+        <tr><td><code>PROT_WRITE</code></td><td>Scrittura</td></tr>
+        <tr><td><code>PROT_EXEC</code></td><td>Esecuzione</td></tr>
+      </table>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>MAP_SHARED</code></td><td>Modifiche visibili ad altri processi (IPC)</td></tr>
+        <tr><td><code>MAP_PRIVATE</code></td><td>Copy-on-write (modifiche private)</td></tr>
+        <tr><td><code>MAP_ANONYMOUS</code></td><td>Nessun file (fd ignorato, -1). Utile per alloc</td></tr>
+        <tr><td><code>MAP_FIXED</code></td><td>Usa addr esatto (pericoloso)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Uso Comune</div>
+<pre>
+<span class="cmt">/* 1. Memory-mapped file (lettura rapida) */</span>
+<span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"data.bin"</span>, O_RDONLY);
+<span class="kw">struct</span> <span class="type">stat</span> sb;
+<span class="fn">fstat</span>(fd, &amp;sb);
+<span class="type">char</span> *data = <span class="fn">mmap</span>(<span class="num">NULL</span>, sb.st_size, PROT_READ, MAP_PRIVATE, fd, <span class="num">0</span>);
+<span class="fn">close</span>(fd);
+<span class="cmt">/* accesso diretto: data[0], data[1], ... */</span>
+<span class="fn">munmap</span>(data, sb.st_size);
+
+<span class="cmt">/* 2. Memoria anonima condivisa tra fork */</span>
+<span class="type">int</span> *shared = <span class="fn">mmap</span>(<span class="num">NULL</span>, <span class="kw">sizeof</span>(<span class="type">int</span>),
+                    PROT_READ | PROT_WRITE,
+                    MAP_SHARED | MAP_ANONYMOUS,
+                    -<span class="num">1</span>, <span class="num">0</span>);
+*shared = <span class="num">0</span>;
+
+<span class="kw">if</span> (<span class="fn">fork</span>() == <span class="num">0</span>) {
+    *shared = <span class="num">42</span>;  <span class="cmt">// visibile al padre!</span>
+    <span class="fn">_exit</span>(<span class="num">0</span>);
+}
+<span class="fn">wait</span>(<span class="num">NULL</span>);
+<span class="fn">printf</span>(<span class="str">"shared = %d\n"</span>, *shared);  <span class="cmt">// 42</span>
+<span class="fn">munmap</span>(shared, <span class="kw">sizeof</span>(<span class="type">int</span>));
+
+<span class="cmt">/* 3. Allocazione di grandi blocchi (alternativa a malloc) */</span>
+<span class="type">void</span> *block = <span class="fn">mmap</span>(<span class="num">NULL</span>, <span class="num">1</span> &lt;&lt; <span class="num">20</span>,  <span class="cmt">// 1 MB</span>
+                    PROT_READ | PROT_WRITE,
+                    MAP_PRIVATE | MAP_ANONYMOUS,
+                    -<span class="num">1</span>, <span class="num">0</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">mprotect() — Cambiare Protezione</div>
+<pre>
+<span class="type">int</span> <span class="fn">mprotect</span>(<span class="kw">void</span> *addr, <span class="type">size_t</span> len, <span class="type">int</span> prot);
+
+<span class="cmt">/* Esempio: rendere una pagina read-only dopo la scrittura */</span>
+<span class="fn">mprotect</span>(ptr, page_size, PROT_READ);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     SOCKET (IPC LOCALE)
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-unix-socket"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> UNIX DOMAIN SOCKET</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetti</div>
+      <p>Unix domain socket: comunicazione locale (stesso host), sia stream (SOCK_STREAM) che datagram (SOCK_DGRAM). Più veloci dei TCP socket (nessun overhead rete). Supportano passaggio fd e credenziali.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/socket.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sys/un.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">sockaddr_un</span> {
+    <span class="type">sa_family_t</span> sun_family;  <span class="cmt">// AF_UNIX</span>
+    <span class="type">char</span>        sun_path[<span class="num">108</span>]; <span class="cmt">// pathname</span>
+};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Server Stream</div>
+<pre>
+<span class="type">int</span> sfd = <span class="fn">socket</span>(AF_UNIX, SOCK_STREAM, <span class="num">0</span>);
+
+<span class="kw">struct</span> <span class="type">sockaddr_un</span> addr = { .sun_family = AF_UNIX };
+<span class="fn">strncpy</span>(addr.sun_path, <span class="str">"/tmp/my.sock"</span>, <span class="kw">sizeof</span>(addr.sun_path) - <span class="num">1</span>);
+<span class="fn">unlink</span>(<span class="str">"/tmp/my.sock"</span>);  <span class="cmt">// rimuovi vecchio socket se esiste</span>
+
+<span class="fn">bind</span>(sfd, (<span class="kw">struct</span> <span class="type">sockaddr</span>*)&amp;addr, <span class="kw">sizeof</span>(addr));
+<span class="fn">listen</span>(sfd, <span class="num">5</span>);
+
+<span class="kw">while</span> (<span class="num">1</span>) {
+    <span class="type">int</span> cfd = <span class="fn">accept</span>(sfd, <span class="num">NULL</span>, <span class="num">NULL</span>);
+
+    <span class="type">char</span> buf[<span class="num">256</span>];
+    <span class="type">ssize_t</span> n = <span class="fn">read</span>(cfd, buf, <span class="kw">sizeof</span>(buf));
+    <span class="fn">write</span>(cfd, buf, n);  <span class="cmt">// echo</span>
+
+    <span class="fn">close</span>(cfd);
+}
+<span class="fn">close</span>(sfd);
+<span class="fn">unlink</span>(<span class="str">"/tmp/my.sock"</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Client Stream</div>
+<pre>
+<span class="type">int</span> sfd = <span class="fn">socket</span>(AF_UNIX, SOCK_STREAM, <span class="num">0</span>);
+
+<span class="kw">struct</span> <span class="type">sockaddr_un</span> addr = { .sun_family = AF_UNIX };
+<span class="fn">strncpy</span>(addr.sun_path, <span class="str">"/tmp/my.sock"</span>, <span class="kw">sizeof</span>(addr.sun_path) - <span class="num">1</span>);
+
+<span class="fn">connect</span>(sfd, (<span class="kw">struct</span> <span class="type">sockaddr</span>*)&amp;addr, <span class="kw">sizeof</span>(addr));
+
+<span class="fn">write</span>(sfd, <span class="str">"Hello!"</span>, <span class="num">6</span>);
+<span class="type">char</span> buf[<span class="num">256</span>];
+<span class="type">ssize_t</span> n = <span class="fn">read</span>(sfd, buf, <span class="kw">sizeof</span>(buf));
+
+<span class="fn">close</span>(sfd);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Passaggio File Descriptor (SCM_RIGHTS)</div>
+      <p>Feature unica dei Unix domain socket: inviare file descriptor aperti tra processi non correlati.</p>
+<pre>
+<span class="cmt">/* ─── INVIO fd tramite ancillary data ─── */</span>
+<span class="kw">void</span> <span class="fn">send_fd</span>(<span class="type">int</span> socket, <span class="type">int</span> fd_to_send) {
+    <span class="kw">struct</span> <span class="type">msghdr</span> msg = {<span class="num">0</span>};
+    <span class="type">char</span> buf[<span class="num">1</span>] = {<span class="str">'F'</span>};
+    <span class="kw">struct</span> <span class="type">iovec</span> io = { .iov_base = buf, .iov_len = <span class="num">1</span> };
+    msg.msg_iov = &amp;io;
+    msg.msg_iovlen = <span class="num">1</span>;
+
+    <span class="type">char</span> cmsgbuf[CMSG_SPACE(<span class="kw">sizeof</span>(<span class="type">int</span>))];
+    msg.msg_control = cmsgbuf;
+    msg.msg_controllen = <span class="kw">sizeof</span>(cmsgbuf);
+
+    <span class="kw">struct</span> <span class="type">cmsghdr</span> *cmsg = CMSG_FIRSTHDR(&amp;msg);
+    cmsg-&gt;cmsg_level = SOL_SOCKET;
+    cmsg-&gt;cmsg_type  = SCM_RIGHTS;
+    cmsg-&gt;cmsg_len   = CMSG_LEN(<span class="kw">sizeof</span>(<span class="type">int</span>));
+    <span class="fn">memcpy</span>(CMSG_DATA(cmsg), &amp;fd_to_send, <span class="kw">sizeof</span>(<span class="type">int</span>));
+
+    <span class="fn">sendmsg</span>(socket, &amp;msg, <span class="num">0</span>);
+}
+
+<span class="cmt">/* ─── RICEZIONE fd ─── */</span>
+<span class="type">int</span> <span class="fn">recv_fd</span>(<span class="type">int</span> socket) {
+    <span class="kw">struct</span> <span class="type">msghdr</span> msg = {<span class="num">0</span>};
+    <span class="type">char</span> buf[<span class="num">1</span>];
+    <span class="kw">struct</span> <span class="type">iovec</span> io = { .iov_base = buf, .iov_len = <span class="num">1</span> };
+    msg.msg_iov = &amp;io;
+    msg.msg_iovlen = <span class="num">1</span>;
+
+    <span class="type">char</span> cmsgbuf[CMSG_SPACE(<span class="kw">sizeof</span>(<span class="type">int</span>))];
+    msg.msg_control = cmsgbuf;
+    msg.msg_controllen = <span class="kw">sizeof</span>(cmsgbuf);
+
+    <span class="fn">recvmsg</span>(socket, &amp;msg, <span class="num">0</span>);
+
+    <span class="kw">struct</span> <span class="type">cmsghdr</span> *cmsg = CMSG_FIRSTHDR(&amp;msg);
+    <span class="type">int</span> received_fd;
+    <span class="fn">memcpy</span>(&amp;received_fd, CMSG_DATA(cmsg), <span class="kw">sizeof</span>(<span class="type">int</span>));
+    <span class="kw">return</span> received_fd;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Abstract Socket (Linux)</div>
+<pre>
+<span class="cmt">/* Su Linux, se sun_path[0] == '\0', il socket è "abstract":
+   non crea file nel filesystem, rimosso automaticamente */</span>
+<span class="kw">struct</span> <span class="type">sockaddr_un</span> addr = { .sun_family = AF_UNIX };
+addr.sun_path[<span class="num">0</span>] = <span class="str">'\0'</span>;
+<span class="fn">strcpy</span>(addr.sun_path + <span class="num">1</span>, <span class="str">"my_abstract_socket"</span>);
+
+<span class="type">socklen_t</span> len = <span class="kw">offsetof</span>(<span class="kw">struct</span> <span class="type">sockaddr_un</span>, sun_path)
+              + <span class="num">1</span> + <span class="fn">strlen</span>(<span class="str">"my_abstract_socket"</span>);
+<span class="fn">bind</span>(sfd, (<span class="kw">struct</span> <span class="type">sockaddr</span>*)&amp;addr, len);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── socketpair() -->
+<span class="anchor" id="s-socketpair"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> socketpair()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Pipe Bidirezionale</div>
+      <p><code>socketpair()</code> crea una coppia di socket connessi — come una pipe bidirezionale. Utile per comunicazione padre-figlio senza FIFO.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/socket.h&gt;</span>
+
+<span class="type">int</span> sv[<span class="num">2</span>];
+<span class="fn">socketpair</span>(AF_UNIX, SOCK_STREAM, <span class="num">0</span>, sv);
+<span class="cmt">// sv[0] e sv[1] sono bidirezionali e connessi tra loro</span>
+
+<span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="num">0</span>) {
+    <span class="fn">close</span>(sv[<span class="num">0</span>]);
+    <span class="cmt">/* Figlio usa sv[1] */</span>
+    <span class="fn">write</span>(sv[<span class="num">1</span>], <span class="str">"from child"</span>, <span class="num">10</span>);
+    <span class="type">char</span> buf[<span class="num">64</span>];
+    <span class="fn">read</span>(sv[<span class="num">1</span>], buf, <span class="kw">sizeof</span>(buf));
+    <span class="fn">close</span>(sv[<span class="num">1</span>]);
+    <span class="fn">_exit</span>(<span class="num">0</span>);
+}
+
+<span class="fn">close</span>(sv[<span class="num">1</span>]);
+<span class="cmt">/* Padre usa sv[0] */</span>
+<span class="type">char</span> buf[<span class="num">64</span>];
+<span class="fn">read</span>(sv[<span class="num">0</span>], buf, <span class="kw">sizeof</span>(buf));
+<span class="fn">write</span>(sv[<span class="num">0</span>], <span class="str">"from parent"</span>, <span class="num">11</span>);
+<span class="fn">close</span>(sv[<span class="num">0</span>]);
+<span class="fn">waitpid</span>(pid, <span class="num">NULL</span>, <span class="num">0</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     FILE LOCKING
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-flock"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> FILE LOCKING</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">flock() — Lock su Intero File</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/file.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">flock</span>(<span class="type">int</span> fd, <span class="type">int</span> operation);
+<span class="cmt">// LOCK_SH — shared lock (lettura, multipli)
+// LOCK_EX — exclusive lock (scrittura, singolo)
+// LOCK_UN — unlock
+// LOCK_NB — non bloccante (OR con SH o EX)</span>
+
+<span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"data.db"</span>, O_RDWR);
+<span class="kw">if</span> (<span class="fn">flock</span>(fd, LOCK_EX) == <span class="num">0</span>) {
+    <span class="cmt">/* ... operazioni esclusive ... */</span>
+    <span class="fn">flock</span>(fd, LOCK_UN);
+}
+<span class="fn">close</span>(fd);  <span class="cmt">// rilascia automaticamente il lock</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">fcntl() — Lock su Regione (POSIX)</div>
+<pre>
+<span class="kw">struct</span> <span class="type">flock</span> {
+    <span class="type">short</span> l_type;    <span class="cmt">// F_RDLCK, F_WRLCK, F_UNLCK</span>
+    <span class="type">short</span> l_whence;  <span class="cmt">// SEEK_SET, SEEK_CUR, SEEK_END</span>
+    <span class="type">off_t</span> l_start;   <span class="cmt">// offset inizio</span>
+    <span class="type">off_t</span> l_len;     <span class="cmt">// lunghezza (0 = fino a EOF)</span>
+    <span class="type">pid_t</span> l_pid;     <span class="cmt">// PID che detiene il lock (F_GETLK)</span>
+};
+
+<span class="cmt">/* Lock esclusivo sui primi 100 byte */</span>
+<span class="kw">struct</span> <span class="type">flock</span> fl = {
+    .l_type   = F_WRLCK,
+    .l_whence = SEEK_SET,
+    .l_start  = <span class="num">0</span>,
+    .l_len    = <span class="num">100</span>
+};
+
+<span class="fn">fcntl</span>(fd, F_SETLKW, &amp;fl);  <span class="cmt">// bloccante</span>
+<span class="cmt">/* ... modifica ... */</span>
+fl.l_type = F_UNLCK;
+<span class="fn">fcntl</span>(fd, F_SETLK, &amp;fl);   <span class="cmt">// unlock</span>
+</pre>
+      <div class="note"><strong>flock</strong>: advisory lock su intero file, ereditato dai figli via fork, rilasciato alla chiusura dell'ultima copia del fd. <strong>fcntl lock</strong>: advisory lock su regione, NON ereditato, rilasciato alla chiusura di qualsiasi fd sullo stesso file. Non mischiare i due!</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern: PID File (Lock Daemon)</div>
+<pre>
+<span class="type">int</span> <span class="fn">acquire_pidfile</span>(<span class="kw">const</span> <span class="type">char</span> *path) {
+    <span class="type">int</span> fd = <span class="fn">open</span>(path, O_RDWR | O_CREAT, <span class="num">0644</span>);
+    <span class="kw">if</span> (fd &lt; <span class="num">0</span>) <span class="kw">return</span> -<span class="num">1</span>;
+
+    <span class="kw">struct</span> <span class="type">flock</span> fl = { .l_type = F_WRLCK, .l_whence = SEEK_SET };
+    <span class="kw">if</span> (<span class="fn">fcntl</span>(fd, F_SETLK, &amp;fl) &lt; <span class="num">0</span>) {
+        <span class="fn">close</span>(fd);
+        <span class="kw">return</span> -<span class="num">1</span>;  <span class="cmt">// un'altra istanza è già in esecuzione</span>
+    }
+
+    <span class="fn">ftruncate</span>(fd, <span class="num">0</span>);
+    <span class="type">char</span> buf[<span class="num">32</span>];
+    <span class="fn">snprintf</span>(buf, <span class="kw">sizeof</span>(buf), <span class="str">"%d\n"</span>, <span class="fn">getpid</span>());
+    <span class="fn">write</span>(fd, buf, <span class="fn">strlen</span>(buf));
+    <span class="cmt">/* Non chiudere fd! Il lock resta finché il processo è vivo */</span>
+    <span class="kw">return</span> fd;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     AVANZATO
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-environ"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> VARIABILI D'AMBIENTE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">char</span> *<span class="fn">getenv</span>(<span class="kw">const</span> <span class="type">char</span> *name);
+<span class="type">int</span>   <span class="fn">setenv</span>(<span class="kw">const</span> <span class="type">char</span> *name, <span class="kw">const</span> <span class="type">char</span> *value, <span class="type">int</span> overwrite);
+<span class="type">int</span>   <span class="fn">unsetenv</span>(<span class="kw">const</span> <span class="type">char</span> *name);
+<span class="type">int</span>   <span class="fn">putenv</span>(<span class="type">char</span> *string);  <span class="cmt">// "NAME=value" (deprecated)</span>
+<span class="type">int</span>   <span class="fn">clearenv</span>(<span class="kw">void</span>);        <span class="cmt">// GNU: svuota ambiente</span>
+
+<span class="cmt">/* Accesso diretto all'ambiente */</span>
+<span class="kw">extern</span> <span class="type">char</span> **environ;
+<span class="kw">for</span> (<span class="type">char</span> **ep = environ; *ep != <span class="num">NULL</span>; ep++)
+    <span class="fn">printf</span>(<span class="str">"%s\n"</span>, *ep);
+
+<span class="cmt">/* Oppure via terzo argomento di main (non standard) */</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> *argv[], <span class="type">char</span> *envp[]);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Limiti & Risorse -->
+<span class="anchor" id="s-resource"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> LIMITI &amp; RISORSE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">getrlimit() / setrlimit()</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/resource.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">rlimit</span> {
+    <span class="type">rlim_t</span> rlim_cur;  <span class="cmt">// soft limit (corrente)</span>
+    <span class="type">rlim_t</span> rlim_max;  <span class="cmt">// hard limit (massimo)</span>
+};
+
+<span class="type">int</span> <span class="fn">getrlimit</span>(<span class="type">int</span> resource, <span class="kw">struct</span> <span class="type">rlimit</span> *rlim);
+<span class="type">int</span> <span class="fn">setrlimit</span>(<span class="type">int</span> resource, <span class="kw">const</span> <span class="kw">struct</span> <span class="type">rlimit</span> *rlim);
+</pre>
+      <table>
+        <tr><th>Risorsa</th><th>Descrizione</th></tr>
+        <tr><td><code>RLIMIT_NOFILE</code></td><td>Max file descriptor aperti</td></tr>
+        <tr><td><code>RLIMIT_NPROC</code></td><td>Max processi per UID</td></tr>
+        <tr><td><code>RLIMIT_FSIZE</code></td><td>Max dimensione file (byte)</td></tr>
+        <tr><td><code>RLIMIT_DATA</code></td><td>Max segmento dati</td></tr>
+        <tr><td><code>RLIMIT_STACK</code></td><td>Max dimensione stack</td></tr>
+        <tr><td><code>RLIMIT_CORE</code></td><td>Max dimensione core dump</td></tr>
+        <tr><td><code>RLIMIT_AS</code></td><td>Max spazio di indirizzamento virtuale</td></tr>
+        <tr><td><code>RLIMIT_CPU</code></td><td>Max tempo CPU (secondi)</td></tr>
+      </table>
+<pre>
+<span class="cmt">/* Esempio: limitare la dimensione del core dump */</span>
+<span class="kw">struct</span> <span class="type">rlimit</span> rl = { .rlim_cur = <span class="num">0</span>, .rlim_max = <span class="num">0</span> };
+<span class="fn">setrlimit</span>(RLIMIT_CORE, &amp;rl);  <span class="cmt">// disabilita core dump</span>
+
+<span class="cmt">/* Aumentare max fd aperti */</span>
+<span class="kw">struct</span> <span class="type">rlimit</span> rl;
+<span class="fn">getrlimit</span>(RLIMIT_NOFILE, &amp;rl);
+rl.rlim_cur = rl.rlim_max;  <span class="cmt">// soft = hard</span>
+<span class="fn">setrlimit</span>(RLIMIT_NOFILE, &amp;rl);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">sysconf() e pathconf()</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+
+<span class="type">long</span> nproc = <span class="fn">sysconf</span>(_SC_NPROCESSORS_ONLN);
+<span class="type">long</span> page  = <span class="fn">sysconf</span>(_SC_PAGESIZE);
+<span class="type">long</span> maxfd = <span class="fn">sysconf</span>(_SC_OPEN_MAX);
+<span class="type">long</span> clktk = <span class="fn">sysconf</span>(_SC_CLK_TCK);
+
+<span class="type">long</span> maxname = <span class="fn">pathconf</span>(<span class="str">"/"</span>, _PC_NAME_MAX);
+<span class="type">long</span> maxpath = <span class="fn">pathconf</span>(<span class="str">"/"</span>, _PC_PATH_MAX);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">getrusage()</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/resource.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">rusage</span> usage;
+<span class="fn">getrusage</span>(RUSAGE_SELF, &amp;usage);      <span class="cmt">// processo corrente</span>
+<span class="fn">getrusage</span>(RUSAGE_CHILDREN, &amp;usage);  <span class="cmt">// figli terminati</span>
+
+<span class="fn">printf</span>(<span class="str">"User CPU: %ld.%06ld s\n"</span>,
+       usage.ru_utime.tv_sec, usage.ru_utime.tv_usec);
+<span class="fn">printf</span>(<span class="str">"Sys CPU:  %ld.%06ld s\n"</span>,
+       usage.ru_stime.tv_sec, usage.ru_stime.tv_usec);
+<span class="fn">printf</span>(<span class="str">"Max RSS:  %ld KB\n"</span>, usage.ru_maxrss);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── ptrace() -->
+<span class="anchor" id="s-ptrace"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> ptrace()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Panoramica</div>
+      <p><code>ptrace()</code> è la syscall alla base di debugger (GDB), strace e strumenti di analisi. Permette a un processo di controllare l'esecuzione di un altro.</p>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/ptrace.h&gt;</span>
+
+<span class="type">long</span> <span class="fn">ptrace</span>(<span class="kw">enum</span> <span class="type">__ptrace_request</span> request, <span class="type">pid_t</span> pid,
+            <span class="kw">void</span> *addr, <span class="kw">void</span> *data);
+</pre>
+      <table>
+        <tr><th>Request</th><th>Descrizione</th></tr>
+        <tr><td><code>PTRACE_TRACEME</code></td><td>Il processo corrente viene tracciato dal padre</td></tr>
+        <tr><td><code>PTRACE_ATTACH</code></td><td>Attacca a un processo esistente</td></tr>
+        <tr><td><code>PTRACE_DETACH</code></td><td>Stacca dal processo tracciato</td></tr>
+        <tr><td><code>PTRACE_PEEKTEXT</code></td><td>Legge una word dallo spazio testo</td></tr>
+        <tr><td><code>PTRACE_PEEKDATA</code></td><td>Legge una word dallo spazio dati</td></tr>
+        <tr><td><code>PTRACE_POKETEXT</code></td><td>Scrive una word nello spazio testo</td></tr>
+        <tr><td><code>PTRACE_GETREGS</code></td><td>Legge i registri del processo</td></tr>
+        <tr><td><code>PTRACE_SETREGS</code></td><td>Scrive i registri del processo</td></tr>
+        <tr><td><code>PTRACE_SINGLESTEP</code></td><td>Esegue una singola istruzione</td></tr>
+        <tr><td><code>PTRACE_CONT</code></td><td>Continua l'esecuzione</td></tr>
+        <tr><td><code>PTRACE_SYSCALL</code></td><td>Continua, stop alla prossima syscall</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Tracer Minimo</div>
+<pre>
+<span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="num">0</span>) {
+    <span class="fn">ptrace</span>(PTRACE_TRACEME, <span class="num">0</span>, <span class="num">NULL</span>, <span class="num">NULL</span>);
+    <span class="fn">execl</span>(<span class="str">"/bin/ls"</span>, <span class="str">"ls"</span>, (<span class="type">char</span>*)<span class="num">NULL</span>);
+    <span class="fn">_exit</span>(<span class="num">127</span>);
+}
+
+<span class="type">int</span> status;
+<span class="fn">waitpid</span>(pid, &amp;status, <span class="num">0</span>);  <span class="cmt">// stop dopo exec</span>
+
+<span class="kw">while</span> (<span class="fn">WIFSTOPPED</span>(status)) {
+    <span class="cmt">/* Leggi registri, analizza, ... */</span>
+    <span class="fn">ptrace</span>(PTRACE_SYSCALL, pid, <span class="num">NULL</span>, <span class="num">NULL</span>);
+    <span class="fn">waitpid</span>(pid, &amp;status, <span class="num">0</span>);
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Pattern Architetturali -->
+<span class="anchor" id="s-patterns"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN ARCHITETTURALI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Pre-fork Server</div>
+      <p>Pattern classico per server concorrenti: il padre crea N worker prima di accettare connessioni. Ogni worker chiama <code>accept()</code> in loop.</p>
+<pre>
+<span class="type">int</span> listenfd = <span class="fn">socket_bind_listen</span>(...);
+
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; N_WORKERS; i++) {
+    <span class="kw">if</span> (<span class="fn">fork</span>() == <span class="num">0</span>) {
+        <span class="cmt">/* Worker: accetta e gestisce connessioni */</span>
+        <span class="kw">while</span> (<span class="num">1</span>) {
+            <span class="type">int</span> connfd = <span class="fn">accept</span>(listenfd, <span class="num">NULL</span>, <span class="num">NULL</span>);
+            <span class="fn">handle_connection</span>(connfd);
+            <span class="fn">close</span>(connfd);
+        }
+    }
+}
+<span class="cmt">/* Padre: monitora worker, riavvia se necessario */</span>
+<span class="kw">while</span> (<span class="num">1</span>) {
+    <span class="type">pid_t</span> w = <span class="fn">wait</span>(<span class="num">NULL</span>);
+    <span class="cmt">/* Worker crashato: forkare un sostituto */</span>
+    <span class="kw">if</span> (<span class="fn">fork</span>() == <span class="num">0</span>) { <span class="cmt">/* nuovo worker... */</span> }
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pipeline di Processi (N stadi)</div>
+<pre>
+<span class="cmt">/* Pipeline generica: cmd[0] | cmd[1] | ... | cmd[n-1] */</span>
+<span class="kw">void</span> <span class="fn">run_pipeline</span>(<span class="type">char</span> **cmds[], <span class="type">int</span> n) {
+    <span class="type">int</span> prev_fd = -<span class="num">1</span>;
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="type">int</span> pfd[<span class="num">2</span>];
+        <span class="kw">if</span> (i &lt; n - <span class="num">1</span>) <span class="fn">pipe</span>(pfd);  <span class="cmt">// non serve per l'ultimo</span>
+
+        <span class="type">pid_t</span> pid = <span class="fn">fork</span>();
+        <span class="kw">if</span> (pid == <span class="num">0</span>) {
+            <span class="kw">if</span> (prev_fd != -<span class="num">1</span>) {
+                <span class="fn">dup2</span>(prev_fd, STDIN_FILENO);
+                <span class="fn">close</span>(prev_fd);
+            }
+            <span class="kw">if</span> (i &lt; n - <span class="num">1</span>) {
+                <span class="fn">close</span>(pfd[<span class="num">0</span>]);
+                <span class="fn">dup2</span>(pfd[<span class="num">1</span>], STDOUT_FILENO);
+                <span class="fn">close</span>(pfd[<span class="num">1</span>]);
+            }
+            <span class="fn">execvp</span>(cmds[i][<span class="num">0</span>], cmds[i]);
+            <span class="fn">_exit</span>(<span class="num">127</span>);
+        }
+
+        <span class="kw">if</span> (prev_fd != -<span class="num">1</span>) <span class="fn">close</span>(prev_fd);
+        <span class="kw">if</span> (i &lt; n - <span class="num">1</span>) {
+            <span class="fn">close</span>(pfd[<span class="num">1</span>]);
+            prev_fd = pfd[<span class="num">0</span>];
+        }
+    }
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) <span class="fn">wait</span>(<span class="num">NULL</span>);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Producer-Consumer con Shared Memory</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">sem_t</span> mutex;        <span class="cmt">// accesso esclusivo</span>
+    <span class="type">sem_t</span> empty;        <span class="cmt">// slot liberi</span>
+    <span class="type">sem_t</span> full;         <span class="cmt">// slot pieni</span>
+    <span class="type">int</span>   buf[<span class="num">16</span>];
+    <span class="type">int</span>   in, out;
+} <span class="type">ring_buf_t</span>;
+
+<span class="cmt">/* Inizializzazione (in shared memory) */</span>
+<span class="type">ring_buf_t</span> *rb = <span class="fn">mmap</span>(..., MAP_SHARED | MAP_ANONYMOUS, ...);
+<span class="fn">sem_init</span>(&amp;rb-&gt;mutex, <span class="num">1</span>, <span class="num">1</span>);
+<span class="fn">sem_init</span>(&amp;rb-&gt;empty, <span class="num">1</span>, <span class="num">16</span>);
+<span class="fn">sem_init</span>(&amp;rb-&gt;full,  <span class="num">1</span>, <span class="num">0</span>);
+rb-&gt;in = rb-&gt;out = <span class="num">0</span>;
+
+<span class="cmt">/* PRODUCER */</span>
+<span class="fn">sem_wait</span>(&amp;rb-&gt;empty);
+<span class="fn">sem_wait</span>(&amp;rb-&gt;mutex);
+rb-&gt;buf[rb-&gt;in] = item;
+rb-&gt;in = (rb-&gt;in + <span class="num">1</span>) % <span class="num">16</span>;
+<span class="fn">sem_post</span>(&amp;rb-&gt;mutex);
+<span class="fn">sem_post</span>(&amp;rb-&gt;full);
+
+<span class="cmt">/* CONSUMER */</span>
+<span class="fn">sem_wait</span>(&amp;rb-&gt;full);
+<span class="fn">sem_wait</span>(&amp;rb-&gt;mutex);
+<span class="type">int</span> item = rb-&gt;buf[rb-&gt;out];
+rb-&gt;out = (rb-&gt;out + <span class="num">1</span>) % <span class="num">16</span>;
+<span class="fn">sem_post</span>(&amp;rb-&gt;mutex);
+<span class="fn">sem_post</span>(&amp;rb-&gt;empty);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Graceful Shutdown</div>
+<pre>
+<span class="kw">volatile</span> <span class="type">sig_atomic_t</span> running = <span class="num">1</span>;
+
+<span class="kw">void</span> <span class="fn">shutdown_handler</span>(<span class="type">int</span> sig) { running = <span class="num">0</span>; }
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="kw">struct</span> <span class="type">sigaction</span> sa = { .sa_handler = shutdown_handler };
+    <span class="fn">sigemptyset</span>(&amp;sa.sa_mask);
+    <span class="fn">sigaction</span>(SIGINT, &amp;sa, <span class="num">NULL</span>);
+    <span class="fn">sigaction</span>(SIGTERM, &amp;sa, <span class="num">NULL</span>);
+
+    <span class="cmt">/* Blocca SIGINT/SIGTERM tranne in pselect */</span>
+    <span class="type">sigset_t</span> block, empty;
+    <span class="fn">sigemptyset</span>(&amp;empty);
+    <span class="fn">sigemptyset</span>(&amp;block);
+    <span class="fn">sigaddset</span>(&amp;block, SIGINT);
+    <span class="fn">sigaddset</span>(&amp;block, SIGTERM);
+    <span class="fn">sigprocmask</span>(SIG_BLOCK, &amp;block, <span class="num">NULL</span>);
+
+    <span class="kw">while</span> (running) {
+        <span class="cmt">/* pselect sblocca atomicamente i segnali durante l'attesa */</span>
+        <span class="type">int</span> ret = <span class="fn">pselect</span>(maxfd + <span class="num">1</span>, &amp;readfds, <span class="num">NULL</span>, <span class="num">NULL</span>, <span class="num">NULL</span>, &amp;empty);
+        <span class="kw">if</span> (ret &gt; <span class="num">0</span>) {
+            <span class="cmt">/* gestisci I/O */</span>
+        }
+    }
+
+    <span class="cmt">/* Cleanup: chiudi fd, rimuovi shm, termina figli */</span>
+    <span class="fn">printf</span>(<span class="str">"Shutdown completo.\n"</span>);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Gestione Errori -->
+<span class="anchor" id="s-errors"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> GESTIONE ERRORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">errno e Funzioni Correlate</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;errno.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="cmt">/* errno è thread-local: ogni thread ha il suo */</span>
+<span class="kw">extern</span> <span class="type">int</span> errno;
+
+<span class="fn">perror</span>(<span class="str">"open"</span>);                  <span class="cmt">// "open: No such file or directory"</span>
+<span class="fn">fprintf</span>(stderr, <span class="str">"%s\n"</span>,
+        <span class="fn">strerror</span>(errno));         <span class="cmt">// "No such file or directory"</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Codici errno Comuni per IPC</div>
+      <table>
+        <tr><th>errno</th><th>Contesto</th></tr>
+        <tr><td><code>EACCES</code></td><td>Permessi insufficienti</td></tr>
+        <tr><td><code>EEXIST</code></td><td>Risorsa già esistente (IPC_EXCL, O_EXCL)</td></tr>
+        <tr><td><code>ENOENT</code></td><td>Risorsa non trovata</td></tr>
+        <tr><td><code>EINTR</code></td><td>Syscall interrotta da segnale</td></tr>
+        <tr><td><code>EAGAIN</code></td><td>Operazione non bloccante non completabile</td></tr>
+        <tr><td><code>ENOMEM</code></td><td>Memoria insufficiente</td></tr>
+        <tr><td><code>EMFILE</code></td><td>Troppi file aperti (per processo)</td></tr>
+        <tr><td><code>ENFILE</code></td><td>Troppi file aperti (sistema)</td></tr>
+        <tr><td><code>EPIPE</code></td><td>Scrittura su pipe/socket chiuso</td></tr>
+        <tr><td><code>ECHILD</code></td><td>Nessun figlio da attendere</td></tr>
+        <tr><td><code>ESRCH</code></td><td>Processo non trovato (kill)</td></tr>
+        <tr><td><code>ENOSPC</code></td><td>Spazio insufficiente (disco, IPC)</td></tr>
+        <tr><td><code>ERANGE</code></td><td>Risultato fuori range</td></tr>
+        <tr><td><code>EDEADLK</code></td><td>Deadlock evitato (file lock)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Macro di Utility</div>
+<pre>
+<span class="dir">#define</span> <span class="fn">CHECK</span>(call, msg) <span class="kw">do</span> { \
+    <span class="kw">if</span> ((call) == -<span class="num">1</span>) {       \
+        <span class="fn">perror</span>(msg);            \
+        <span class="fn">exit</span>(EXIT_FAILURE);     \
+    }                           \
+} <span class="kw">while</span>(<span class="num">0</span>)
+
+<span class="cmt">/* Uso */</span>
+<span class="fn">CHECK</span>(<span class="fn">pipe</span>(pfd), <span class="str">"pipe"</span>);
+<span class="fn">CHECK</span>(pid = <span class="fn">fork</span>(), <span class="str">"fork"</span>);
+
+<span class="cmt">/* Retry su EINTR */</span>
+<span class="dir">#define</span> <span class="fn">RETRY_EINTR</span>(expr) ({ \
+    <span class="type">typeof</span>(expr) _r;          \
+    <span class="kw">do</span> { _r = (expr); }        \
+    <span class="kw">while</span> (_r == -<span class="num">1</span> &amp;&amp; errno == EINTR); \
+    _r; })
+
+<span class="type">ssize_t</span> n = <span class="fn">RETRY_EINTR</span>(<span class="fn">read</span>(fd, buf, size));
+</pre>
+    </div>
+
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
