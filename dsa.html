@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithms &amp; Data Structures CHEATSHEET</title>
+<link rel="icon" type="image/png" href="./res/icons/icon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+  :root {
+    --bg:        #050a0a;
+    --bg2:       #080e0e;
+    --panel:     #0c1414;
+    --panel2:    #101818;
+    --border:    #142222;
+    --border2:   #203a3a;
+    --glow:      #00bbaa;
+    --glow2:     #22ddcc;
+    --glow-dim:  #003b33;
+    --dim:       #204a44;
+    --text:      #a0b8b4;
+    --text2:     #b8d0cc;
+    --bright:    #ccffee;
+    --accent:    #00aa99;
+    --accent2:   #33ccbb;
+    --key:       #55aa99;
+    --kw:        #66ddcc;
+    --str:       #aaddaa;
+    --num:       #ddaa77;
+    --cmt:       #447766;
+    --fn:        #77ccbb;
+    --cls:       #eecc88;
+    --op:        #cc8888;
+    --var:       #88bbdd;
+    --dec:       #ddbb88;
+    --lbl:       #bbddaa;
+    --head:      #ccffee;
+    --hr:        #142222;
+    --scan:      rgba(0,187,170,0.025);
+    --warn-bg:   rgba(120,60,10,0.25);
+    --warn-brd:  #ddaa44;
+    --warn-txt:  #ffcc88;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scan) 2px,var(--scan) 4px);
+    pointer-events:none; z-index:9999;
+  }
+
+  body::after {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: radial-gradient(ellipse at center,transparent 60%,rgba(0,10,10,0.7) 100%);
+    pointer-events:none; z-index:9998;
+  }
+
+  #header {
+    background: linear-gradient(180deg, #081a18 0%, var(--bg2) 100%);
+    border-bottom: 2px solid var(--glow);
+    padding: 18px 24px 14px;
+    position: sticky; top:0; z-index:100;
+    box-shadow: 0 0 30px rgba(0,187,170,0.15);
+  }
+  #header h1 {
+    font-family: 'VT323', monospace;
+    font-size: 2.4rem;
+    color: var(--bright);
+    text-shadow: 0 0 12px var(--glow2), 0 0 30px var(--glow);
+    letter-spacing: 3px;
+  }
+  #header .subtitle { color: var(--dim); font-size: 11px; letter-spacing: 2px; margin-top: 2px; }
+  #header .subtitle span { color: var(--accent); }
+
+  #layout { display:flex; gap:0; }
+
+  #sidebar {
+    width: 260px; min-width: 260px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    position: sticky; top: 70px;
+    padding: 12px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+  #sidebar::-webkit-scrollbar { width:5px; }
+  #sidebar::-webkit-scrollbar-track { background: var(--bg); }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+
+  .nav-head {
+    font-family: 'VT323', monospace; font-size: 1rem;
+    color: var(--accent2); padding: 6px 14px 4px;
+    letter-spacing: 2px; text-shadow: 0 0 8px var(--glow-dim);
+    border-bottom: 1px solid var(--border); margin-bottom: 4px;
+  }
+  .nav-section { margin-bottom: 2px; }
+  .nav-section-title {
+    color: var(--kw); font-size: 10px; letter-spacing: 1.5px;
+    padding: 6px 14px 2px; opacity: 0.7; text-transform: uppercase;
+  }
+  #sidebar a {
+    display: block; color: var(--text); text-decoration: none;
+    padding: 3px 14px 3px 20px; font-size: 11.5px;
+    transition: all 0.12s; border-left: 2px solid transparent;
+  }
+  #sidebar a::before { content:'> '; color:var(--dim); }
+  #sidebar a:hover {
+    color: var(--bright); background: rgba(0,187,170,0.08);
+    border-left-color: var(--glow); text-shadow: 0 0 6px var(--glow2);
+  }
+
+  #main { flex:1; padding: 20px 28px 60px; overflow-x: hidden; max-width: calc(100vw - 260px); }
+
+  .section {
+    margin-bottom: 28px; border: 1px solid var(--border); border-radius: 2px;
+    background: var(--panel2); box-shadow: 0 0 18px rgba(0,60,55,0.5); overflow: hidden;
+  }
+  .section-header {
+    background: linear-gradient(90deg, var(--glow-dim) 0%, var(--panel) 100%);
+    padding: 7px 14px; font-family: 'VT323', monospace; font-size: 1.15rem;
+    color: var(--bright); letter-spacing: 2px; text-shadow: 0 0 10px var(--glow2);
+    border-bottom: 1px solid var(--border2); display:flex; align-items:center; gap:8px;
+  }
+  .section-header .icon { opacity:0.7; font-size:0.95rem; }
+  .section-body { padding: 12px 14px; }
+
+  .sub { margin: 10px 0; }
+  .sub-title {
+    color: var(--lbl); font-size: 12px; letter-spacing: 1.5px;
+    border-bottom: 1px dashed var(--hr); margin-bottom: 6px;
+    padding-bottom: 2px; text-transform: uppercase;
+  }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre {
+    background: rgba(0,0,0,0.45); border: 1px solid var(--border);
+    border-left: 3px solid var(--glow-dim); padding: 10px 12px;
+    overflow-x: auto; font-size: 12px; line-height: 1.5;
+    color: var(--text2); border-radius: 1px; margin: 6px 0;
+    white-space: pre; scrollbar-width: thin;
+    scrollbar-color: var(--glow-dim) var(--bg);
+  }
+  pre::-webkit-scrollbar { height:4px; }
+  pre::-webkit-scrollbar-track { background:var(--bg); }
+  pre::-webkit-scrollbar-thumb { background:var(--glow-dim); }
+
+  .kw  { color: var(--kw); }
+  .fn  { color: var(--fn); }
+  .cls { color: var(--cls); }
+  .str { color: var(--str); }
+  .num { color: var(--num); }
+  .cmt { color: var(--cmt); font-style: italic; }
+  .op  { color: var(--op); }
+  .var { color: var(--var); }
+  .dec { color: var(--dec); }
+  .lbl { color: var(--lbl); }
+  .hd  { color: var(--head); font-weight:bold; }
+  .dim { color: var(--dim); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0; }
+  th {
+    background: rgba(0,187,170,0.12); color: var(--accent2);
+    text-align: left; padding: 5px 8px; border: 1px solid var(--border);
+    font-size: 11px; letter-spacing: 1px;
+  }
+  td { padding: 4px 8px; border: 1px solid var(--hr); vertical-align: top; color: var(--text2); }
+  tr:nth-child(even) td { background: rgba(0,40,35,0.3); }
+  tr:hover td { background: rgba(0,187,170,0.06); }
+  td code, th code { color: var(--fn); background: rgba(0,0,0,0.25); padding: 1px 4px; border-radius: 1px; }
+
+  p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
+
+  .note {
+    background: rgba(0,187,170,0.08); border-left: 3px solid var(--accent);
+    padding: 6px 10px; margin: 6px 0; font-size: 11.5px; color: var(--text);
+  }
+  .warn {
+    background: var(--warn-bg); border-left: 3px solid var(--warn-brd);
+    padding: 6px 10px; margin: 6px 0; font-size: 11.5px; color: var(--warn-txt);
+  }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+  @media(max-width:900px) {
+    .grid2, .grid3 { grid-template-columns:1fr; }
+    #sidebar { display:none; }
+    #main { max-width:100vw; padding:14px; }
+  }
+
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  .cursor::after { content:'█'; animation:blink 1s infinite; color:var(--accent); }
+  .anchor { display:block; height:70px; margin-top:-70px; visibility:hidden; }
+
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>&gt; ALGORITHMS &amp; DATA STRUCTURES <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>Python / Teoria &amp; Implementazioni</span> &mdash; v1.3</div>
+</div>
+
+<div id="layout">
+
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-bigo">Complessit&agrave; (Big-O)</a>
+    <a href="#s-recursion">Ricorsione &amp; Master Theorem</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Strutture Lineari</div>
+    <a href="#s-array">Array Statici &amp; Dinamici</a>
+    <a href="#s-linkedlist">Liste Concatenate</a>
+    <a href="#s-stack">Pile (Stack)</a>
+    <a href="#s-queue">Code (Queue &amp; Deque)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Hashing &amp; Alberi</div>
+    <a href="#s-hashmap">Tabelle Hash (HashMap)</a>
+    <a href="#s-bst">Alberi Binari di Ricerca</a>
+    <a href="#s-avl">Alberi AVL</a>
+    <a href="#s-heap">Heap &amp; Code a Priorit&agrave;</a>
+    <a href="#s-trie">Trie (Prefix Tree)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Grafi</div>
+    <a href="#s-graphs">Rappresentazione Grafi</a>
+    <a href="#s-bfsdfs">BFS &amp; DFS</a>
+    <a href="#s-shortest">Cammini Minimi</a>
+    <a href="#s-mst">Minimum Spanning Tree</a>
+    <a href="#s-topsort">Ordinamento Topologico</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Ricerca</div>
+    <a href="#s-search">Ricerca Lineare &amp; Binaria</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Ordinamento</div>
+    <a href="#s-sort-basic">Ordinamento Base</a>
+    <a href="#s-sort-advanced">Ordinamento Avanzato</a>
+    <a href="#s-sort-linear">Ordinamento Lineare</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Tecniche Algoritmiche</div>
+    <a href="#s-dp">Programmazione Dinamica</a>
+    <a href="#s-greedy">Greedy</a>
+    <a href="#s-divconq">Divide et Impera</a>
+    <a href="#s-backtrack">Backtracking</a>
+    <a href="#s-unionfind">Union-Find (DSU)</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════
+     COMPLESSITA' (BIG-O)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bigo"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> COMPLESSIT&Agrave; COMPUTAZIONALE (Big-O)</div>
+  <div class="section-body">
+    <p>La notazione asintotica descrive il comportamento di un algoritmo al crescere dell'input.</p>
+
+    <div class="sub">
+      <div class="sub-title">NOTAZIONI</div>
+      <table>
+        <tr><th>Notazione</th><th>Significato</th><th>Uso</th></tr>
+        <tr><td><code>O(f(n))</code></td><td>Limite superiore (upper bound)</td><td>Caso peggiore &le;</td></tr>
+        <tr><td><code>&Omega;(f(n))</code></td><td>Limite inferiore (lower bound)</td><td>Caso migliore &ge;</td></tr>
+        <tr><td><code>&Theta;(f(n))</code></td><td>Limite stretto (tight bound)</td><td>Caso medio =</td></tr>
+        <tr><td><code>o(f(n))</code></td><td>Upper bound stretto (non tight)</td><td>Cresce strettamente pi&ugrave; lento</td></tr>
+        <tr><td><code>&omega;(f(n))</code></td><td>Lower bound stretto</td><td>Cresce strettamente pi&ugrave; veloce</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CLASSI DI COMPLESSIT&Agrave; (dalla migliore alla peggiore)</div>
+      <table>
+        <tr><th>Complessit&agrave;</th><th>Nome</th><th>Esempio</th></tr>
+        <tr><td><code>O(1)</code></td><td>Costante</td><td>Accesso array per indice, push/pop stack</td></tr>
+        <tr><td><code>O(log n)</code></td><td>Logaritmica</td><td>Ricerca binaria, operazioni BST bilanciato</td></tr>
+        <tr><td><code>O(n)</code></td><td>Lineare</td><td>Ricerca lineare, scansione array</td></tr>
+        <tr><td><code>O(n log n)</code></td><td>Linearitmica</td><td>Merge sort, Quick sort (medio), Heap sort</td></tr>
+        <tr><td><code>O(n&sup2;)</code></td><td>Quadratica</td><td>Bubble sort, Insertion sort, cicli annidati</td></tr>
+        <tr><td><code>O(n&sup3;)</code></td><td>Cubica</td><td>Moltiplicazione matrici naive, Floyd-Warshall</td></tr>
+        <tr><td><code>O(2&#8319;)</code></td><td>Esponenziale</td><td>Sottoinsiemi, Fibonacci ricorsivo naive</td></tr>
+        <tr><td><code>O(n!)</code></td><td>Fattoriale</td><td>Permutazioni, TSP brute-force</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">REGOLE DI CALCOLO</div>
+<pre><span class="cmt"># Regola della somma: O(f + g) = O(max(f, g))</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):       <span class="cmt"># O(n)</span>
+    ...
+<span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>*<span class="var">n</span>):    <span class="cmt"># O(n²)</span>
+    ...
+<span class="cmt"># Totale: O(n²)</span>
+
+<span class="cmt"># Regola del prodotto: cicli annidati si moltiplicano</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):       <span class="cmt"># O(n)</span>
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):   <span class="cmt">#   × O(n)</span>
+        ...               <span class="cmt"># = O(n²)</span>
+
+<span class="cmt"># Logaritmico: dimezzamento ad ogni iterazione</span>
+<span class="kw">while</span> <span class="var">n</span> &gt; <span class="num">1</span>:             <span class="cmt"># O(log n)</span>
+    <span class="var">n</span> //= <span class="num">2</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">COMPLESSIT&Agrave; SPAZIALE</div>
+      <p>Misura la memoria aggiuntiva usata dall'algoritmo (escludendo l'input).</p>
+      <table>
+        <tr><th>Algoritmo</th><th>Tempo</th><th>Spazio</th></tr>
+        <tr><td>Ricerca binaria (iterativa)</td><td>O(log n)</td><td>O(1)</td></tr>
+        <tr><td>Merge sort</td><td>O(n log n)</td><td>O(n)</td></tr>
+        <tr><td>Quick sort (in-place)</td><td>O(n log n) medio</td><td>O(log n) stack</td></tr>
+        <tr><td>BFS</td><td>O(V + E)</td><td>O(V)</td></tr>
+        <tr><td>DFS (ricorsivo)</td><td>O(V + E)</td><td>O(V) stack</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RICORSIONE & MASTER THEOREM
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-recursion"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RICORSIONE &amp; MASTER THEOREM</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">STRUTTURA RICORSIVA</div>
+<pre><span class="kw">def</span> <span class="fn">fibonacci</span>(<span class="var">n</span>):
+    <span class="cmt"># Caso base</span>
+    <span class="kw">if</span> <span class="var">n</span> &lt;= <span class="num">1</span>:
+        <span class="kw">return</span> <span class="var">n</span>
+    <span class="cmt"># Caso ricorsivo</span>
+    <span class="kw">return</span> <span class="fn">fibonacci</span>(<span class="var">n</span> - <span class="num">1</span>) + <span class="fn">fibonacci</span>(<span class="var">n</span> - <span class="num">2</span>)  <span class="cmt"># O(2^n) !</span>
+
+<span class="cmt"># Con memoization: O(n)</span>
+<span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+<span class="dec">@lru_cache</span>(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">fib</span>(<span class="var">n</span>):
+    <span class="kw">if</span> <span class="var">n</span> &lt;= <span class="num">1</span>: <span class="kw">return</span> <span class="var">n</span>
+    <span class="kw">return</span> <span class="fn">fib</span>(<span class="var">n</span> - <span class="num">1</span>) + <span class="fn">fib</span>(<span class="var">n</span> - <span class="num">2</span>)</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MASTER THEOREM</div>
+      <p>Per ricorrenze della forma <code>T(n) = a&middot;T(n/b) + O(n^d)</code>:</p>
+      <table>
+        <tr><th>Condizione</th><th>Risultato</th></tr>
+        <tr><td><code>d &lt; log_b(a)</code></td><td><code>T(n) = O(n^(log_b(a)))</code></td></tr>
+        <tr><td><code>d = log_b(a)</code></td><td><code>T(n) = O(n^d &middot; log n)</code></td></tr>
+        <tr><td><code>d &gt; log_b(a)</code></td><td><code>T(n) = O(n^d)</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPI MASTER THEOREM</div>
+      <table>
+        <tr><th>Ricorrenza</th><th>a, b, d</th><th>Caso</th><th>Risultato</th></tr>
+        <tr><td>Ricerca binaria: T(n) = T(n/2) + O(1)</td><td>1, 2, 0</td><td>d = log&#8322;1 = 0</td><td>O(log n)</td></tr>
+        <tr><td>Merge sort: T(n) = 2T(n/2) + O(n)</td><td>2, 2, 1</td><td>d = log&#8322;2 = 1</td><td>O(n log n)</td></tr>
+        <tr><td>Karatsuba: T(n) = 3T(n/2) + O(n)</td><td>3, 2, 1</td><td>d &lt; log&#8322;3</td><td>O(n^1.585)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ARRAY STATICI & DINAMICI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-array"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ARRAY STATICI &amp; DINAMICI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">COMPLESSIT&Agrave;</div>
+      <table>
+        <tr><th>Operazione</th><th>Array statico</th><th>Array dinamico (list)</th></tr>
+        <tr><td>Accesso per indice</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Ricerca</td><td>O(n)</td><td>O(n)</td></tr>
+        <tr><td>Inserimento in coda</td><td>N/A</td><td>O(1) ammortizzato</td></tr>
+        <tr><td>Inserimento in posizione</td><td>N/A</td><td>O(n)</td></tr>
+        <tr><td>Rimozione in coda</td><td>N/A</td><td>O(1)</td></tr>
+        <tr><td>Rimozione in posizione</td><td>N/A</td><td>O(n)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ARRAY STATICO (con array module o tuple)</div>
+<pre><span class="kw">from</span> array <span class="kw">import</span> array
+
+<span class="cmt"># Array statico di interi (tipizzato, pi&ugrave; efficiente in memoria)</span>
+<span class="var">arr</span> = array(<span class="str">'i'</span>, [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>])
+<span class="var">arr</span>[<span class="num">2</span>]             <span class="cmt"># accesso O(1) → 30</span>
+<span class="fn">len</span>(<span class="var">arr</span>)            <span class="cmt"># 5</span>
+
+<span class="cmt"># Typecodes: 'b'=int8, 'i'=int32, 'f'=float32, 'd'=float64</span>
+
+<span class="cmt"># Tuple: immutabile, pi&ugrave; leggero di una lista</span>
+<span class="var">t</span> = (<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>)
+<span class="var">t</span>[<span class="num">0</span>]               <span class="cmt"># 1 — accesso O(1)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ARRAY DINAMICO (list)</div>
+<pre><span class="cmt"># list in Python = array dinamico con doubling strategy</span>
+<span class="var">a</span> = []
+<span class="var">a</span>.<span class="fn">append</span>(<span class="num">10</span>)       <span class="cmt"># O(1) ammortizzato — aggiunge in coda</span>
+<span class="var">a</span>.<span class="fn">append</span>(<span class="num">20</span>)
+<span class="var">a</span>.<span class="fn">append</span>(<span class="num">30</span>)
+<span class="var">a</span>.<span class="fn">insert</span>(<span class="num">1</span>, <span class="num">15</span>)    <span class="cmt"># O(n) — inserisce in posizione</span>
+<span class="var">a</span>.<span class="fn">pop</span>()             <span class="cmt"># O(1) — rimuove ultimo</span>
+<span class="var">a</span>.<span class="fn">pop</span>(<span class="num">0</span>)            <span class="cmt"># O(n) — rimuove primo (shift tutti)</span>
+<span class="var">a</span>.<span class="fn">remove</span>(<span class="num">15</span>)       <span class="cmt"># O(n) — rimuove prima occorrenza</span>
+<span class="kw">del</span> <span class="var">a</span>[<span class="num">1</span>]            <span class="cmt"># O(n) — rimuove per indice</span>
+
+<span class="cmt"># Slicing</span>
+<span class="var">a</span> = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]
+<span class="var">a</span>[<span class="num">1</span>:<span class="num">4</span>]             <span class="cmt"># [2, 3, 4] — O(k) dove k = dimensione slice</span>
+<span class="var">a</span>[::-<span class="num">1</span>]            <span class="cmt"># [5, 4, 3, 2, 1] — reverse O(n)</span>
+
+<span class="cmt"># List comprehension</span>
+<span class="var">squares</span> = [<span class="var">x</span>**<span class="num">2</span> <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>)]  <span class="cmt"># [0, 1, 4, 9, 16, ...]</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONE ARRAY DINAMICO</div>
+<pre><span class="kw">class</span> <span class="cls">DynamicArray</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">size</span> = <span class="num">0</span>
+        <span class="var">self</span>.<span class="var">capacity</span> = <span class="num">1</span>
+        <span class="var">self</span>.<span class="var">data</span> = [<span class="kw">None</span>] * <span class="var">self</span>.<span class="var">capacity</span>
+
+    <span class="kw">def</span> <span class="fn">append</span>(<span class="var">self</span>, <span class="var">val</span>):
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">size</span> == <span class="var">self</span>.<span class="var">capacity</span>:
+            <span class="var">self</span>.<span class="fn">_resize</span>(<span class="var">self</span>.<span class="var">capacity</span> * <span class="num">2</span>)  <span class="cmt"># doubling</span>
+        <span class="var">self</span>.<span class="var">data</span>[<span class="var">self</span>.<span class="var">size</span>] = <span class="var">val</span>
+        <span class="var">self</span>.<span class="var">size</span> += <span class="num">1</span>
+
+    <span class="kw">def</span> <span class="fn">_resize</span>(<span class="var">self</span>, <span class="var">new_cap</span>):
+        <span class="var">new_data</span> = [<span class="kw">None</span>] * <span class="var">new_cap</span>
+        <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">self</span>.<span class="var">size</span>):
+            <span class="var">new_data</span>[<span class="var">i</span>] = <span class="var">self</span>.<span class="var">data</span>[<span class="var">i</span>]
+        <span class="var">self</span>.<span class="var">data</span> = <span class="var">new_data</span>
+        <span class="var">self</span>.<span class="var">capacity</span> = <span class="var">new_cap</span></pre>
+    </div>
+
+    <div class="note"><b>Analisi ammortizzata:</b> la strategia di doubling garantisce che n operazioni di append costano O(n) in totale, quindi O(1) ammortizzato per singola operazione.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     LISTE CONCATENATE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-linkedlist"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LISTE CONCATENATE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">COMPLESSIT&Agrave;</div>
+      <table>
+        <tr><th>Operazione</th><th>Lista singola</th><th>Lista doppia</th></tr>
+        <tr><td>Accesso per indice</td><td>O(n)</td><td>O(n)</td></tr>
+        <tr><td>Inserimento in testa</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Inserimento in coda (con tail)</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Inserimento dopo nodo dato</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Rimozione in testa</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Rimozione nodo dato</td><td>O(n)</td><td>O(1)</td></tr>
+        <tr><td>Ricerca</td><td>O(n)</td><td>O(n)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LISTA SINGOLARMENTE CONCATENATA</div>
+<pre><span class="kw">class</span> <span class="cls">Node</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">data</span>):
+        <span class="var">self</span>.<span class="var">data</span> = <span class="var">data</span>
+        <span class="var">self</span>.<span class="var">next</span> = <span class="kw">None</span>
+
+<span class="kw">class</span> <span class="cls">SinglyLinkedList</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">head</span> = <span class="kw">None</span>
+
+    <span class="kw">def</span> <span class="fn">prepend</span>(<span class="var">self</span>, <span class="var">data</span>):           <span class="cmt"># O(1)</span>
+        <span class="var">node</span> = <span class="cls">Node</span>(<span class="var">data</span>)
+        <span class="var">node</span>.<span class="var">next</span> = <span class="var">self</span>.<span class="var">head</span>
+        <span class="var">self</span>.<span class="var">head</span> = <span class="var">node</span>
+
+    <span class="kw">def</span> <span class="fn">append</span>(<span class="var">self</span>, <span class="var">data</span>):            <span class="cmt"># O(n) senza tail pointer</span>
+        <span class="var">node</span> = <span class="cls">Node</span>(<span class="var">data</span>)
+        <span class="kw">if not</span> <span class="var">self</span>.<span class="var">head</span>:
+            <span class="var">self</span>.<span class="var">head</span> = <span class="var">node</span>
+            <span class="kw">return</span>
+        <span class="var">cur</span> = <span class="var">self</span>.<span class="var">head</span>
+        <span class="kw">while</span> <span class="var">cur</span>.<span class="var">next</span>:
+            <span class="var">cur</span> = <span class="var">cur</span>.<span class="var">next</span>
+        <span class="var">cur</span>.<span class="var">next</span> = <span class="var">node</span>
+
+    <span class="kw">def</span> <span class="fn">delete</span>(<span class="var">self</span>, <span class="var">data</span>):            <span class="cmt"># O(n)</span>
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">head</span> <span class="kw">and</span> <span class="var">self</span>.<span class="var">head</span>.<span class="var">data</span> == <span class="var">data</span>:
+            <span class="var">self</span>.<span class="var">head</span> = <span class="var">self</span>.<span class="var">head</span>.<span class="var">next</span>
+            <span class="kw">return</span>
+        <span class="var">cur</span> = <span class="var">self</span>.<span class="var">head</span>
+        <span class="kw">while</span> <span class="var">cur</span>.<span class="var">next</span>:
+            <span class="kw">if</span> <span class="var">cur</span>.<span class="var">next</span>.<span class="var">data</span> == <span class="var">data</span>:
+                <span class="var">cur</span>.<span class="var">next</span> = <span class="var">cur</span>.<span class="var">next</span>.<span class="var">next</span>
+                <span class="kw">return</span>
+            <span class="var">cur</span> = <span class="var">cur</span>.<span class="var">next</span>
+
+    <span class="kw">def</span> <span class="fn">reverse</span>(<span class="var">self</span>):                 <span class="cmt"># O(n) in-place</span>
+        <span class="var">prev</span>, <span class="var">cur</span> = <span class="kw">None</span>, <span class="var">self</span>.<span class="var">head</span>
+        <span class="kw">while</span> <span class="var">cur</span>:
+            <span class="var">nxt</span> = <span class="var">cur</span>.<span class="var">next</span>
+            <span class="var">cur</span>.<span class="var">next</span> = <span class="var">prev</span>
+            <span class="var">prev</span> = <span class="var">cur</span>
+            <span class="var">cur</span> = <span class="var">nxt</span>
+        <span class="var">self</span>.<span class="var">head</span> = <span class="var">prev</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LISTA DOPPIAMENTE CONCATENATA</div>
+<pre><span class="kw">class</span> <span class="cls">DNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">data</span>):
+        <span class="var">self</span>.<span class="var">data</span> = <span class="var">data</span>
+        <span class="var">self</span>.<span class="var">prev</span> = <span class="kw">None</span>
+        <span class="var">self</span>.<span class="var">next</span> = <span class="kw">None</span>
+
+<span class="kw">class</span> <span class="cls">DoublyLinkedList</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">head</span> = <span class="kw">None</span>
+        <span class="var">self</span>.<span class="var">tail</span> = <span class="kw">None</span>
+
+    <span class="kw">def</span> <span class="fn">append</span>(<span class="var">self</span>, <span class="var">data</span>):            <span class="cmt"># O(1) con tail</span>
+        <span class="var">node</span> = <span class="cls">DNode</span>(<span class="var">data</span>)
+        <span class="kw">if not</span> <span class="var">self</span>.<span class="var">tail</span>:
+            <span class="var">self</span>.<span class="var">head</span> = <span class="var">self</span>.<span class="var">tail</span> = <span class="var">node</span>
+        <span class="kw">else</span>:
+            <span class="var">node</span>.<span class="var">prev</span> = <span class="var">self</span>.<span class="var">tail</span>
+            <span class="var">self</span>.<span class="var">tail</span>.<span class="var">next</span> = <span class="var">node</span>
+            <span class="var">self</span>.<span class="var">tail</span> = <span class="var">node</span>
+
+    <span class="kw">def</span> <span class="fn">delete_node</span>(<span class="var">self</span>, <span class="var">node</span>):      <span class="cmt"># O(1) dato il riferimento al nodo</span>
+        <span class="kw">if</span> <span class="var">node</span>.<span class="var">prev</span>: <span class="var">node</span>.<span class="var">prev</span>.<span class="var">next</span> = <span class="var">node</span>.<span class="var">next</span>
+        <span class="kw">else</span>:        <span class="var">self</span>.<span class="var">head</span> = <span class="var">node</span>.<span class="var">next</span>
+        <span class="kw">if</span> <span class="var">node</span>.<span class="var">next</span>: <span class="var">node</span>.<span class="var">next</span>.<span class="var">prev</span> = <span class="var">node</span>.<span class="var">prev</span>
+        <span class="kw">else</span>:        <span class="var">self</span>.<span class="var">tail</span> = <span class="var">node</span>.<span class="var">prev</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TECNICA: TWO POINTERS (SLOW/FAST)</div>
+<pre><span class="kw">def</span> <span class="fn">has_cycle</span>(<span class="var">head</span>):
+    <span class="str">"""Rileva ciclo in una linked list — Floyd's algorithm"""</span>
+    <span class="var">slow</span> = <span class="var">fast</span> = <span class="var">head</span>
+    <span class="kw">while</span> <span class="var">fast</span> <span class="kw">and</span> <span class="var">fast</span>.<span class="var">next</span>:
+        <span class="var">slow</span> = <span class="var">slow</span>.<span class="var">next</span>
+        <span class="var">fast</span> = <span class="var">fast</span>.<span class="var">next</span>.<span class="var">next</span>
+        <span class="kw">if</span> <span class="var">slow</span> == <span class="var">fast</span>:
+            <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">return</span> <span class="kw">False</span>
+
+<span class="kw">def</span> <span class="fn">find_middle</span>(<span class="var">head</span>):
+    <span class="str">"""Trova il nodo centrale in O(n) con un solo passaggio"""</span>
+    <span class="var">slow</span> = <span class="var">fast</span> = <span class="var">head</span>
+    <span class="kw">while</span> <span class="var">fast</span> <span class="kw">and</span> <span class="var">fast</span>.<span class="var">next</span>:
+        <span class="var">slow</span> = <span class="var">slow</span>.<span class="var">next</span>
+        <span class="var">fast</span> = <span class="var">fast</span>.<span class="var">next</span>.<span class="var">next</span>
+    <span class="kw">return</span> <span class="var">slow</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     PILE (STACK)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stack"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PILE (STACK) &mdash; LIFO</div>
+  <div class="section-body">
+    <p>Last In, First Out. Tutte le operazioni principali sono <code>O(1)</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">OPERAZIONI E COMPLESSIT&Agrave;</div>
+      <table>
+        <tr><th>Operazione</th><th>Complessit&agrave;</th><th>Python</th></tr>
+        <tr><td>Push</td><td>O(1)</td><td><code>stack.append(x)</code></td></tr>
+        <tr><td>Pop</td><td>O(1)</td><td><code>stack.pop()</code></td></tr>
+        <tr><td>Peek / Top</td><td>O(1)</td><td><code>stack[-1]</code></td></tr>
+        <tr><td>Is empty</td><td>O(1)</td><td><code>len(stack) == 0</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONI</div>
+<pre><span class="cmt"># 1) Con lista Python (semplice e veloce)</span>
+<span class="var">stack</span> = []
+<span class="var">stack</span>.<span class="fn">append</span>(<span class="num">10</span>)        <span class="cmt"># push</span>
+<span class="var">stack</span>.<span class="fn">append</span>(<span class="num">20</span>)
+<span class="var">top</span> = <span class="var">stack</span>.<span class="fn">pop</span>()       <span class="cmt"># pop → 20</span>
+
+<span class="cmt"># 2) Con collections.deque (thread-safe, no reallocation)</span>
+<span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="var">stack</span> = <span class="fn">deque</span>()
+<span class="var">stack</span>.<span class="fn">append</span>(<span class="num">10</span>)
+<span class="var">stack</span>.<span class="fn">pop</span>()
+
+<span class="cmt"># 3) Implementazione con linked list</span>
+<span class="kw">class</span> <span class="cls">Stack</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">_top</span> = <span class="kw">None</span>
+        <span class="var">self</span>.<span class="var">_size</span> = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">push</span>(<span class="var">self</span>, <span class="var">data</span>):
+        <span class="var">node</span> = <span class="cls">Node</span>(<span class="var">data</span>)
+        <span class="var">node</span>.<span class="var">next</span> = <span class="var">self</span>.<span class="var">_top</span>
+        <span class="var">self</span>.<span class="var">_top</span> = <span class="var">node</span>
+        <span class="var">self</span>.<span class="var">_size</span> += <span class="num">1</span>
+
+    <span class="kw">def</span> <span class="fn">pop</span>(<span class="var">self</span>):
+        <span class="kw">if not</span> <span class="var">self</span>.<span class="var">_top</span>: <span class="kw">raise</span> <span class="cls">IndexError</span>(<span class="str">"empty"</span>)
+        <span class="var">data</span> = <span class="var">self</span>.<span class="var">_top</span>.<span class="var">data</span>
+        <span class="var">self</span>.<span class="var">_top</span> = <span class="var">self</span>.<span class="var">_top</span>.<span class="var">next</span>
+        <span class="var">self</span>.<span class="var">_size</span> -= <span class="num">1</span>
+        <span class="kw">return</span> <span class="var">data</span>
+
+    <span class="kw">def</span> <span class="fn">peek</span>(<span class="var">self</span>): <span class="kw">return</span> <span class="var">self</span>.<span class="var">_top</span>.<span class="var">data</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">APPLICAZIONI CLASSICHE</div>
+<pre><span class="cmt"># Verifica parentesi bilanciate</span>
+<span class="kw">def</span> <span class="fn">is_balanced</span>(<span class="var">s</span>):
+    <span class="var">stack</span> = []
+    <span class="var">pairs</span> = {<span class="str">')'</span>: <span class="str">'('</span>, <span class="str">']'</span>: <span class="str">'['</span>, <span class="str">'}'</span>: <span class="str">'{'</span>}
+    <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">s</span>:
+        <span class="kw">if</span> <span class="var">c</span> <span class="kw">in</span> <span class="str">'([{'</span>:
+            <span class="var">stack</span>.<span class="fn">append</span>(<span class="var">c</span>)
+        <span class="kw">elif</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">pairs</span>:
+            <span class="kw">if not</span> <span class="var">stack</span> <span class="kw">or</span> <span class="var">stack</span>.<span class="fn">pop</span>() != <span class="var">pairs</span>[<span class="var">c</span>]:
+                <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="fn">len</span>(<span class="var">stack</span>) == <span class="num">0</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     CODE (QUEUE & DEQUE)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-queue"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CODE (QUEUE &amp; DEQUE) &mdash; FIFO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">COMPLESSIT&Agrave;</div>
+      <table>
+        <tr><th>Operazione</th><th>Queue</th><th>Deque</th></tr>
+        <tr><td>Enqueue / append</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Dequeue / popleft</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Peek front</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>appendleft</td><td>N/A</td><td>O(1)</td></tr>
+        <tr><td>pop (destra)</td><td>N/A</td><td>O(1)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONI</div>
+<pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="cmt"># Coda FIFO</span>
+<span class="var">q</span> = <span class="fn">deque</span>()
+<span class="var">q</span>.<span class="fn">append</span>(<span class="num">10</span>)           <span class="cmt"># enqueue</span>
+<span class="var">q</span>.<span class="fn">append</span>(<span class="num">20</span>)
+<span class="var">front</span> = <span class="var">q</span>.<span class="fn">popleft</span>()    <span class="cmt"># dequeue → 10</span>
+<span class="var">q</span>[<span class="num">0</span>]                    <span class="cmt"># peek → 20</span>
+
+<span class="cmt"># Deque (doppia estremit&agrave;)</span>
+<span class="var">dq</span> = <span class="fn">deque</span>()
+<span class="var">dq</span>.<span class="fn">appendleft</span>(<span class="num">5</span>)       <span class="cmt"># inserisci a sinistra</span>
+<span class="var">dq</span>.<span class="fn">append</span>(<span class="num">10</span>)           <span class="cmt"># inserisci a destra</span>
+<span class="var">dq</span>.<span class="fn">popleft</span>()            <span class="cmt"># rimuovi da sinistra</span>
+<span class="var">dq</span>.<span class="fn">pop</span>()                <span class="cmt"># rimuovi da destra</span>
+
+<span class="cmt"># Coda con capacit&agrave; massima (buffer circolare)</span>
+<span class="var">buf</span> = <span class="fn">deque</span>(maxlen=<span class="num">5</span>)  <span class="cmt"># se pieno, rimuove dal lato opposto</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CODA CIRCOLARE (IMPLEMENTAZIONE)</div>
+<pre><span class="kw">class</span> <span class="cls">CircularQueue</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">k</span>):
+        <span class="var">self</span>.<span class="var">data</span> = [<span class="kw">None</span>] * <span class="var">k</span>
+        <span class="var">self</span>.<span class="var">head</span> = <span class="var">self</span>.<span class="var">tail</span> = -<span class="num">1</span>
+        <span class="var">self</span>.<span class="var">size</span>, <span class="var">self</span>.<span class="var">cap</span> = <span class="num">0</span>, <span class="var">k</span>
+
+    <span class="kw">def</span> <span class="fn">enqueue</span>(<span class="var">self</span>, <span class="var">val</span>):
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">size</span> == <span class="var">self</span>.<span class="var">cap</span>: <span class="kw">raise</span> <span class="cls">OverflowError</span>
+        <span class="var">self</span>.<span class="var">tail</span> = (<span class="var">self</span>.<span class="var">tail</span> + <span class="num">1</span>) % <span class="var">self</span>.<span class="var">cap</span>
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">head</span> == -<span class="num">1</span>: <span class="var">self</span>.<span class="var">head</span> = <span class="num">0</span>
+        <span class="var">self</span>.<span class="var">data</span>[<span class="var">self</span>.<span class="var">tail</span>] = <span class="var">val</span>
+        <span class="var">self</span>.<span class="var">size</span> += <span class="num">1</span>
+
+    <span class="kw">def</span> <span class="fn">dequeue</span>(<span class="var">self</span>):
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">size</span> == <span class="num">0</span>: <span class="kw">raise</span> <span class="cls">IndexError</span>
+        <span class="var">val</span> = <span class="var">self</span>.<span class="var">data</span>[<span class="var">self</span>.<span class="var">head</span>]
+        <span class="var">self</span>.<span class="var">head</span> = (<span class="var">self</span>.<span class="var">head</span> + <span class="num">1</span>) % <span class="var">self</span>.<span class="var">cap</span>
+        <span class="var">self</span>.<span class="var">size</span> -= <span class="num">1</span>
+        <span class="kw">return</span> <span class="var">val</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     TABELLE HASH (HASHMAP)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-hashmap"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TABELLE HASH (HASHMAP)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">COMPLESSIT&Agrave;</div>
+      <table>
+        <tr><th>Operazione</th><th>Medio</th><th>Peggiore</th></tr>
+        <tr><td>Inserimento</td><td>O(1)</td><td>O(n)</td></tr>
+        <tr><td>Ricerca</td><td>O(1)</td><td>O(n)</td></tr>
+        <tr><td>Rimozione</td><td>O(1)</td><td>O(n)</td></tr>
+      </table>
+      <p>Il caso peggiore O(n) si verifica quando tutte le chiavi collidono nello stesso bucket.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DICT DI PYTHON (BUILT-IN)</div>
+<pre><span class="cmt"># dict &egrave; un hash table ottimizzato (open addressing)</span>
+<span class="var">d</span> = {}
+<span class="var">d</span>[<span class="str">"chiave"</span>] = <span class="num">42</span>       <span class="cmt"># inserimento</span>
+<span class="var">val</span> = <span class="var">d</span>[<span class="str">"chiave"</span>]        <span class="cmt"># accesso</span>
+<span class="var">d</span>.<span class="fn">get</span>(<span class="str">"missing"</span>, <span class="num">0</span>)     <span class="cmt"># accesso con default</span>
+<span class="kw">del</span> <span class="var">d</span>[<span class="str">"chiave"</span>]          <span class="cmt"># rimozione</span>
+<span class="str">"chiave"</span> <span class="kw">in</span> <span class="var">d</span>            <span class="cmt"># ricerca → O(1) medio</span>
+
+<span class="cmt"># set: hash table senza valori (solo chiavi)</span>
+<span class="var">s</span> = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}
+<span class="var">s</span>.<span class="fn">add</span>(<span class="num">4</span>)                 <span class="cmt"># O(1)</span>
+<span class="num">3</span> <span class="kw">in</span> <span class="var">s</span>                    <span class="cmt"># O(1)</span>
+
+<span class="cmt"># Counter per frequenze</span>
+<span class="kw">from</span> collections <span class="kw">import</span> Counter
+<span class="var">freq</span> = <span class="fn">Counter</span>([<span class="num">1</span>,<span class="num">2</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">3</span>,<span class="num">3</span>])  <span class="cmt"># {3: 3, 2: 2, 1: 1}</span>
+<span class="var">freq</span>.<span class="fn">most_common</span>(<span class="num">2</span>)                <span class="cmt"># [(3, 3), (2, 2)]</span>
+
+<span class="cmt"># defaultdict: valore di default automatico</span>
+<span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+<span class="var">adj</span> = <span class="fn">defaultdict</span>(<span class="fn">list</span>)          <span class="cmt"># lista di adiacenza</span>
+<span class="var">adj</span>[<span class="str">"A"</span>].<span class="fn">append</span>(<span class="str">"B"</span>)</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONE HASH TABLE (CHAINING)</div>
+<pre><span class="kw">class</span> <span class="cls">HashTable</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">capacity</span>=<span class="num">16</span>):
+        <span class="var">self</span>.<span class="var">cap</span> = <span class="var">capacity</span>
+        <span class="var">self</span>.<span class="var">buckets</span> = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">capacity</span>)]
+        <span class="var">self</span>.<span class="var">size</span> = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">_hash</span>(<span class="var">self</span>, <span class="var">key</span>):
+        <span class="kw">return</span> <span class="fn">hash</span>(<span class="var">key</span>) % <span class="var">self</span>.<span class="var">cap</span>
+
+    <span class="kw">def</span> <span class="fn">put</span>(<span class="var">self</span>, <span class="var">key</span>, <span class="var">val</span>):
+        <span class="var">idx</span> = <span class="var">self</span>.<span class="fn">_hash</span>(<span class="var">key</span>)
+        <span class="kw">for</span> <span class="var">i</span>, (<span class="var">k</span>, <span class="var">v</span>) <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">self</span>.<span class="var">buckets</span>[<span class="var">idx</span>]):
+            <span class="kw">if</span> <span class="var">k</span> == <span class="var">key</span>:
+                <span class="var">self</span>.<span class="var">buckets</span>[<span class="var">idx</span>][<span class="var">i</span>] = (<span class="var">key</span>, <span class="var">val</span>)
+                <span class="kw">return</span>
+        <span class="var">self</span>.<span class="var">buckets</span>[<span class="var">idx</span>].<span class="fn">append</span>((<span class="var">key</span>, <span class="var">val</span>))
+        <span class="var">self</span>.<span class="var">size</span> += <span class="num">1</span>
+
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="var">self</span>, <span class="var">key</span>):
+        <span class="var">idx</span> = <span class="var">self</span>.<span class="fn">_hash</span>(<span class="var">key</span>)
+        <span class="kw">for</span> <span class="var">k</span>, <span class="var">v</span> <span class="kw">in</span> <span class="var">self</span>.<span class="var">buckets</span>[<span class="var">idx</span>]:
+            <span class="kw">if</span> <span class="var">k</span> == <span class="var">key</span>: <span class="kw">return</span> <span class="var">v</span>
+        <span class="kw">raise</span> <span class="cls">KeyError</span>(<span class="var">key</span>)</pre>
+    </div>
+
+    <div class="note"><b>Load factor</b> = n/m (elementi/bucket). Quando supera ~0.75, si fa rehashing: si raddoppia la capacit&agrave; e si reinseriscono tutti gli elementi. Costo ammortizzato O(1).</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ALBERI BINARI DI RICERCA (BST)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bst"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ALBERI BINARI DI RICERCA (BST)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">COMPLESSIT&Agrave;</div>
+      <table>
+        <tr><th>Operazione</th><th>Medio (bilanciato)</th><th>Peggiore (degenere)</th></tr>
+        <tr><td>Ricerca</td><td>O(log n)</td><td>O(n)</td></tr>
+        <tr><td>Inserimento</td><td>O(log n)</td><td>O(n)</td></tr>
+        <tr><td>Rimozione</td><td>O(log n)</td><td>O(n)</td></tr>
+        <tr><td>Min / Max</td><td>O(log n)</td><td>O(n)</td></tr>
+      </table>
+      <p>Propriet&agrave;: per ogni nodo, tutti i valori nel sottoalbero sinistro sono &lt; e nel destro sono &gt;.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONE BST</div>
+<pre><span class="kw">class</span> <span class="cls">BSTNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">key</span>):
+        <span class="var">self</span>.<span class="var">key</span> = <span class="var">key</span>
+        <span class="var">self</span>.<span class="var">left</span> = <span class="var">self</span>.<span class="var">right</span> = <span class="kw">None</span>
+
+<span class="kw">def</span> <span class="fn">insert</span>(<span class="var">root</span>, <span class="var">key</span>):
+    <span class="kw">if not</span> <span class="var">root</span>:
+        <span class="kw">return</span> <span class="cls">BSTNode</span>(<span class="var">key</span>)
+    <span class="kw">if</span> <span class="var">key</span> &lt; <span class="var">root</span>.<span class="var">key</span>:
+        <span class="var">root</span>.<span class="var">left</span> = <span class="fn">insert</span>(<span class="var">root</span>.<span class="var">left</span>, <span class="var">key</span>)
+    <span class="kw">elif</span> <span class="var">key</span> &gt; <span class="var">root</span>.<span class="var">key</span>:
+        <span class="var">root</span>.<span class="var">right</span> = <span class="fn">insert</span>(<span class="var">root</span>.<span class="var">right</span>, <span class="var">key</span>)
+    <span class="kw">return</span> <span class="var">root</span>
+
+<span class="kw">def</span> <span class="fn">search</span>(<span class="var">root</span>, <span class="var">key</span>):
+    <span class="kw">if not</span> <span class="var">root</span> <span class="kw">or</span> <span class="var">root</span>.<span class="var">key</span> == <span class="var">key</span>:
+        <span class="kw">return</span> <span class="var">root</span>
+    <span class="kw">if</span> <span class="var">key</span> &lt; <span class="var">root</span>.<span class="var">key</span>:
+        <span class="kw">return</span> <span class="fn">search</span>(<span class="var">root</span>.<span class="var">left</span>, <span class="var">key</span>)
+    <span class="kw">return</span> <span class="fn">search</span>(<span class="var">root</span>.<span class="var">right</span>, <span class="var">key</span>)
+
+<span class="kw">def</span> <span class="fn">find_min</span>(<span class="var">root</span>):
+    <span class="kw">while</span> <span class="var">root</span>.<span class="var">left</span>:
+        <span class="var">root</span> = <span class="var">root</span>.<span class="var">left</span>
+    <span class="kw">return</span> <span class="var">root</span>
+
+<span class="kw">def</span> <span class="fn">delete</span>(<span class="var">root</span>, <span class="var">key</span>):
+    <span class="kw">if not</span> <span class="var">root</span>: <span class="kw">return</span> <span class="kw">None</span>
+    <span class="kw">if</span> <span class="var">key</span> &lt; <span class="var">root</span>.<span class="var">key</span>:
+        <span class="var">root</span>.<span class="var">left</span> = <span class="fn">delete</span>(<span class="var">root</span>.<span class="var">left</span>, <span class="var">key</span>)
+    <span class="kw">elif</span> <span class="var">key</span> &gt; <span class="var">root</span>.<span class="var">key</span>:
+        <span class="var">root</span>.<span class="var">right</span> = <span class="fn">delete</span>(<span class="var">root</span>.<span class="var">right</span>, <span class="var">key</span>)
+    <span class="kw">else</span>:
+        <span class="kw">if not</span> <span class="var">root</span>.<span class="var">left</span>: <span class="kw">return</span> <span class="var">root</span>.<span class="var">right</span>
+        <span class="kw">if not</span> <span class="var">root</span>.<span class="var">right</span>: <span class="kw">return</span> <span class="var">root</span>.<span class="var">left</span>
+        <span class="cmt"># Due figli: sostituisci con successore in-order</span>
+        <span class="var">succ</span> = <span class="fn">find_min</span>(<span class="var">root</span>.<span class="var">right</span>)
+        <span class="var">root</span>.<span class="var">key</span> = <span class="var">succ</span>.<span class="var">key</span>
+        <span class="var">root</span>.<span class="var">right</span> = <span class="fn">delete</span>(<span class="var">root</span>.<span class="var">right</span>, <span class="var">succ</span>.<span class="var">key</span>)
+    <span class="kw">return</span> <span class="var">root</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">VISITE (TRAVERSAL)</div>
+<pre><span class="kw">def</span> <span class="fn">inorder</span>(<span class="var">root</span>):       <span class="cmt"># Sx → Radice → Dx  (ordinato per BST!)</span>
+    <span class="kw">if</span> <span class="var">root</span>:
+        <span class="fn">inorder</span>(<span class="var">root</span>.<span class="var">left</span>)
+        <span class="fn">print</span>(<span class="var">root</span>.<span class="var">key</span>)
+        <span class="fn">inorder</span>(<span class="var">root</span>.<span class="var">right</span>)
+
+<span class="kw">def</span> <span class="fn">preorder</span>(<span class="var">root</span>):      <span class="cmt"># Radice → Sx → Dx  (utile per copiare l'albero)</span>
+    <span class="kw">if</span> <span class="var">root</span>:
+        <span class="fn">print</span>(<span class="var">root</span>.<span class="var">key</span>)
+        <span class="fn">preorder</span>(<span class="var">root</span>.<span class="var">left</span>)
+        <span class="fn">preorder</span>(<span class="var">root</span>.<span class="var">right</span>)
+
+<span class="kw">def</span> <span class="fn">postorder</span>(<span class="var">root</span>):     <span class="cmt"># Sx → Dx → Radice  (utile per distruggere)</span>
+    <span class="kw">if</span> <span class="var">root</span>:
+        <span class="fn">postorder</span>(<span class="var">root</span>.<span class="var">left</span>)
+        <span class="fn">postorder</span>(<span class="var">root</span>.<span class="var">right</span>)
+        <span class="fn">print</span>(<span class="var">root</span>.<span class="var">key</span>)
+
+<span class="kw">def</span> <span class="fn">level_order</span>(<span class="var">root</span>):   <span class="cmt"># BFS per livelli</span>
+    <span class="kw">from</span> collections <span class="kw">import</span> deque
+    <span class="var">q</span> = <span class="fn">deque</span>([<span class="var">root</span>])
+    <span class="kw">while</span> <span class="var">q</span>:
+        <span class="var">node</span> = <span class="var">q</span>.<span class="fn">popleft</span>()
+        <span class="fn">print</span>(<span class="var">node</span>.<span class="var">key</span>)
+        <span class="kw">if</span> <span class="var">node</span>.<span class="var">left</span>:  <span class="var">q</span>.<span class="fn">append</span>(<span class="var">node</span>.<span class="var">left</span>)
+        <span class="kw">if</span> <span class="var">node</span>.<span class="var">right</span>: <span class="var">q</span>.<span class="fn">append</span>(<span class="var">node</span>.<span class="var">right</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ALBERI AVL
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-avl"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ALBERI AVL (BST BILANCIATO)</div>
+  <div class="section-body">
+    <p>Un albero AVL &egrave; un BST in cui per ogni nodo la differenza di altezza tra sottoalbero sinistro e destro (fattore di bilanciamento) &egrave; al massimo 1. Tutte le operazioni sono <code>O(log n)</code> garantito.</p>
+
+    <div class="sub">
+      <div class="sub-title">ROTAZIONI</div>
+<pre><span class="cmt"># Rotazione singola destra (caso LL)</span>
+<span class="cmt">#       z               y</span>
+<span class="cmt">#      / \            /   \</span>
+<span class="cmt">#     y   T4   →    x     z</span>
+<span class="cmt">#    / \           / \   / \</span>
+<span class="cmt">#   x   T3        T1 T2 T3 T4</span>
+<span class="cmt">#  / \</span>
+<span class="cmt"># T1  T2</span>
+
+<span class="kw">def</span> <span class="fn">rotate_right</span>(<span class="var">z</span>):
+    <span class="var">y</span> = <span class="var">z</span>.<span class="var">left</span>
+    <span class="var">z</span>.<span class="var">left</span> = <span class="var">y</span>.<span class="var">right</span>
+    <span class="var">y</span>.<span class="var">right</span> = <span class="var">z</span>
+    <span class="var">z</span>.<span class="var">height</span> = <span class="num">1</span> + <span class="fn">max</span>(<span class="fn">h</span>(<span class="var">z</span>.<span class="var">left</span>), <span class="fn">h</span>(<span class="var">z</span>.<span class="var">right</span>))
+    <span class="var">y</span>.<span class="var">height</span> = <span class="num">1</span> + <span class="fn">max</span>(<span class="fn">h</span>(<span class="var">y</span>.<span class="var">left</span>), <span class="fn">h</span>(<span class="var">y</span>.<span class="var">right</span>))
+    <span class="kw">return</span> <span class="var">y</span>
+
+<span class="cmt"># Rotazione singola sinistra (caso RR) — simmetrica</span>
+<span class="kw">def</span> <span class="fn">rotate_left</span>(<span class="var">z</span>):
+    <span class="var">y</span> = <span class="var">z</span>.<span class="var">right</span>
+    <span class="var">z</span>.<span class="var">right</span> = <span class="var">y</span>.<span class="var">left</span>
+    <span class="var">y</span>.<span class="var">left</span> = <span class="var">z</span>
+    <span class="var">z</span>.<span class="var">height</span> = <span class="num">1</span> + <span class="fn">max</span>(<span class="fn">h</span>(<span class="var">z</span>.<span class="var">left</span>), <span class="fn">h</span>(<span class="var">z</span>.<span class="var">right</span>))
+    <span class="var">y</span>.<span class="var">height</span> = <span class="num">1</span> + <span class="fn">max</span>(<span class="fn">h</span>(<span class="var">y</span>.<span class="var">left</span>), <span class="fn">h</span>(<span class="var">y</span>.<span class="var">right</span>))
+    <span class="kw">return</span> <span class="var">y</span>
+
+<span class="kw">def</span> <span class="fn">h</span>(<span class="var">node</span>): <span class="kw">return</span> <span class="var">node</span>.<span class="var">height</span> <span class="kw">if</span> <span class="var">node</span> <span class="kw">else</span> <span class="num">0</span>
+<span class="kw">def</span> <span class="fn">bf</span>(<span class="var">node</span>): <span class="kw">return</span> <span class="fn">h</span>(<span class="var">node</span>.<span class="var">left</span>) - <span class="fn">h</span>(<span class="var">node</span>.<span class="var">right</span>)  <span class="cmt"># balance factor</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">INSERIMENTO AVL</div>
+<pre><span class="kw">class</span> <span class="cls">AVLNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">key</span>):
+        <span class="var">self</span>.<span class="var">key</span> = <span class="var">key</span>
+        <span class="var">self</span>.<span class="var">left</span> = <span class="var">self</span>.<span class="var">right</span> = <span class="kw">None</span>
+        <span class="var">self</span>.<span class="var">height</span> = <span class="num">1</span>
+
+<span class="kw">def</span> <span class="fn">avl_insert</span>(<span class="var">root</span>, <span class="var">key</span>):
+    <span class="kw">if not</span> <span class="var">root</span>: <span class="kw">return</span> <span class="cls">AVLNode</span>(<span class="var">key</span>)
+    <span class="kw">if</span> <span class="var">key</span> &lt; <span class="var">root</span>.<span class="var">key</span>:   <span class="var">root</span>.<span class="var">left</span>  = <span class="fn">avl_insert</span>(<span class="var">root</span>.<span class="var">left</span>, <span class="var">key</span>)
+    <span class="kw">elif</span> <span class="var">key</span> &gt; <span class="var">root</span>.<span class="var">key</span>: <span class="var">root</span>.<span class="var">right</span> = <span class="fn">avl_insert</span>(<span class="var">root</span>.<span class="var">right</span>, <span class="var">key</span>)
+    <span class="kw">else</span>: <span class="kw">return</span> <span class="var">root</span>
+
+    <span class="var">root</span>.<span class="var">height</span> = <span class="num">1</span> + <span class="fn">max</span>(<span class="fn">h</span>(<span class="var">root</span>.<span class="var">left</span>), <span class="fn">h</span>(<span class="var">root</span>.<span class="var">right</span>))
+    <span class="var">balance</span> = <span class="fn">bf</span>(<span class="var">root</span>)
+
+    <span class="cmt"># Caso LL</span>
+    <span class="kw">if</span> <span class="var">balance</span> &gt; <span class="num">1</span> <span class="kw">and</span> <span class="var">key</span> &lt; <span class="var">root</span>.<span class="var">left</span>.<span class="var">key</span>:
+        <span class="kw">return</span> <span class="fn">rotate_right</span>(<span class="var">root</span>)
+    <span class="cmt"># Caso RR</span>
+    <span class="kw">if</span> <span class="var">balance</span> &lt; -<span class="num">1</span> <span class="kw">and</span> <span class="var">key</span> &gt; <span class="var">root</span>.<span class="var">right</span>.<span class="var">key</span>:
+        <span class="kw">return</span> <span class="fn">rotate_left</span>(<span class="var">root</span>)
+    <span class="cmt"># Caso LR</span>
+    <span class="kw">if</span> <span class="var">balance</span> &gt; <span class="num">1</span> <span class="kw">and</span> <span class="var">key</span> &gt; <span class="var">root</span>.<span class="var">left</span>.<span class="var">key</span>:
+        <span class="var">root</span>.<span class="var">left</span> = <span class="fn">rotate_left</span>(<span class="var">root</span>.<span class="var">left</span>)
+        <span class="kw">return</span> <span class="fn">rotate_right</span>(<span class="var">root</span>)
+    <span class="cmt"># Caso RL</span>
+    <span class="kw">if</span> <span class="var">balance</span> &lt; -<span class="num">1</span> <span class="kw">and</span> <span class="var">key</span> &lt; <span class="var">root</span>.<span class="var">right</span>.<span class="var">key</span>:
+        <span class="var">root</span>.<span class="var">right</span> = <span class="fn">rotate_right</span>(<span class="var">root</span>.<span class="var">right</span>)
+        <span class="kw">return</span> <span class="fn">rotate_left</span>(<span class="var">root</span>)
+
+    <span class="kw">return</span> <span class="var">root</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     HEAP & CODE A PRIORITA'
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-heap"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> HEAP &amp; CODE A PRIORIT&Agrave;</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">COMPLESSIT&Agrave;</div>
+      <table>
+        <tr><th>Operazione</th><th>Complessit&agrave;</th></tr>
+        <tr><td>Inserimento (push)</td><td>O(log n)</td></tr>
+        <tr><td>Estrai minimo/massimo (pop)</td><td>O(log n)</td></tr>
+        <tr><td>Peek minimo/massimo</td><td>O(1)</td></tr>
+        <tr><td>Heapify (costruzione da array)</td><td>O(n)</td></tr>
+      </table>
+      <p><b>Min-heap:</b> genitore &le; figli. <b>Max-heap:</b> genitore &ge; figli. Su array: figli di <code>i</code> in posizione <code>2i+1</code> e <code>2i+2</code>, genitore in <code>(i-1)//2</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">heapq DI PYTHON (MIN-HEAP)</div>
+<pre><span class="kw">import</span> heapq
+
+<span class="cmt"># Min-heap</span>
+<span class="var">heap</span> = []
+<span class="fn">heapq.heappush</span>(<span class="var">heap</span>, <span class="num">5</span>)
+<span class="fn">heapq.heappush</span>(<span class="var">heap</span>, <span class="num">2</span>)
+<span class="fn">heapq.heappush</span>(<span class="var">heap</span>, <span class="num">8</span>)
+<span class="var">minimo</span> = <span class="fn">heapq.heappop</span>(<span class="var">heap</span>)    <span class="cmt"># → 2</span>
+<span class="var">peek</span> = <span class="var">heap</span>[<span class="num">0</span>]                    <span class="cmt"># → 5 (min senza rimuovere)</span>
+
+<span class="cmt"># Heapify: trasforma lista in heap in O(n)</span>
+<span class="var">arr</span> = [<span class="num">9</span>, <span class="num">3</span>, <span class="num">7</span>, <span class="num">1</span>, <span class="num">5</span>]
+<span class="fn">heapq.heapify</span>(<span class="var">arr</span>)              <span class="cmt"># arr ora &egrave; un min-heap</span>
+
+<span class="cmt"># Max-heap: negare i valori</span>
+<span class="var">max_heap</span> = []
+<span class="fn">heapq.heappush</span>(<span class="var">max_heap</span>, -<span class="num">5</span>)
+<span class="fn">heapq.heappush</span>(<span class="var">max_heap</span>, -<span class="num">2</span>)
+<span class="var">massimo</span> = -<span class="fn">heapq.heappop</span>(<span class="var">max_heap</span>)  <span class="cmt"># → 5</span>
+
+<span class="cmt"># N pi&ugrave; grandi / piccoli</span>
+<span class="fn">heapq.nlargest</span>(<span class="num">3</span>, <span class="var">arr</span>)         <span class="cmt"># 3 pi&ugrave; grandi</span>
+<span class="fn">heapq.nsmallest</span>(<span class="num">3</span>, <span class="var">arr</span>)        <span class="cmt"># 3 pi&ugrave; piccoli</span>
+
+<span class="cmt"># Coda a priorit&agrave; con tuple (priorit&agrave;, dato)</span>
+<span class="var">pq</span> = []
+<span class="fn">heapq.heappush</span>(<span class="var">pq</span>, (<span class="num">3</span>, <span class="str">"bassa"</span>))
+<span class="fn">heapq.heappush</span>(<span class="var">pq</span>, (<span class="num">1</span>, <span class="str">"alta"</span>))
+<span class="fn">heapq.heappush</span>(<span class="var">pq</span>, (<span class="num">2</span>, <span class="str">"media"</span>))
+<span class="var">_</span>, <span class="var">task</span> = <span class="fn">heapq.heappop</span>(<span class="var">pq</span>)     <span class="cmt"># → "alta"</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONE HEAP</div>
+<pre><span class="kw">class</span> <span class="cls">MinHeap</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">data</span> = []
+
+    <span class="kw">def</span> <span class="fn">push</span>(<span class="var">self</span>, <span class="var">val</span>):
+        <span class="var">self</span>.<span class="var">data</span>.<span class="fn">append</span>(<span class="var">val</span>)
+        <span class="var">self</span>.<span class="fn">_sift_up</span>(<span class="fn">len</span>(<span class="var">self</span>.<span class="var">data</span>) - <span class="num">1</span>)
+
+    <span class="kw">def</span> <span class="fn">pop</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">data</span>[<span class="num">0</span>], <span class="var">self</span>.<span class="var">data</span>[-<span class="num">1</span>] = <span class="var">self</span>.<span class="var">data</span>[-<span class="num">1</span>], <span class="var">self</span>.<span class="var">data</span>[<span class="num">0</span>]
+        <span class="var">val</span> = <span class="var">self</span>.<span class="var">data</span>.<span class="fn">pop</span>()
+        <span class="var">self</span>.<span class="fn">_sift_down</span>(<span class="num">0</span>)
+        <span class="kw">return</span> <span class="var">val</span>
+
+    <span class="kw">def</span> <span class="fn">_sift_up</span>(<span class="var">self</span>, <span class="var">i</span>):
+        <span class="kw">while</span> <span class="var">i</span> &gt; <span class="num">0</span>:
+            <span class="var">parent</span> = (<span class="var">i</span> - <span class="num">1</span>) // <span class="num">2</span>
+            <span class="kw">if</span> <span class="var">self</span>.<span class="var">data</span>[<span class="var">i</span>] &lt; <span class="var">self</span>.<span class="var">data</span>[<span class="var">parent</span>]:
+                <span class="var">self</span>.<span class="var">data</span>[<span class="var">i</span>], <span class="var">self</span>.<span class="var">data</span>[<span class="var">parent</span>] = <span class="var">self</span>.<span class="var">data</span>[<span class="var">parent</span>], <span class="var">self</span>.<span class="var">data</span>[<span class="var">i</span>]
+                <span class="var">i</span> = <span class="var">parent</span>
+            <span class="kw">else</span>: <span class="kw">break</span>
+
+    <span class="kw">def</span> <span class="fn">_sift_down</span>(<span class="var">self</span>, <span class="var">i</span>):
+        <span class="var">n</span> = <span class="fn">len</span>(<span class="var">self</span>.<span class="var">data</span>)
+        <span class="kw">while</span> <span class="num">2</span>*<span class="var">i</span>+<span class="num">1</span> &lt; <span class="var">n</span>:
+            <span class="var">j</span> = <span class="num">2</span>*<span class="var">i</span>+<span class="num">1</span>
+            <span class="kw">if</span> <span class="var">j</span>+<span class="num">1</span> &lt; <span class="var">n</span> <span class="kw">and</span> <span class="var">self</span>.<span class="var">data</span>[<span class="var">j</span>+<span class="num">1</span>] &lt; <span class="var">self</span>.<span class="var">data</span>[<span class="var">j</span>]: <span class="var">j</span> += <span class="num">1</span>
+            <span class="kw">if</span> <span class="var">self</span>.<span class="var">data</span>[<span class="var">i</span>] &gt; <span class="var">self</span>.<span class="var">data</span>[<span class="var">j</span>]:
+                <span class="var">self</span>.<span class="var">data</span>[<span class="var">i</span>], <span class="var">self</span>.<span class="var">data</span>[<span class="var">j</span>] = <span class="var">self</span>.<span class="var">data</span>[<span class="var">j</span>], <span class="var">self</span>.<span class="var">data</span>[<span class="var">i</span>]
+                <span class="var">i</span> = <span class="var">j</span>
+            <span class="kw">else</span>: <span class="kw">break</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     TRIE (PREFIX TREE)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-trie"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TRIE (PREFIX TREE)</div>
+  <div class="section-body">
+    <p>Struttura ottimale per operazioni su prefissi di stringhe. Ricerca, inserimento, prefisso: <code>O(m)</code> dove m = lunghezza stringa.</p>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONE</div>
+<pre><span class="kw">class</span> <span class="cls">TrieNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">children</span> = {}
+        <span class="var">self</span>.<span class="var">is_end</span> = <span class="kw">False</span>
+
+<span class="kw">class</span> <span class="cls">Trie</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):
+        <span class="var">self</span>.<span class="var">root</span> = <span class="cls">TrieNode</span>()
+
+    <span class="kw">def</span> <span class="fn">insert</span>(<span class="var">self</span>, <span class="var">word</span>):                 <span class="cmt"># O(m)</span>
+        <span class="var">node</span> = <span class="var">self</span>.<span class="var">root</span>
+        <span class="kw">for</span> <span class="var">ch</span> <span class="kw">in</span> <span class="var">word</span>:
+            <span class="kw">if</span> <span class="var">ch</span> <span class="kw">not in</span> <span class="var">node</span>.<span class="var">children</span>:
+                <span class="var">node</span>.<span class="var">children</span>[<span class="var">ch</span>] = <span class="cls">TrieNode</span>()
+            <span class="var">node</span> = <span class="var">node</span>.<span class="var">children</span>[<span class="var">ch</span>]
+        <span class="var">node</span>.<span class="var">is_end</span> = <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">search</span>(<span class="var">self</span>, <span class="var">word</span>):                 <span class="cmt"># O(m)</span>
+        <span class="var">node</span> = <span class="var">self</span>.<span class="fn">_find</span>(<span class="var">word</span>)
+        <span class="kw">return</span> <span class="var">node</span> <span class="kw">is not</span> <span class="kw">None</span> <span class="kw">and</span> <span class="var">node</span>.<span class="var">is_end</span>
+
+    <span class="kw">def</span> <span class="fn">starts_with</span>(<span class="var">self</span>, <span class="var">prefix</span>):           <span class="cmt"># O(m)</span>
+        <span class="kw">return</span> <span class="var">self</span>.<span class="fn">_find</span>(<span class="var">prefix</span>) <span class="kw">is not</span> <span class="kw">None</span>
+
+    <span class="kw">def</span> <span class="fn">_find</span>(<span class="var">self</span>, <span class="var">prefix</span>):
+        <span class="var">node</span> = <span class="var">self</span>.<span class="var">root</span>
+        <span class="kw">for</span> <span class="var">ch</span> <span class="kw">in</span> <span class="var">prefix</span>:
+            <span class="kw">if</span> <span class="var">ch</span> <span class="kw">not in</span> <span class="var">node</span>.<span class="var">children</span>: <span class="kw">return</span> <span class="kw">None</span>
+            <span class="var">node</span> = <span class="var">node</span>.<span class="var">children</span>[<span class="var">ch</span>]
+        <span class="kw">return</span> <span class="var">node</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RAPPRESENTAZIONE GRAFI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-graphs"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RAPPRESENTAZIONE GRAFI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">CONFRONTO RAPPRESENTAZIONI</div>
+      <table>
+        <tr><th>Operazione</th><th>Lista adiacenza</th><th>Matrice adiacenza</th></tr>
+        <tr><td>Spazio</td><td>O(V + E)</td><td>O(V&sup2;)</td></tr>
+        <tr><td>Arco esiste?</td><td>O(grado)</td><td>O(1)</td></tr>
+        <tr><td>Itera vicini</td><td>O(grado)</td><td>O(V)</td></tr>
+        <tr><td>Aggiungi arco</td><td>O(1)</td><td>O(1)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LISTA DI ADIACENZA</div>
+<pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="cmt"># Grafo non orientato non pesato</span>
+<span class="var">graph</span> = <span class="fn">defaultdict</span>(<span class="fn">list</span>)
+<span class="var">graph</span>[<span class="str">"A"</span>].<span class="fn">append</span>(<span class="str">"B"</span>)
+<span class="var">graph</span>[<span class="str">"B"</span>].<span class="fn">append</span>(<span class="str">"A"</span>)  <span class="cmt"># bidirezionale</span>
+
+<span class="cmt"># Grafo orientato pesato</span>
+<span class="var">wgraph</span> = <span class="fn">defaultdict</span>(<span class="fn">list</span>)
+<span class="var">wgraph</span>[<span class="str">"A"</span>].<span class="fn">append</span>((<span class="str">"B"</span>, <span class="num">5</span>))    <span class="cmt"># A → B con peso 5</span>
+<span class="var">wgraph</span>[<span class="str">"A"</span>].<span class="fn">append</span>((<span class="str">"C"</span>, <span class="num">3</span>))    <span class="cmt"># A → C con peso 3</span>
+
+<span class="cmt"># Da lista di archi</span>
+<span class="var">edges</span> = [(<span class="str">"A"</span>,<span class="str">"B"</span>), (<span class="str">"A"</span>,<span class="str">"C"</span>), (<span class="str">"B"</span>,<span class="str">"C"</span>)]
+<span class="var">adj</span> = <span class="fn">defaultdict</span>(<span class="fn">list</span>)
+<span class="kw">for</span> <span class="var">u</span>, <span class="var">v</span> <span class="kw">in</span> <span class="var">edges</span>:
+    <span class="var">adj</span>[<span class="var">u</span>].<span class="fn">append</span>(<span class="var">v</span>)
+    <span class="var">adj</span>[<span class="var">v</span>].<span class="fn">append</span>(<span class="var">u</span>)   <span class="cmt"># non orientato</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MATRICE DI ADIACENZA</div>
+<pre><span class="cmt"># Grafo con V nodi (0..V-1)</span>
+<span class="var">V</span> = <span class="num">4</span>
+<span class="var">matrix</span> = [[<span class="num">0</span>] * <span class="var">V</span> <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">V</span>)]
+<span class="var">matrix</span>[<span class="num">0</span>][<span class="num">1</span>] = <span class="num">1</span>  <span class="cmt"># arco 0→1</span>
+<span class="var">matrix</span>[<span class="num">1</span>][<span class="num">0</span>] = <span class="num">1</span>  <span class="cmt"># non orientato</span>
+
+<span class="cmt"># Pesato: matrix[u][v] = peso (0 o inf se non esiste)</span>
+<span class="var">INF</span> = <span class="fn">float</span>(<span class="str">'inf'</span>)
+<span class="var">wmatrix</span> = [[<span class="var">INF</span>]*<span class="var">V</span> <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">V</span>)]
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">V</span>): <span class="var">wmatrix</span>[<span class="var">i</span>][<span class="var">i</span>] = <span class="num">0</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     BFS & DFS
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bfsdfs"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BFS &amp; DFS</div>
+  <div class="section-body">
+    <p>Entrambi <code>O(V + E)</code> in tempo e <code>O(V)</code> in spazio.</p>
+
+    <div class="sub">
+      <div class="sub-title">BFS (BREADTH-FIRST SEARCH)</div>
+<pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="kw">def</span> <span class="fn">bfs</span>(<span class="var">graph</span>, <span class="var">start</span>):
+    <span class="var">visited</span> = {<span class="var">start</span>}
+    <span class="var">queue</span> = <span class="fn">deque</span>([<span class="var">start</span>])
+    <span class="var">order</span> = []
+    <span class="kw">while</span> <span class="var">queue</span>:
+        <span class="var">node</span> = <span class="var">queue</span>.<span class="fn">popleft</span>()
+        <span class="var">order</span>.<span class="fn">append</span>(<span class="var">node</span>)
+        <span class="kw">for</span> <span class="var">neighbor</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">node</span>]:
+            <span class="kw">if</span> <span class="var">neighbor</span> <span class="kw">not in</span> <span class="var">visited</span>:
+                <span class="var">visited</span>.<span class="fn">add</span>(<span class="var">neighbor</span>)
+                <span class="var">queue</span>.<span class="fn">append</span>(<span class="var">neighbor</span>)
+    <span class="kw">return</span> <span class="var">order</span>
+
+<span class="cmt"># BFS con distanza minima (grafi non pesati)</span>
+<span class="kw">def</span> <span class="fn">bfs_distance</span>(<span class="var">graph</span>, <span class="var">start</span>):
+    <span class="var">dist</span> = {<span class="var">start</span>: <span class="num">0</span>}
+    <span class="var">queue</span> = <span class="fn">deque</span>([<span class="var">start</span>])
+    <span class="kw">while</span> <span class="var">queue</span>:
+        <span class="var">node</span> = <span class="var">queue</span>.<span class="fn">popleft</span>()
+        <span class="kw">for</span> <span class="var">nb</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">node</span>]:
+            <span class="kw">if</span> <span class="var">nb</span> <span class="kw">not in</span> <span class="var">dist</span>:
+                <span class="var">dist</span>[<span class="var">nb</span>] = <span class="var">dist</span>[<span class="var">node</span>] + <span class="num">1</span>
+                <span class="var">queue</span>.<span class="fn">append</span>(<span class="var">nb</span>)
+    <span class="kw">return</span> <span class="var">dist</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DFS (DEPTH-FIRST SEARCH)</div>
+<pre><span class="cmt"># DFS iterativo (con stack)</span>
+<span class="kw">def</span> <span class="fn">dfs_iterative</span>(<span class="var">graph</span>, <span class="var">start</span>):
+    <span class="var">visited</span> = <span class="fn">set</span>()
+    <span class="var">stack</span> = [<span class="var">start</span>]
+    <span class="var">order</span> = []
+    <span class="kw">while</span> <span class="var">stack</span>:
+        <span class="var">node</span> = <span class="var">stack</span>.<span class="fn">pop</span>()
+        <span class="kw">if</span> <span class="var">node</span> <span class="kw">in</span> <span class="var">visited</span>: <span class="kw">continue</span>
+        <span class="var">visited</span>.<span class="fn">add</span>(<span class="var">node</span>)
+        <span class="var">order</span>.<span class="fn">append</span>(<span class="var">node</span>)
+        <span class="kw">for</span> <span class="var">nb</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">node</span>]:
+            <span class="var">stack</span>.<span class="fn">append</span>(<span class="var">nb</span>)
+    <span class="kw">return</span> <span class="var">order</span>
+
+<span class="cmt"># DFS ricorsivo</span>
+<span class="kw">def</span> <span class="fn">dfs_recursive</span>(<span class="var">graph</span>, <span class="var">node</span>, <span class="var">visited</span>=<span class="kw">None</span>):
+    <span class="kw">if</span> <span class="var">visited</span> <span class="kw">is</span> <span class="kw">None</span>: <span class="var">visited</span> = <span class="fn">set</span>()
+    <span class="var">visited</span>.<span class="fn">add</span>(<span class="var">node</span>)
+    <span class="kw">for</span> <span class="var">nb</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">node</span>]:
+        <span class="kw">if</span> <span class="var">nb</span> <span class="kw">not in</span> <span class="var">visited</span>:
+            <span class="fn">dfs_recursive</span>(<span class="var">graph</span>, <span class="var">nb</span>, <span class="var">visited</span>)
+    <span class="kw">return</span> <span class="var">visited</span>
+
+<span class="cmt"># Rilevare cicli in un grafo orientato (DFS con colori)</span>
+<span class="kw">def</span> <span class="fn">has_cycle</span>(<span class="var">graph</span>, <span class="var">n</span>):
+    <span class="var">WHITE</span>, <span class="var">GRAY</span>, <span class="var">BLACK</span> = <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>
+    <span class="var">color</span> = [<span class="var">WHITE</span>] * <span class="var">n</span>
+    <span class="kw">def</span> <span class="fn">dfs</span>(<span class="var">u</span>):
+        <span class="var">color</span>[<span class="var">u</span>] = <span class="var">GRAY</span>
+        <span class="kw">for</span> <span class="var">v</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">u</span>]:
+            <span class="kw">if</span> <span class="var">color</span>[<span class="var">v</span>] == <span class="var">GRAY</span>: <span class="kw">return</span> <span class="kw">True</span>    <span class="cmt"># back edge!</span>
+            <span class="kw">if</span> <span class="var">color</span>[<span class="var">v</span>] == <span class="var">WHITE</span> <span class="kw">and</span> <span class="fn">dfs</span>(<span class="var">v</span>): <span class="kw">return</span> <span class="kw">True</span>
+        <span class="var">color</span>[<span class="var">u</span>] = <span class="var">BLACK</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="fn">any</span>(<span class="fn">dfs</span>(<span class="var">i</span>) <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>) <span class="kw">if</span> <span class="var">color</span>[<span class="var">i</span>] == <span class="var">WHITE</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     CAMMINI MINIMI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-shortest"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CAMMINI MINIMI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">CONFRONTO ALGORITMI</div>
+      <table>
+        <tr><th>Algoritmo</th><th>Complessit&agrave;</th><th>Pesi negativi</th><th>Sorgente</th></tr>
+        <tr><td>BFS</td><td>O(V + E)</td><td>No (non pesato)</td><td>Singola</td></tr>
+        <tr><td>Dijkstra</td><td>O((V+E) log V)</td><td>No</td><td>Singola</td></tr>
+        <tr><td>Bellman-Ford</td><td>O(V &middot; E)</td><td>S&igrave; (rileva cicli neg.)</td><td>Singola</td></tr>
+        <tr><td>Floyd-Warshall</td><td>O(V&sup3;)</td><td>S&igrave; (no cicli neg.)</td><td>Tutte le coppie</td></tr>
+        <tr><td>A*</td><td>O(E) con buona euristica</td><td>No</td><td>Singola (con target)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DIJKSTRA</div>
+<pre><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">dijkstra</span>(<span class="var">graph</span>, <span class="var">src</span>):
+    <span class="str">"""graph[u] = [(v, weight), ...] — pesi &ge; 0"""</span>
+    <span class="var">dist</span> = {<span class="var">src</span>: <span class="num">0</span>}
+    <span class="var">pq</span> = [(<span class="num">0</span>, <span class="var">src</span>)]
+    <span class="var">prev</span> = {}
+
+    <span class="kw">while</span> <span class="var">pq</span>:
+        <span class="var">d</span>, <span class="var">u</span> = <span class="fn">heapq.heappop</span>(<span class="var">pq</span>)
+        <span class="kw">if</span> <span class="var">d</span> &gt; <span class="var">dist</span>.<span class="fn">get</span>(<span class="var">u</span>, <span class="fn">float</span>(<span class="str">'inf'</span>)):
+            <span class="kw">continue</span>
+        <span class="kw">for</span> <span class="var">v</span>, <span class="var">w</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">u</span>]:
+            <span class="var">nd</span> = <span class="var">d</span> + <span class="var">w</span>
+            <span class="kw">if</span> <span class="var">nd</span> &lt; <span class="var">dist</span>.<span class="fn">get</span>(<span class="var">v</span>, <span class="fn">float</span>(<span class="str">'inf'</span>)):
+                <span class="var">dist</span>[<span class="var">v</span>] = <span class="var">nd</span>
+                <span class="var">prev</span>[<span class="var">v</span>] = <span class="var">u</span>
+                <span class="fn">heapq.heappush</span>(<span class="var">pq</span>, (<span class="var">nd</span>, <span class="var">v</span>))
+
+    <span class="kw">return</span> <span class="var">dist</span>, <span class="var">prev</span>
+
+<span class="cmt"># Ricostruzione percorso</span>
+<span class="kw">def</span> <span class="fn">reconstruct_path</span>(<span class="var">prev</span>, <span class="var">src</span>, <span class="var">dst</span>):
+    <span class="var">path</span> = []
+    <span class="var">node</span> = <span class="var">dst</span>
+    <span class="kw">while</span> <span class="var">node</span> != <span class="var">src</span>:
+        <span class="var">path</span>.<span class="fn">append</span>(<span class="var">node</span>)
+        <span class="var">node</span> = <span class="var">prev</span>[<span class="var">node</span>]
+    <span class="var">path</span>.<span class="fn">append</span>(<span class="var">src</span>)
+    <span class="kw">return</span> <span class="var">path</span>[::-<span class="num">1</span>]</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BELLMAN-FORD</div>
+<pre><span class="kw">def</span> <span class="fn">bellman_ford</span>(<span class="var">edges</span>, <span class="var">n</span>, <span class="var">src</span>):
+    <span class="str">"""edges = [(u, v, weight), ...] — supporta pesi negativi"""</span>
+    <span class="var">dist</span> = [<span class="fn">float</span>(<span class="str">'inf'</span>)] * <span class="var">n</span>
+    <span class="var">dist</span>[<span class="var">src</span>] = <span class="num">0</span>
+
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> - <span class="num">1</span>):
+        <span class="kw">for</span> <span class="var">u</span>, <span class="var">v</span>, <span class="var">w</span> <span class="kw">in</span> <span class="var">edges</span>:
+            <span class="kw">if</span> <span class="var">dist</span>[<span class="var">u</span>] + <span class="var">w</span> &lt; <span class="var">dist</span>[<span class="var">v</span>]:
+                <span class="var">dist</span>[<span class="var">v</span>] = <span class="var">dist</span>[<span class="var">u</span>] + <span class="var">w</span>
+
+    <span class="cmt"># Rileva cicli a peso negativo</span>
+    <span class="kw">for</span> <span class="var">u</span>, <span class="var">v</span>, <span class="var">w</span> <span class="kw">in</span> <span class="var">edges</span>:
+        <span class="kw">if</span> <span class="var">dist</span>[<span class="var">u</span>] + <span class="var">w</span> &lt; <span class="var">dist</span>[<span class="var">v</span>]:
+            <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="str">"Ciclo a peso negativo!"</span>)
+    <span class="kw">return</span> <span class="var">dist</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">A* (A-STAR)</div>
+<pre><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">a_star</span>(<span class="var">graph</span>, <span class="var">start</span>, <span class="var">goal</span>, <span class="var">heuristic</span>):
+    <span class="str">"""heuristic(node) → stima distanza al goal (ammissibile!)"""</span>
+    <span class="var">pq</span> = [(<span class="fn">heuristic</span>(<span class="var">start</span>), <span class="num">0</span>, <span class="var">start</span>)]  <span class="cmt"># (f, g, node)</span>
+    <span class="var">g_score</span> = {<span class="var">start</span>: <span class="num">0</span>}
+    <span class="var">prev</span> = {}
+
+    <span class="kw">while</span> <span class="var">pq</span>:
+        <span class="var">f</span>, <span class="var">g</span>, <span class="var">u</span> = <span class="fn">heapq.heappop</span>(<span class="var">pq</span>)
+        <span class="kw">if</span> <span class="var">u</span> == <span class="var">goal</span>:
+            <span class="kw">return</span> <span class="fn">reconstruct_path</span>(<span class="var">prev</span>, <span class="var">start</span>, <span class="var">goal</span>), <span class="var">g</span>
+        <span class="kw">if</span> <span class="var">g</span> &gt; <span class="var">g_score</span>.<span class="fn">get</span>(<span class="var">u</span>, <span class="fn">float</span>(<span class="str">'inf'</span>)):
+            <span class="kw">continue</span>
+        <span class="kw">for</span> <span class="var">v</span>, <span class="var">w</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">u</span>]:
+            <span class="var">ng</span> = <span class="var">g</span> + <span class="var">w</span>
+            <span class="kw">if</span> <span class="var">ng</span> &lt; <span class="var">g_score</span>.<span class="fn">get</span>(<span class="var">v</span>, <span class="fn">float</span>(<span class="str">'inf'</span>)):
+                <span class="var">g_score</span>[<span class="var">v</span>] = <span class="var">ng</span>
+                <span class="var">prev</span>[<span class="var">v</span>] = <span class="var">u</span>
+                <span class="fn">heapq.heappush</span>(<span class="var">pq</span>, (<span class="var">ng</span> + <span class="fn">heuristic</span>(<span class="var">v</span>), <span class="var">ng</span>, <span class="var">v</span>))
+
+    <span class="kw">return</span> <span class="kw">None</span>, <span class="fn">float</span>(<span class="str">'inf'</span>)  <span class="cmt"># nessun percorso</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FLOYD-WARSHALL</div>
+<pre><span class="kw">def</span> <span class="fn">floyd_warshall</span>(<span class="var">dist</span>):
+    <span class="str">"""dist = matrice V×V (dist[i][j] = peso, inf se non connesso)"""</span>
+    <span class="var">n</span> = <span class="fn">len</span>(<span class="var">dist</span>)
+    <span class="kw">for</span> <span class="var">k</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+        <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+            <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+                <span class="var">dist</span>[<span class="var">i</span>][<span class="var">j</span>] = <span class="fn">min</span>(<span class="var">dist</span>[<span class="var">i</span>][<span class="var">j</span>], <span class="var">dist</span>[<span class="var">i</span>][<span class="var">k</span>] + <span class="var">dist</span>[<span class="var">k</span>][<span class="var">j</span>])
+    <span class="kw">return</span> <span class="var">dist</span>  <span class="cmt"># O(V³)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MINIMUM SPANNING TREE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-mst"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MINIMUM SPANNING TREE (MST)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">KRUSKAL (usa Union-Find)</div>
+<pre><span class="kw">def</span> <span class="fn">kruskal</span>(<span class="var">n</span>, <span class="var">edges</span>):
+    <span class="str">"""edges = [(weight, u, v), ...] — O(E log E)"""</span>
+    <span class="var">edges</span>.<span class="fn">sort</span>()
+    <span class="var">uf</span> = <span class="cls">UnionFind</span>(<span class="var">n</span>)  <span class="cmt"># vedi sezione Union-Find</span>
+    <span class="var">mst</span> = []
+    <span class="var">cost</span> = <span class="num">0</span>
+    <span class="kw">for</span> <span class="var">w</span>, <span class="var">u</span>, <span class="var">v</span> <span class="kw">in</span> <span class="var">edges</span>:
+        <span class="kw">if</span> <span class="var">uf</span>.<span class="fn">find</span>(<span class="var">u</span>) != <span class="var">uf</span>.<span class="fn">find</span>(<span class="var">v</span>):
+            <span class="var">uf</span>.<span class="fn">union</span>(<span class="var">u</span>, <span class="var">v</span>)
+            <span class="var">mst</span>.<span class="fn">append</span>((<span class="var">u</span>, <span class="var">v</span>, <span class="var">w</span>))
+            <span class="var">cost</span> += <span class="var">w</span>
+    <span class="kw">return</span> <span class="var">mst</span>, <span class="var">cost</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PRIM (usa priority queue)</div>
+<pre><span class="kw">def</span> <span class="fn">prim</span>(<span class="var">graph</span>, <span class="var">start</span>=<span class="num">0</span>):
+    <span class="str">"""graph[u] = [(v, weight), ...] — O((V+E) log V)"""</span>
+    <span class="var">visited</span> = {<span class="var">start</span>}
+    <span class="var">pq</span> = [(<span class="var">w</span>, <span class="var">start</span>, <span class="var">v</span>) <span class="kw">for</span> <span class="var">v</span>, <span class="var">w</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">start</span>]]
+    <span class="fn">heapq.heapify</span>(<span class="var">pq</span>)
+    <span class="var">mst</span>, <span class="var">cost</span> = [], <span class="num">0</span>
+
+    <span class="kw">while</span> <span class="var">pq</span>:
+        <span class="var">w</span>, <span class="var">u</span>, <span class="var">v</span> = <span class="fn">heapq.heappop</span>(<span class="var">pq</span>)
+        <span class="kw">if</span> <span class="var">v</span> <span class="kw">in</span> <span class="var">visited</span>: <span class="kw">continue</span>
+        <span class="var">visited</span>.<span class="fn">add</span>(<span class="var">v</span>)
+        <span class="var">mst</span>.<span class="fn">append</span>((<span class="var">u</span>, <span class="var">v</span>, <span class="var">w</span>))
+        <span class="var">cost</span> += <span class="var">w</span>
+        <span class="kw">for</span> <span class="var">nb</span>, <span class="var">nw</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">v</span>]:
+            <span class="kw">if</span> <span class="var">nb</span> <span class="kw">not in</span> <span class="var">visited</span>:
+                <span class="fn">heapq.heappush</span>(<span class="var">pq</span>, (<span class="var">nw</span>, <span class="var">v</span>, <span class="var">nb</span>))
+    <span class="kw">return</span> <span class="var">mst</span>, <span class="var">cost</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ORDINAMENTO TOPOLOGICO
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-topsort"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ORDINAMENTO TOPOLOGICO</div>
+  <div class="section-body">
+    <p>Ordinamento lineare dei vertici di un DAG tale che per ogni arco (u,v), u precede v. <code>O(V + E)</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">KAHN (BFS con in-degree)</div>
+<pre><span class="kw">from</span> collections <span class="kw">import</span> deque, defaultdict
+
+<span class="kw">def</span> <span class="fn">topological_sort</span>(<span class="var">graph</span>, <span class="var">n</span>):
+    <span class="var">in_deg</span> = [<span class="num">0</span>] * <span class="var">n</span>
+    <span class="kw">for</span> <span class="var">u</span> <span class="kw">in</span> <span class="var">graph</span>:
+        <span class="kw">for</span> <span class="var">v</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">u</span>]:
+            <span class="var">in_deg</span>[<span class="var">v</span>] += <span class="num">1</span>
+
+    <span class="var">queue</span> = <span class="fn">deque</span>(<span class="var">i</span> <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>) <span class="kw">if</span> <span class="var">in_deg</span>[<span class="var">i</span>] == <span class="num">0</span>)
+    <span class="var">order</span> = []
+    <span class="kw">while</span> <span class="var">queue</span>:
+        <span class="var">u</span> = <span class="var">queue</span>.<span class="fn">popleft</span>()
+        <span class="var">order</span>.<span class="fn">append</span>(<span class="var">u</span>)
+        <span class="kw">for</span> <span class="var">v</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">u</span>]:
+            <span class="var">in_deg</span>[<span class="var">v</span>] -= <span class="num">1</span>
+            <span class="kw">if</span> <span class="var">in_deg</span>[<span class="var">v</span>] == <span class="num">0</span>:
+                <span class="var">queue</span>.<span class="fn">append</span>(<span class="var">v</span>)
+
+    <span class="kw">if</span> <span class="fn">len</span>(<span class="var">order</span>) != <span class="var">n</span>:
+        <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="str">"Il grafo ha un ciclo!"</span>)
+    <span class="kw">return</span> <span class="var">order</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RICERCA LINEARE & BINARIA
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-search"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RICERCA LINEARE &amp; BINARIA</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">RICERCA LINEARE &mdash; O(n)</div>
+<pre><span class="kw">def</span> <span class="fn">linear_search</span>(<span class="var">arr</span>, <span class="var">target</span>):
+    <span class="kw">for</span> <span class="var">i</span>, <span class="var">val</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">arr</span>):
+        <span class="kw">if</span> <span class="var">val</span> == <span class="var">target</span>:
+            <span class="kw">return</span> <span class="var">i</span>
+    <span class="kw">return</span> -<span class="num">1</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">RICERCA BINARIA &mdash; O(log n)</div>
+<pre><span class="cmt"># Richiede array ORDINATO</span>
+
+<span class="cmt"># Iterativa</span>
+<span class="kw">def</span> <span class="fn">binary_search</span>(<span class="var">arr</span>, <span class="var">target</span>):
+    <span class="var">lo</span>, <span class="var">hi</span> = <span class="num">0</span>, <span class="fn">len</span>(<span class="var">arr</span>) - <span class="num">1</span>
+    <span class="kw">while</span> <span class="var">lo</span> &lt;= <span class="var">hi</span>:
+        <span class="var">mid</span> = (<span class="var">lo</span> + <span class="var">hi</span>) // <span class="num">2</span>
+        <span class="kw">if</span> <span class="var">arr</span>[<span class="var">mid</span>] == <span class="var">target</span>:   <span class="kw">return</span> <span class="var">mid</span>
+        <span class="kw">elif</span> <span class="var">arr</span>[<span class="var">mid</span>] &lt; <span class="var">target</span>: <span class="var">lo</span> = <span class="var">mid</span> + <span class="num">1</span>
+        <span class="kw">else</span>:                     <span class="var">hi</span> = <span class="var">mid</span> - <span class="num">1</span>
+    <span class="kw">return</span> -<span class="num">1</span>
+
+<span class="cmt"># bisect (libreria standard)</span>
+<span class="kw">from</span> bisect <span class="kw">import</span> bisect_left, bisect_right, insort
+
+<span class="var">arr</span> = [<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>]
+<span class="fn">bisect_left</span>(<span class="var">arr</span>, <span class="num">5</span>)     <span class="cmt"># → 2 (primo indice dove 5 pu&ograve; andare)</span>
+<span class="fn">bisect_right</span>(<span class="var">arr</span>, <span class="num">5</span>)    <span class="cmt"># → 3 (dopo l'ultimo 5)</span>
+<span class="fn">insort</span>(<span class="var">arr</span>, <span class="num">6</span>)           <span class="cmt"># inserisce mantenendo ordinato</span>
+
+<span class="cmt"># Ricerca binaria su condizione (lower bound)</span>
+<span class="kw">def</span> <span class="fn">lower_bound</span>(<span class="var">lo</span>, <span class="var">hi</span>, <span class="var">predicate</span>):
+    <span class="str">"""Trova il minimo x in [lo,hi] tale che predicate(x) &egrave; True"""</span>
+    <span class="kw">while</span> <span class="var">lo</span> &lt; <span class="var">hi</span>:
+        <span class="var">mid</span> = (<span class="var">lo</span> + <span class="var">hi</span>) // <span class="num">2</span>
+        <span class="kw">if</span> <span class="fn">predicate</span>(<span class="var">mid</span>): <span class="var">hi</span> = <span class="var">mid</span>
+        <span class="kw">else</span>:               <span class="var">lo</span> = <span class="var">mid</span> + <span class="num">1</span>
+    <span class="kw">return</span> <span class="var">lo</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ORDINAMENTO BASE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-sort-basic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ORDINAMENTO BASE &mdash; O(n&sup2;)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">CONFRONTO</div>
+      <table>
+        <tr><th>Algoritmo</th><th>Migliore</th><th>Medio</th><th>Peggiore</th><th>Spazio</th><th>Stabile</th></tr>
+        <tr><td>Bubble Sort</td><td>O(n)</td><td>O(n&sup2;)</td><td>O(n&sup2;)</td><td>O(1)</td><td>S&igrave;</td></tr>
+        <tr><td>Selection Sort</td><td>O(n&sup2;)</td><td>O(n&sup2;)</td><td>O(n&sup2;)</td><td>O(1)</td><td>No</td></tr>
+        <tr><td>Insertion Sort</td><td>O(n)</td><td>O(n&sup2;)</td><td>O(n&sup2;)</td><td>O(1)</td><td>S&igrave;</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BUBBLE SORT</div>
+<pre><span class="kw">def</span> <span class="fn">bubble_sort</span>(<span class="var">arr</span>):
+    <span class="var">n</span> = <span class="fn">len</span>(<span class="var">arr</span>)
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+        <span class="var">swapped</span> = <span class="kw">False</span>
+        <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> - <span class="var">i</span> - <span class="num">1</span>):
+            <span class="kw">if</span> <span class="var">arr</span>[<span class="var">j</span>] &gt; <span class="var">arr</span>[<span class="var">j</span>+<span class="num">1</span>]:
+                <span class="var">arr</span>[<span class="var">j</span>], <span class="var">arr</span>[<span class="var">j</span>+<span class="num">1</span>] = <span class="var">arr</span>[<span class="var">j</span>+<span class="num">1</span>], <span class="var">arr</span>[<span class="var">j</span>]
+                <span class="var">swapped</span> = <span class="kw">True</span>
+        <span class="kw">if not</span> <span class="var">swapped</span>: <span class="kw">break</span>  <span class="cmt"># ottimizzazione: gi&agrave; ordinato</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">SELECTION SORT</div>
+<pre><span class="kw">def</span> <span class="fn">selection_sort</span>(<span class="var">arr</span>):
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(<span class="var">arr</span>)):
+        <span class="var">min_idx</span> = <span class="var">i</span>
+        <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">i</span> + <span class="num">1</span>, <span class="fn">len</span>(<span class="var">arr</span>)):
+            <span class="kw">if</span> <span class="var">arr</span>[<span class="var">j</span>] &lt; <span class="var">arr</span>[<span class="var">min_idx</span>]:
+                <span class="var">min_idx</span> = <span class="var">j</span>
+        <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">min_idx</span>] = <span class="var">arr</span>[<span class="var">min_idx</span>], <span class="var">arr</span>[<span class="var">i</span>]</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">INSERTION SORT</div>
+<pre><span class="kw">def</span> <span class="fn">insertion_sort</span>(<span class="var">arr</span>):
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(<span class="var">arr</span>)):
+        <span class="var">key</span> = <span class="var">arr</span>[<span class="var">i</span>]
+        <span class="var">j</span> = <span class="var">i</span> - <span class="num">1</span>
+        <span class="kw">while</span> <span class="var">j</span> &gt;= <span class="num">0</span> <span class="kw">and</span> <span class="var">arr</span>[<span class="var">j</span>] &gt; <span class="var">key</span>:
+            <span class="var">arr</span>[<span class="var">j</span>+<span class="num">1</span>] = <span class="var">arr</span>[<span class="var">j</span>]
+            <span class="var">j</span> -= <span class="num">1</span>
+        <span class="var">arr</span>[<span class="var">j</span>+<span class="num">1</span>] = <span class="var">key</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ORDINAMENTO AVANZATO
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-sort-advanced"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ORDINAMENTO AVANZATO &mdash; O(n log n)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">CONFRONTO</div>
+      <table>
+        <tr><th>Algoritmo</th><th>Migliore</th><th>Medio</th><th>Peggiore</th><th>Spazio</th><th>Stabile</th></tr>
+        <tr><td>Merge Sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>S&igrave;</td></tr>
+        <tr><td>Quick Sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n&sup2;)</td><td>O(log n)</td><td>No</td></tr>
+        <tr><td>Heap Sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>No</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MERGE SORT</div>
+<pre><span class="kw">def</span> <span class="fn">merge_sort</span>(<span class="var">arr</span>):
+    <span class="kw">if</span> <span class="fn">len</span>(<span class="var">arr</span>) &lt;= <span class="num">1</span>: <span class="kw">return</span> <span class="var">arr</span>
+    <span class="var">mid</span> = <span class="fn">len</span>(<span class="var">arr</span>) // <span class="num">2</span>
+    <span class="var">left</span>  = <span class="fn">merge_sort</span>(<span class="var">arr</span>[:<span class="var">mid</span>])
+    <span class="var">right</span> = <span class="fn">merge_sort</span>(<span class="var">arr</span>[<span class="var">mid</span>:])
+    <span class="kw">return</span> <span class="fn">merge</span>(<span class="var">left</span>, <span class="var">right</span>)
+
+<span class="kw">def</span> <span class="fn">merge</span>(<span class="var">a</span>, <span class="var">b</span>):
+    <span class="var">result</span> = []
+    <span class="var">i</span> = <span class="var">j</span> = <span class="num">0</span>
+    <span class="kw">while</span> <span class="var">i</span> &lt; <span class="fn">len</span>(<span class="var">a</span>) <span class="kw">and</span> <span class="var">j</span> &lt; <span class="fn">len</span>(<span class="var">b</span>):
+        <span class="kw">if</span> <span class="var">a</span>[<span class="var">i</span>] &lt;= <span class="var">b</span>[<span class="var">j</span>]:
+            <span class="var">result</span>.<span class="fn">append</span>(<span class="var">a</span>[<span class="var">i</span>]); <span class="var">i</span> += <span class="num">1</span>
+        <span class="kw">else</span>:
+            <span class="var">result</span>.<span class="fn">append</span>(<span class="var">b</span>[<span class="var">j</span>]); <span class="var">j</span> += <span class="num">1</span>
+    <span class="var">result</span>.<span class="fn">extend</span>(<span class="var">a</span>[<span class="var">i</span>:])
+    <span class="var">result</span>.<span class="fn">extend</span>(<span class="var">b</span>[<span class="var">j</span>:])
+    <span class="kw">return</span> <span class="var">result</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">QUICK SORT</div>
+<pre><span class="kw">def</span> <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">lo</span>=<span class="num">0</span>, <span class="var">hi</span>=<span class="kw">None</span>):
+    <span class="kw">if</span> <span class="var">hi</span> <span class="kw">is</span> <span class="kw">None</span>: <span class="var">hi</span> = <span class="fn">len</span>(<span class="var">arr</span>) - <span class="num">1</span>
+    <span class="kw">if</span> <span class="var">lo</span> &lt; <span class="var">hi</span>:
+        <span class="var">p</span> = <span class="fn">partition</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">hi</span>)
+        <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">p</span> - <span class="num">1</span>)
+        <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">p</span> + <span class="num">1</span>, <span class="var">hi</span>)
+
+<span class="kw">def</span> <span class="fn">partition</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">hi</span>):
+    <span class="var">pivot</span> = <span class="var">arr</span>[<span class="var">hi</span>]  <span class="cmt"># ultimo elemento come pivot</span>
+    <span class="var">i</span> = <span class="var">lo</span>
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">lo</span>, <span class="var">hi</span>):
+        <span class="kw">if</span> <span class="var">arr</span>[<span class="var">j</span>] &lt; <span class="var">pivot</span>:
+            <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">j</span>] = <span class="var">arr</span>[<span class="var">j</span>], <span class="var">arr</span>[<span class="var">i</span>]
+            <span class="var">i</span> += <span class="num">1</span>
+    <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">hi</span>] = <span class="var">arr</span>[<span class="var">hi</span>], <span class="var">arr</span>[<span class="var">i</span>]
+    <span class="kw">return</span> <span class="var">i</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">HEAP SORT</div>
+<pre><span class="kw">def</span> <span class="fn">heap_sort</span>(<span class="var">arr</span>):
+    <span class="var">n</span> = <span class="fn">len</span>(<span class="var">arr</span>)
+
+    <span class="kw">def</span> <span class="fn">sift_down</span>(<span class="var">i</span>, <span class="var">size</span>):
+        <span class="kw">while</span> <span class="num">2</span>*<span class="var">i</span>+<span class="num">1</span> &lt; <span class="var">size</span>:
+            <span class="var">j</span> = <span class="num">2</span>*<span class="var">i</span>+<span class="num">1</span>
+            <span class="kw">if</span> <span class="var">j</span>+<span class="num">1</span> &lt; <span class="var">size</span> <span class="kw">and</span> <span class="var">arr</span>[<span class="var">j</span>+<span class="num">1</span>] &gt; <span class="var">arr</span>[<span class="var">j</span>]: <span class="var">j</span> += <span class="num">1</span>
+            <span class="kw">if</span> <span class="var">arr</span>[<span class="var">i</span>] &lt; <span class="var">arr</span>[<span class="var">j</span>]:
+                <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">j</span>] = <span class="var">arr</span>[<span class="var">j</span>], <span class="var">arr</span>[<span class="var">i</span>]
+                <span class="var">i</span> = <span class="var">j</span>
+            <span class="kw">else</span>: <span class="kw">break</span>
+
+    <span class="cmt"># Build max-heap O(n)</span>
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>//<span class="num">2</span> - <span class="num">1</span>, -<span class="num">1</span>, -<span class="num">1</span>):
+        <span class="fn">sift_down</span>(<span class="var">i</span>, <span class="var">n</span>)
+
+    <span class="cmt"># Extract max ripetutamente</span>
+    <span class="kw">for</span> <span class="var">end</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> - <span class="num">1</span>, <span class="num">0</span>, -<span class="num">1</span>):
+        <span class="var">arr</span>[<span class="num">0</span>], <span class="var">arr</span>[<span class="var">end</span>] = <span class="var">arr</span>[<span class="var">end</span>], <span class="var">arr</span>[<span class="num">0</span>]
+        <span class="fn">sift_down</span>(<span class="num">0</span>, <span class="var">end</span>)</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PYTHON BUILT-IN (TIMSORT)</div>
+<pre><span class="cmt"># sorted() e list.sort() usano Timsort: O(n log n), stabile</span>
+<span class="var">arr</span> = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>]
+<span class="fn">sorted</span>(<span class="var">arr</span>)                      <span class="cmt"># nuova lista ordinata</span>
+<span class="var">arr</span>.<span class="fn">sort</span>()                       <span class="cmt"># in-place</span>
+<span class="fn">sorted</span>(<span class="var">arr</span>, reverse=<span class="kw">True</span>)      <span class="cmt"># decrescente</span>
+<span class="fn">sorted</span>(<span class="var">arr</span>, key=<span class="kw">lambda</span> <span class="var">x</span>: -<span class="var">x</span>) <span class="cmt"># custom key</span>
+
+<span class="cmt"># Ordinamento stabile: ordina per pi&ugrave; chiavi</span>
+<span class="var">data</span> = [(<span class="str">"B"</span>,<span class="num">2</span>), (<span class="str">"A"</span>,<span class="num">1</span>), (<span class="str">"B"</span>,<span class="num">1</span>)]
+<span class="fn">sorted</span>(<span class="var">data</span>, key=<span class="kw">lambda</span> <span class="var">x</span>: (<span class="var">x</span>[<span class="num">0</span>], <span class="var">x</span>[<span class="num">1</span>]))
+<span class="cmt"># → [('A', 1), ('B', 1), ('B', 2)]</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ORDINAMENTO LINEARE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-sort-linear"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ORDINAMENTO LINEARE &mdash; O(n)</div>
+  <div class="section-body">
+    <p>Possibile solo con assunzioni sui dati (range limitato, numeri interi, ecc.).</p>
+
+    <div class="sub">
+      <div class="sub-title">COUNTING SORT &mdash; O(n + k)</div>
+<pre><span class="kw">def</span> <span class="fn">counting_sort</span>(<span class="var">arr</span>, <span class="var">k</span>):
+    <span class="str">"""Ordina interi in [0, k). Stabile."""</span>
+    <span class="var">count</span> = [<span class="num">0</span>] * <span class="var">k</span>
+    <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="var">arr</span>:
+        <span class="var">count</span>[<span class="var">x</span>] += <span class="num">1</span>
+    <span class="var">i</span> = <span class="num">0</span>
+    <span class="kw">for</span> <span class="var">val</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">k</span>):
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">count</span>[<span class="var">val</span>]):
+            <span class="var">arr</span>[<span class="var">i</span>] = <span class="var">val</span>
+            <span class="var">i</span> += <span class="num">1</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">RADIX SORT &mdash; O(d &middot; (n + k))</div>
+<pre><span class="kw">def</span> <span class="fn">radix_sort</span>(<span class="var">arr</span>):
+    <span class="str">"""Ordina interi non negativi. d = cifre, k = base (10)."""</span>
+    <span class="kw">if not</span> <span class="var">arr</span>: <span class="kw">return</span>
+    <span class="var">max_val</span> = <span class="fn">max</span>(<span class="var">arr</span>)
+    <span class="var">exp</span> = <span class="num">1</span>
+    <span class="kw">while</span> <span class="var">max_val</span> // <span class="var">exp</span> &gt; <span class="num">0</span>:
+        <span class="fn">_counting_by_digit</span>(<span class="var">arr</span>, <span class="var">exp</span>)
+        <span class="var">exp</span> *= <span class="num">10</span>
+
+<span class="kw">def</span> <span class="fn">_counting_by_digit</span>(<span class="var">arr</span>, <span class="var">exp</span>):
+    <span class="var">n</span> = <span class="fn">len</span>(<span class="var">arr</span>)
+    <span class="var">output</span> = [<span class="num">0</span>] * <span class="var">n</span>
+    <span class="var">count</span> = [<span class="num">0</span>] * <span class="num">10</span>
+    <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="var">arr</span>:
+        <span class="var">count</span>[(<span class="var">x</span> // <span class="var">exp</span>) % <span class="num">10</span>] += <span class="num">1</span>
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">10</span>):
+        <span class="var">count</span>[<span class="var">i</span>] += <span class="var">count</span>[<span class="var">i</span>-<span class="num">1</span>]
+    <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="fn">reversed</span>(<span class="var">arr</span>):
+        <span class="var">d</span> = (<span class="var">x</span> // <span class="var">exp</span>) % <span class="num">10</span>
+        <span class="var">count</span>[<span class="var">d</span>] -= <span class="num">1</span>
+        <span class="var">output</span>[<span class="var">count</span>[<span class="var">d</span>]] = <span class="var">x</span>
+    <span class="var">arr</span>[:] = <span class="var">output</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     PROGRAMMAZIONE DINAMICA
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-dp"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PROGRAMMAZIONE DINAMICA (DP)</div>
+  <div class="section-body">
+    <p>Tecnica per risolvere problemi con <b>sottostruttura ottima</b> e <b>sottoproblemi sovrapposti</b>. Due approcci: top-down (memoization) e bottom-up (tabulazione).</p>
+
+    <div class="sub">
+      <div class="sub-title">FIBONACCI (esempio dei due approcci)</div>
+<pre><span class="cmt"># Top-down (memoization)</span>
+<span class="kw">def</span> <span class="fn">fib_memo</span>(<span class="var">n</span>, <span class="var">memo</span>={}):
+    <span class="kw">if</span> <span class="var">n</span> &lt;= <span class="num">1</span>: <span class="kw">return</span> <span class="var">n</span>
+    <span class="kw">if</span> <span class="var">n</span> <span class="kw">not in</span> <span class="var">memo</span>:
+        <span class="var">memo</span>[<span class="var">n</span>] = <span class="fn">fib_memo</span>(<span class="var">n</span>-<span class="num">1</span>) + <span class="fn">fib_memo</span>(<span class="var">n</span>-<span class="num">2</span>)
+    <span class="kw">return</span> <span class="var">memo</span>[<span class="var">n</span>]
+
+<span class="cmt"># Bottom-up (tabulazione)</span>
+<span class="kw">def</span> <span class="fn">fib_tab</span>(<span class="var">n</span>):
+    <span class="kw">if</span> <span class="var">n</span> &lt;= <span class="num">1</span>: <span class="kw">return</span> <span class="var">n</span>
+    <span class="var">dp</span> = [<span class="num">0</span>] * (<span class="var">n</span> + <span class="num">1</span>)
+    <span class="var">dp</span>[<span class="num">1</span>] = <span class="num">1</span>
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, <span class="var">n</span> + <span class="num">1</span>):
+        <span class="var">dp</span>[<span class="var">i</span>] = <span class="var">dp</span>[<span class="var">i</span>-<span class="num">1</span>] + <span class="var">dp</span>[<span class="var">i</span>-<span class="num">2</span>]
+    <span class="kw">return</span> <span class="var">dp</span>[<span class="var">n</span>]
+
+<span class="cmt"># Ottimizzato in spazio O(1)</span>
+<span class="kw">def</span> <span class="fn">fib_opt</span>(<span class="var">n</span>):
+    <span class="var">a</span>, <span class="var">b</span> = <span class="num">0</span>, <span class="num">1</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+        <span class="var">a</span>, <span class="var">b</span> = <span class="var">b</span>, <span class="var">a</span> + <span class="var">b</span>
+    <span class="kw">return</span> <span class="var">a</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">KNAPSACK 0/1 &mdash; O(n&middot;W)</div>
+<pre><span class="kw">def</span> <span class="fn">knapsack</span>(<span class="var">weights</span>, <span class="var">values</span>, <span class="var">W</span>):
+    <span class="var">n</span> = <span class="fn">len</span>(<span class="var">weights</span>)
+    <span class="var">dp</span> = [[<span class="num">0</span>] * (<span class="var">W</span> + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> + <span class="num">1</span>)]
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="var">n</span> + <span class="num">1</span>):
+        <span class="kw">for</span> <span class="var">w</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">W</span> + <span class="num">1</span>):
+            <span class="var">dp</span>[<span class="var">i</span>][<span class="var">w</span>] = <span class="var">dp</span>[<span class="var">i</span>-<span class="num">1</span>][<span class="var">w</span>]  <span class="cmt"># non prendere</span>
+            <span class="kw">if</span> <span class="var">weights</span>[<span class="var">i</span>-<span class="num">1</span>] &lt;= <span class="var">w</span>:
+                <span class="var">dp</span>[<span class="var">i</span>][<span class="var">w</span>] = <span class="fn">max</span>(<span class="var">dp</span>[<span class="var">i</span>][<span class="var">w</span>],
+                    <span class="var">dp</span>[<span class="var">i</span>-<span class="num">1</span>][<span class="var">w</span> - <span class="var">weights</span>[<span class="var">i</span>-<span class="num">1</span>]] + <span class="var">values</span>[<span class="var">i</span>-<span class="num">1</span>])
+    <span class="kw">return</span> <span class="var">dp</span>[<span class="var">n</span>][<span class="var">W</span>]</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LONGEST COMMON SUBSEQUENCE (LCS) &mdash; O(m&middot;n)</div>
+<pre><span class="kw">def</span> <span class="fn">lcs</span>(<span class="var">s1</span>, <span class="var">s2</span>):
+    <span class="var">m</span>, <span class="var">n</span> = <span class="fn">len</span>(<span class="var">s1</span>), <span class="fn">len</span>(<span class="var">s2</span>)
+    <span class="var">dp</span> = [[<span class="num">0</span>] * (<span class="var">n</span>+<span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">m</span>+<span class="num">1</span>)]
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="var">m</span>+<span class="num">1</span>):
+        <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="var">n</span>+<span class="num">1</span>):
+            <span class="kw">if</span> <span class="var">s1</span>[<span class="var">i</span>-<span class="num">1</span>] == <span class="var">s2</span>[<span class="var">j</span>-<span class="num">1</span>]:
+                <span class="var">dp</span>[<span class="var">i</span>][<span class="var">j</span>] = <span class="var">dp</span>[<span class="var">i</span>-<span class="num">1</span>][<span class="var">j</span>-<span class="num">1</span>] + <span class="num">1</span>
+            <span class="kw">else</span>:
+                <span class="var">dp</span>[<span class="var">i</span>][<span class="var">j</span>] = <span class="fn">max</span>(<span class="var">dp</span>[<span class="var">i</span>-<span class="num">1</span>][<span class="var">j</span>], <span class="var">dp</span>[<span class="var">i</span>][<span class="var">j</span>-<span class="num">1</span>])
+    <span class="kw">return</span> <span class="var">dp</span>[<span class="var">m</span>][<span class="var">n</span>]</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">EDIT DISTANCE (LEVENSHTEIN) &mdash; O(m&middot;n)</div>
+<pre><span class="kw">def</span> <span class="fn">edit_distance</span>(<span class="var">s1</span>, <span class="var">s2</span>):
+    <span class="var">m</span>, <span class="var">n</span> = <span class="fn">len</span>(<span class="var">s1</span>), <span class="fn">len</span>(<span class="var">s2</span>)
+    <span class="var">dp</span> = [[<span class="num">0</span>]*(<span class="var">n</span>+<span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="var">m</span>+<span class="num">1</span>)]
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">m</span>+<span class="num">1</span>): <span class="var">dp</span>[<span class="var">i</span>][<span class="num">0</span>] = <span class="var">i</span>
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>+<span class="num">1</span>): <span class="var">dp</span>[<span class="num">0</span>][<span class="var">j</span>] = <span class="var">j</span>
+    <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="var">m</span>+<span class="num">1</span>):
+        <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="var">n</span>+<span class="num">1</span>):
+            <span class="var">cost</span> = <span class="num">0</span> <span class="kw">if</span> <span class="var">s1</span>[<span class="var">i</span>-<span class="num">1</span>] == <span class="var">s2</span>[<span class="var">j</span>-<span class="num">1</span>] <span class="kw">else</span> <span class="num">1</span>
+            <span class="var">dp</span>[<span class="var">i</span>][<span class="var">j</span>] = <span class="fn">min</span>(
+                <span class="var">dp</span>[<span class="var">i</span>-<span class="num">1</span>][<span class="var">j</span>] + <span class="num">1</span>,       <span class="cmt"># cancellazione</span>
+                <span class="var">dp</span>[<span class="var">i</span>][<span class="var">j</span>-<span class="num">1</span>] + <span class="num">1</span>,       <span class="cmt"># inserimento</span>
+                <span class="var">dp</span>[<span class="var">i</span>-<span class="num">1</span>][<span class="var">j</span>-<span class="num">1</span>] + <span class="var">cost</span>  <span class="cmt"># sostituzione</span>
+            )
+    <span class="kw">return</span> <span class="var">dp</span>[<span class="var">m</span>][<span class="var">n</span>]</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">COIN CHANGE &mdash; O(n&middot;amount)</div>
+<pre><span class="kw">def</span> <span class="fn">coin_change</span>(<span class="var">coins</span>, <span class="var">amount</span>):
+    <span class="str">"""Minimo numero di monete per raggiungere amount"""</span>
+    <span class="var">dp</span> = [<span class="fn">float</span>(<span class="str">'inf'</span>)] * (<span class="var">amount</span> + <span class="num">1</span>)
+    <span class="var">dp</span>[<span class="num">0</span>] = <span class="num">0</span>
+    <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">coins</span>:
+        <span class="kw">for</span> <span class="var">a</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">c</span>, <span class="var">amount</span> + <span class="num">1</span>):
+            <span class="var">dp</span>[<span class="var">a</span>] = <span class="fn">min</span>(<span class="var">dp</span>[<span class="var">a</span>], <span class="var">dp</span>[<span class="var">a</span> - <span class="var">c</span>] + <span class="num">1</span>)
+    <span class="kw">return</span> <span class="var">dp</span>[<span class="var">amount</span>] <span class="kw">if</span> <span class="var">dp</span>[<span class="var">amount</span>] != <span class="fn">float</span>(<span class="str">'inf'</span>) <span class="kw">else</span> -<span class="num">1</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     GREEDY
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-greedy"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ALGORITMI GREEDY</div>
+  <div class="section-body">
+    <p>Ad ogni passo sceglie l'opzione localmente ottima. Funziona solo se la scelta locale porta alla soluzione globale (propriet&agrave; della scelta greedy).</p>
+
+    <div class="sub">
+      <div class="sub-title">ACTIVITY SELECTION (INTERVAL SCHEDULING)</div>
+<pre><span class="kw">def</span> <span class="fn">activity_selection</span>(<span class="var">activities</span>):
+    <span class="str">"""activities = [(start, end), ...] — massimizza il numero"""</span>
+    <span class="var">activities</span>.<span class="fn">sort</span>(key=<span class="kw">lambda</span> <span class="var">x</span>: <span class="var">x</span>[<span class="num">1</span>])  <span class="cmt"># ordina per fine</span>
+    <span class="var">result</span> = [<span class="var">activities</span>[<span class="num">0</span>]]
+    <span class="kw">for</span> <span class="var">s</span>, <span class="var">e</span> <span class="kw">in</span> <span class="var">activities</span>[<span class="num">1</span>:]:
+        <span class="kw">if</span> <span class="var">s</span> &gt;= <span class="var">result</span>[-<span class="num">1</span>][<span class="num">1</span>]:  <span class="cmt"># non si sovrappone</span>
+            <span class="var">result</span>.<span class="fn">append</span>((<span class="var">s</span>, <span class="var">e</span>))
+    <span class="kw">return</span> <span class="var">result</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">HUFFMAN CODING</div>
+<pre><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">huffman</span>(<span class="var">freq</span>):
+    <span class="str">"""freq = {'a': 5, 'b': 9, ...} → codici Huffman"""</span>
+    <span class="var">heap</span> = [(<span class="var">f</span>, <span class="var">c</span>) <span class="kw">for</span> <span class="var">c</span>, <span class="var">f</span> <span class="kw">in</span> <span class="var">freq</span>.<span class="fn">items</span>()]
+    <span class="fn">heapq.heapify</span>(<span class="var">heap</span>)
+    <span class="kw">while</span> <span class="fn">len</span>(<span class="var">heap</span>) &gt; <span class="num">1</span>:
+        <span class="var">f1</span>, <span class="var">c1</span> = <span class="fn">heapq.heappop</span>(<span class="var">heap</span>)
+        <span class="var">f2</span>, <span class="var">c2</span> = <span class="fn">heapq.heappop</span>(<span class="var">heap</span>)
+        <span class="fn">heapq.heappush</span>(<span class="var">heap</span>, (<span class="var">f1</span> + <span class="var">f2</span>, (<span class="var">c1</span>, <span class="var">c2</span>)))
+    <span class="kw">return</span> <span class="var">heap</span>[<span class="num">0</span>]</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DIVIDE ET IMPERA
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-divconq"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DIVIDE ET IMPERA</div>
+  <div class="section-body">
+    <p>Dividi il problema in sottoproblemi pi&ugrave; piccoli, risolvili ricorsivamente, combina i risultati.</p>
+
+    <div class="sub">
+      <div class="sub-title">QUICK SELECT (k-esimo pi&ugrave; piccolo) &mdash; O(n) medio</div>
+<pre><span class="kw">import</span> random
+
+<span class="kw">def</span> <span class="fn">quick_select</span>(<span class="var">arr</span>, <span class="var">k</span>):
+    <span class="str">"""Trova il k-esimo elemento pi&ugrave; piccolo (0-indexed)"""</span>
+    <span class="var">pivot</span> = <span class="fn">random.choice</span>(<span class="var">arr</span>)
+    <span class="var">lo</span> = [<span class="var">x</span> <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="var">arr</span> <span class="kw">if</span> <span class="var">x</span> &lt; <span class="var">pivot</span>]
+    <span class="var">eq</span> = [<span class="var">x</span> <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="var">arr</span> <span class="kw">if</span> <span class="var">x</span> == <span class="var">pivot</span>]
+    <span class="var">hi</span> = [<span class="var">x</span> <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="var">arr</span> <span class="kw">if</span> <span class="var">x</span> &gt; <span class="var">pivot</span>]
+
+    <span class="kw">if</span> <span class="var">k</span> &lt; <span class="fn">len</span>(<span class="var">lo</span>):
+        <span class="kw">return</span> <span class="fn">quick_select</span>(<span class="var">lo</span>, <span class="var">k</span>)
+    <span class="kw">elif</span> <span class="var">k</span> &lt; <span class="fn">len</span>(<span class="var">lo</span>) + <span class="fn">len</span>(<span class="var">eq</span>):
+        <span class="kw">return</span> <span class="var">pivot</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="fn">quick_select</span>(<span class="var">hi</span>, <span class="var">k</span> - <span class="fn">len</span>(<span class="var">lo</span>) - <span class="fn">len</span>(<span class="var">eq</span>))</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MAXIMUM SUBARRAY (KADANE) &mdash; O(n)</div>
+<pre><span class="kw">def</span> <span class="fn">max_subarray</span>(<span class="var">arr</span>):
+    <span class="str">"""Somma massima di un sotto-array contiguo"""</span>
+    <span class="var">best</span> = <span class="var">cur</span> = <span class="var">arr</span>[<span class="num">0</span>]
+    <span class="kw">for</span> <span class="var">x</span> <span class="kw">in</span> <span class="var">arr</span>[<span class="num">1</span>:]:
+        <span class="var">cur</span> = <span class="fn">max</span>(<span class="var">x</span>, <span class="var">cur</span> + <span class="var">x</span>)
+        <span class="var">best</span> = <span class="fn">max</span>(<span class="var">best</span>, <span class="var">cur</span>)
+    <span class="kw">return</span> <span class="var">best</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     BACKTRACKING
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-backtrack"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BACKTRACKING</div>
+  <div class="section-body">
+    <p>Esplora sistematicamente tutte le soluzioni, abbandonando (&ldquo;potando&rdquo;) i rami non promettenti.</p>
+
+    <div class="sub">
+      <div class="sub-title">PERMUTAZIONI</div>
+<pre><span class="kw">def</span> <span class="fn">permutations</span>(<span class="var">arr</span>):
+    <span class="var">result</span> = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(<span class="var">path</span>, <span class="var">remaining</span>):
+        <span class="kw">if not</span> <span class="var">remaining</span>:
+            <span class="var">result</span>.<span class="fn">append</span>(<span class="var">path</span>[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> <span class="var">i</span>, <span class="var">val</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">remaining</span>):
+            <span class="var">path</span>.<span class="fn">append</span>(<span class="var">val</span>)
+            <span class="fn">backtrack</span>(<span class="var">path</span>, <span class="var">remaining</span>[:<span class="var">i</span>] + <span class="var">remaining</span>[<span class="var">i</span>+<span class="num">1</span>:])
+            <span class="var">path</span>.<span class="fn">pop</span>()
+    <span class="fn">backtrack</span>([], <span class="var">arr</span>)
+    <span class="kw">return</span> <span class="var">result</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">SOTTOINSIEMI</div>
+<pre><span class="kw">def</span> <span class="fn">subsets</span>(<span class="var">arr</span>):
+    <span class="var">result</span> = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(<span class="var">start</span>, <span class="var">path</span>):
+        <span class="var">result</span>.<span class="fn">append</span>(<span class="var">path</span>[:])
+        <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">start</span>, <span class="fn">len</span>(<span class="var">arr</span>)):
+            <span class="var">path</span>.<span class="fn">append</span>(<span class="var">arr</span>[<span class="var">i</span>])
+            <span class="fn">backtrack</span>(<span class="var">i</span> + <span class="num">1</span>, <span class="var">path</span>)
+            <span class="var">path</span>.<span class="fn">pop</span>()
+    <span class="fn">backtrack</span>(<span class="num">0</span>, [])
+    <span class="kw">return</span> <span class="var">result</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">N-QUEENS</div>
+<pre><span class="kw">def</span> <span class="fn">n_queens</span>(<span class="var">n</span>):
+    <span class="var">solutions</span> = []
+    <span class="var">cols</span> = <span class="fn">set</span>()
+    <span class="var">diag1</span> = <span class="fn">set</span>()  <span class="cmt"># r - c</span>
+    <span class="var">diag2</span> = <span class="fn">set</span>()  <span class="cmt"># r + c</span>
+
+    <span class="kw">def</span> <span class="fn">solve</span>(<span class="var">r</span>, <span class="var">queens</span>):
+        <span class="kw">if</span> <span class="var">r</span> == <span class="var">n</span>:
+            <span class="var">solutions</span>.<span class="fn">append</span>(<span class="var">queens</span>[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+            <span class="kw">if</span> <span class="var">c</span> <span class="kw">in</span> <span class="var">cols</span> <span class="kw">or</span> <span class="var">r</span>-<span class="var">c</span> <span class="kw">in</span> <span class="var">diag1</span> <span class="kw">or</span> <span class="var">r</span>+<span class="var">c</span> <span class="kw">in</span> <span class="var">diag2</span>:
+                <span class="kw">continue</span>
+            <span class="var">cols</span>.<span class="fn">add</span>(<span class="var">c</span>); <span class="var">diag1</span>.<span class="fn">add</span>(<span class="var">r</span>-<span class="var">c</span>); <span class="var">diag2</span>.<span class="fn">add</span>(<span class="var">r</span>+<span class="var">c</span>)
+            <span class="fn">solve</span>(<span class="var">r</span>+<span class="num">1</span>, <span class="var">queens</span> + [<span class="var">c</span>])
+            <span class="var">cols</span>.<span class="fn">discard</span>(<span class="var">c</span>); <span class="var">diag1</span>.<span class="fn">discard</span>(<span class="var">r</span>-<span class="var">c</span>); <span class="var">diag2</span>.<span class="fn">discard</span>(<span class="var">r</span>+<span class="var">c</span>)
+
+    <span class="fn">solve</span>(<span class="num">0</span>, [])
+    <span class="kw">return</span> <span class="var">solutions</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     UNION-FIND (DSU)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-unionfind"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> UNION-FIND (DISJOINT SET UNION)</div>
+  <div class="section-body">
+    <p>Struttura dati per gestire insiemi disgiunti. Con path compression e union by rank: find e union quasi <code>O(1)</code> ammortizzato (O(&alpha;(n)) &mdash; inversa di Ackermann).</p>
+
+    <div class="sub">
+      <div class="sub-title">IMPLEMENTAZIONE</div>
+<pre><span class="kw">class</span> <span class="cls">UnionFind</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, <span class="var">n</span>):
+        <span class="var">self</span>.<span class="var">parent</span> = <span class="fn">list</span>(<span class="fn">range</span>(<span class="var">n</span>))
+        <span class="var">self</span>.<span class="var">rank</span> = [<span class="num">0</span>] * <span class="var">n</span>
+        <span class="var">self</span>.<span class="var">components</span> = <span class="var">n</span>
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="var">self</span>, <span class="var">x</span>):               <span class="cmt"># con path compression</span>
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">parent</span>[<span class="var">x</span>] != <span class="var">x</span>:
+            <span class="var">self</span>.<span class="var">parent</span>[<span class="var">x</span>] = <span class="var">self</span>.<span class="fn">find</span>(<span class="var">self</span>.<span class="var">parent</span>[<span class="var">x</span>])
+        <span class="kw">return</span> <span class="var">self</span>.<span class="var">parent</span>[<span class="var">x</span>]
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="var">self</span>, <span class="var">x</span>, <span class="var">y</span>):            <span class="cmt"># con union by rank</span>
+        <span class="var">rx</span>, <span class="var">ry</span> = <span class="var">self</span>.<span class="fn">find</span>(<span class="var">x</span>), <span class="var">self</span>.<span class="fn">find</span>(<span class="var">y</span>)
+        <span class="kw">if</span> <span class="var">rx</span> == <span class="var">ry</span>: <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">rank</span>[<span class="var">rx</span>] &lt; <span class="var">self</span>.<span class="var">rank</span>[<span class="var">ry</span>]:
+            <span class="var">rx</span>, <span class="var">ry</span> = <span class="var">ry</span>, <span class="var">rx</span>
+        <span class="var">self</span>.<span class="var">parent</span>[<span class="var">ry</span>] = <span class="var">rx</span>
+        <span class="kw">if</span> <span class="var">self</span>.<span class="var">rank</span>[<span class="var">rx</span>] == <span class="var">self</span>.<span class="var">rank</span>[<span class="var">ry</span>]:
+            <span class="var">self</span>.<span class="var">rank</span>[<span class="var">rx</span>] += <span class="num">1</span>
+        <span class="var">self</span>.<span class="var">components</span> -= <span class="num">1</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">connected</span>(<span class="var">self</span>, <span class="var">x</span>, <span class="var">y</span>):
+        <span class="kw">return</span> <span class="var">self</span>.<span class="fn">find</span>(<span class="var">x</span>) == <span class="var">self</span>.<span class="fn">find</span>(<span class="var">y</span>)</pre>
+    </div>
+
+    <div class="note"><b>Applicazioni:</b> Kruskal (MST), componenti connesse, rilevamento cicli in grafi non orientati, percolation.</div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
