@@ -254,6 +254,7 @@
   .badge-fortran { background:#1a0e00; color:#ffaa44; border:1px solid #5c3200; }
   .badge-sqlite  { background:#101014; color:#cccccc; border:1px solid #333340; }
   .badge-asm     { background:#1a0c00; color:#ff8833; border:1px solid #5c2a00; }
+  .badge-gdb     { background:#1a0808; color:#ff5555; border:1px solid #5c1a1a; }
 
   /* ─── INLINE ──────────────────────────────────── */
   p { margin: 4px 0 6px; color: var(--text); line-height: 1.6; }
@@ -308,6 +309,11 @@
 
   <div class="nav-section">
     <div class="nav-section-title">Data</div>
+    <a href="#cat-tools">Tools</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Data</div>
     <a href="#cat-db">Database</a>
   </div>
 </nav>
@@ -336,6 +342,20 @@
         <a href="assembly_x86.html">ASM_x86_x86_64_REFERENCE.html</a>
         <span class="lang-badge badge-asm">ASM x86</span>
         <span class="desc">Guida completa Assembly x86/x86_64 — Sintassi AT&amp;T, Registri, Syscall, ABI, SSE, Inline ASM, Segnali.</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<a class="anchor" id="cat-tools"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TOOLS</div>
+  <div class="section-body">
+    <ul class="file-list">
+      <li>
+        <a href="gdb.html">GDB_REFERENCE.html</a>
+        <span class="lang-badge badge-gdb">GDB</span>
+        <span class="desc">Guida completa a GNU Debugger — Breakpoints, Stepping, Variabili, Array, Assembly, Multiprocesso, Multithread, Reverse Debug, TUI, Scripting.</span>
       </li>
     </ul>
   </div>
