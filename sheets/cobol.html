@@ -54,7 +54,7 @@
 <div id="header">
   <a class="back-btn" href="../index.html">&larr; INDEX</a>
   <h1>&gt; COBOL REFERENCE MANUAL <span class="cursor"></span></h1>
-  <div class="subtitle">RETRO TERMINAL CHEATSHEETS — <span>COBOL / GnuCOBOL</span> — v1.3</div>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS — <span>COBOL / GnuCOBOL</span> — v2.1</div>
 </div>
 
 <div id="layout">
@@ -64,6 +64,11 @@
      ══════════════════════════════════════════════════════════════ -->
 <nav id="sidebar">
   <div class="nav-head">◈ INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Storia</div>
+    <a href="#s-versions">Versioni &amp; Dialetti</a>
+  </div>
 
   <div class="nav-section">
     <div class="nav-section-title">Struttura</div>
@@ -90,6 +95,7 @@
     <a href="#s-math">Aritmetica</a>
     <a href="#s-strings">Stringhe</a>
     <a href="#s-inspect">INSPECT</a>
+    <a href="#s-initialize">INITIALIZE</a>
   </div>
 
   <div class="nav-section">
@@ -143,7 +149,13 @@
   </div>
 
   <div class="nav-section">
-    <div class="nav-section-title">Funzioni</div>
+    <div class="nav-section-title">Errori</div>
+    <a href="#s-errorhandling">Gestione Errori</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-nested">Programmi Annidati</a>
     <a href="#s-intrinsic">Funzioni Intrinseche</a>
   </div>
 </nav>
@@ -152,6 +164,145 @@
      MAIN
      ══════════════════════════════════════════════════════════════ -->
 <main id="main">
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- VERSIONI & DIALETTI                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-versions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> VERSIONI COBOL &amp; DIALETTI</div>
+  <div class="section-body">
+    <p>COBOL (COmmon Business-Oriented Language) nasce nel 1959 per iniziativa del <b>DoD statunitense</b> e del comitato CODASYL. È il linguaggio più longevo in ambito business/finanziario; si stima che oltre il 70% delle transazioni finanziarie globali tocchi codice COBOL.</p>
+
+    <div class="sub-title">STANDARD COBOL — EVOLUZIONE</div>
+    <table>
+      <tr><th>Versione</th><th>Anno</th><th>Standard</th><th>Novità Principali</th></tr>
+      <tr>
+        <td><b>COBOL-60</b></td>
+        <td>1960</td>
+        <td>CODASYL (informale)</td>
+        <td>Prima specifica. 4 divisioni, PICTURE, MOVE, ADD/SUBTRACT, READ/WRITE. Fixed format (schede perforate). Nessun IF annidato, nessun PERFORM inline.</td>
+      </tr>
+      <tr>
+        <td><b>COBOL-61 / -61 Ext.</b></td>
+        <td>1961–63</td>
+        <td>CODASYL revisioni</td>
+        <td>Aggiunta SORT, Report Writer, tabelle OCCURS. Correzioni alla specifica originale.</td>
+      </tr>
+      <tr>
+        <td><b>COBOL-68</b></td>
+        <td>1968</td>
+        <td>ANSI X3.23-1968</td>
+        <td>Primo standard ANSI ufficiale. Inter-program communication (CALL). INSPECT primitivo. Struttura definita in 3 livelli (nucleo, tabelle, I/O sequenziale).</td>
+      </tr>
+      <tr>
+        <td><b>COBOL-74</b></td>
+        <td>1974</td>
+        <td>ANSI X3.23-1974</td>
+        <td>File I/O indexed e relative (ISAM). PERFORM ... UNTIL. INSPECT completo (TALLYING, REPLACING, CONVERTING). DELETE/REWRITE su file indexed. STRING/UNSTRING. Moduli funzionali (11 moduli opzionali).</td>
+      </tr>
+      <tr>
+        <td><b>COBOL-85</b></td>
+        <td>1985</td>
+        <td>ANSI X3.23-1985 / ISO 1989:1985</td>
+        <td><b>Rivoluzione strutturale:</b> scope terminators (END-IF, END-PERFORM, END-READ, ecc.), PERFORM inline, EVALUATE (switch), NOT AT END/INVALID KEY, CONTINUE, INITIALIZE, reference modification <code>var(start:len)</code>, nested programs. De facto standard per decenni.</td>
+      </tr>
+      <tr>
+        <td><b>COBOL 2002</b></td>
+        <td>2002</td>
+        <td>ISO/IEC 1989:2002</td>
+        <td>OO COBOL (CLASS-ID, METHOD-ID, OBJECT REFERENCE, INVOKE). Free-format source. User-defined functions. TYPEDEF. Locale support (NATIONAL/UTF-16). Boolean data type. Binary/alphanumeric truncation. VALIDATE statement. Molte feature rimaste non implementate nei compilatori.</td>
+      </tr>
+      <tr>
+        <td><b>COBOL 2014</b></td>
+        <td>2014</td>
+        <td>ISO/IEC 1989:2014</td>
+        <td>Dynamic tables (OCCURS DYNAMIC). ALLOCATE/FREE (heap memory). Float IEEE (FLOAT-SHORT, FLOAT-LONG, FLOAT-EXTENDED). FUNCTION-POINTER / PROGRAM-POINTER. Conditional compilation (>>DEFINE, >>IF). RAISE / RESUME exception handling. JSON/XML GENERATE/PARSE. RETRY su I/O.</td>
+      </tr>
+      <tr>
+        <td><b>COBOL 202x</b></td>
+        <td>~2025</td>
+        <td>ISO/IEC 1989 (in sviluppo)</td>
+        <td>In corso: miglioramenti OO, UTF-8 nativo, iteratori moderni, miglioramenti ai container, allineamento con pratiche moderne.</td>
+      </tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:14px">DIALETTI COBOL — COMPILATORI E VARIANTI</div>
+    <table>
+      <tr><th>Dialetto / Compilatore</th><th>Piattaforma</th><th>Standard</th><th>Estensioni Caratteristiche</th></tr>
+      <tr>
+        <td><b>IBM Enterprise COBOL</b></td>
+        <td>z/OS (mainframe)</td>
+        <td>COBOL 85 + estensioni</td>
+        <td>COMP-5, XML GENERATE/PARSE, DB2 embedded SQL, CICS (EXEC CICS), JCL integration, EBCDIC nativo, AMODE 31/64. De facto standard mainframe.</td>
+      </tr>
+      <tr>
+        <td><b>IBM COBOL for AIX/Linux</b></td>
+        <td>AIX, Linux on Z</td>
+        <td>COBOL 2002 parziale</td>
+        <td>Simile a Enterprise COBOL, ma su Unix. Supporta DB2, CICS TX. ASCII nativo.</td>
+      </tr>
+      <tr>
+        <td><b>Micro Focus COBOL</b><br>(ora Rocket Software)</td>
+        <td>Windows, Linux, Unix</td>
+        <td>COBOL 2002 + 2014 parziale</td>
+        <td>COMP-X, COMP-5, screen handling avanzato, .NET/JVM interop, embedded SQL, XML/JSON. IDE Visual COBOL. Gestione mainframe migration. Il più completo su piattaforme distribuite.</td>
+      </tr>
+      <tr>
+        <td><b>GnuCOBOL</b><br>(ex OpenCOBOL)</td>
+        <td>Linux, macOS, Windows, BSD</td>
+        <td>COBOL 85 + 2002/2014 parziale</td>
+        <td>Open source (GPL). Compila COBOL → C → eseguibile nativo. BINARY-CHAR/SHORT/LONG/DOUBLE, FLOAT-SHORT/LONG/EXTENDED, SCREEN SECTION con ncurses, COMP-X, interop C nativa. Flag <code>-std=ibm|mf|cobol2014</code> per compatibilità.</td>
+      </tr>
+      <tr>
+        <td><b>ACUCOBOL-GT</b><br>(Micro Focus)</td>
+        <td>Multi-piattaforma</td>
+        <td>COBOL 85 + estensioni</td>
+        <td>GUI nativa, thin client, runtime interpretato. Usato in ambito PMI. ACCEPT/DISPLAY estesi con controlli grafici. Ora parte di Micro Focus extend.</td>
+      </tr>
+      <tr>
+        <td><b>Fujitsu NetCOBOL</b></td>
+        <td>Windows, Linux, Solaris</td>
+        <td>COBOL 2002 parziale</td>
+        <td>Supporto Unicode nativo, PowerCOBOL (visual IDE), form printing, .NET interop, Web services. Usato in Giappone e Asia.</td>
+      </tr>
+      <tr>
+        <td><b>RM/COBOL</b><br>(Micro Focus)</td>
+        <td>Multi-piattaforma</td>
+        <td>COBOL 85</td>
+        <td>Runtime interpretato leggero. Popolare nelle PMI americane anni '80-'90. Ora parte di Micro Focus.</td>
+      </tr>
+      <tr>
+        <td><b>COBOL-IT</b></td>
+        <td>Linux, Unix, Windows</td>
+        <td>COBOL 85 + 2002 parziale</td>
+        <td>Compilatore commerciale alternativo. Compatibile con IBM/MF. Supporto embedded SQL (Oracle, DB2).</td>
+      </tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:14px">DIFFERENZE CHIAVE TRA DIALETTI</div>
+    <table>
+      <tr><th>Feature</th><th>IBM Ent.</th><th>Micro Focus</th><th>GnuCOBOL</th><th>Standard</th></tr>
+      <tr><td>COMP-3 (packed decimal)</td><td>Sì</td><td>Sì</td><td>Sì</td><td>PACKED-DECIMAL</td></tr>
+      <tr><td>COMP-5 (native binary)</td><td>Sì</td><td>Sì</td><td>Sì</td><td>No (estensione)</td></tr>
+      <tr><td>COMP-X (unsigned binary)</td><td>No</td><td>Sì</td><td>Sì</td><td>No (estensione)</td></tr>
+      <tr><td>SCREEN SECTION</td><td>No</td><td>Sì</td><td>Sì (ncurses)</td><td>COBOL 2002+</td></tr>
+      <tr><td>Embedded SQL (EXEC SQL)</td><td>DB2 nativo</td><td>Sì (preprocessore)</td><td>No (via OCESQL)</td><td>No</td></tr>
+      <tr><td>CICS (EXEC CICS)</td><td>Sì</td><td>Sì (emulato)</td><td>No</td><td>No</td></tr>
+      <tr><td>OO COBOL (CLASS-ID)</td><td>Parziale</td><td>Sì</td><td>Parziale</td><td>COBOL 2002+</td></tr>
+      <tr><td>XML/JSON GENERATE</td><td>Sì</td><td>Sì</td><td>JSON sì, XML parziale</td><td>COBOL 2014</td></tr>
+      <tr><td>FLOAT-SHORT/LONG</td><td>COMP-1/2</td><td>Sì</td><td>Sì</td><td>COBOL 2014</td></tr>
+      <tr><td>Free format</td><td>Enterprise V6+</td><td>Sì</td><td>Sì</td><td>COBOL 2002+</td></tr>
+      <tr><td>ALLOCATE/FREE</td><td>No</td><td>Parziale</td><td>No</td><td>COBOL 2014</td></tr>
+      <tr><td>Codifica default</td><td>EBCDIC</td><td>ASCII</td><td>ASCII</td><td>Impl. defined</td></tr>
+    </table>
+
+    <div class="note">
+      <b>Per la migrazione mainframe → open:</b> GnuCOBOL con <code>-std=ibm</code> copre ~85% della sintassi IBM.
+      Per copertura completa, Micro Focus è lo standard de facto nella mainframe modernization.
+    </div>
+  </div>
+</div>
 
 <!-- ─── STRUTTURA PROGRAMMA ───────────────────────────────────── -->
 <a class="anchor" id="s-structure"></a>
@@ -344,7 +495,7 @@ nome-sezione <span class="kw">SECTION.</span>
       <div>
         <table>
           <tr><th>Figurativa</th><th>Significato</th></tr>
-          <tr><td><code>ZERO / ZEROS / ZEROES</code></td><td>Tutti i byte a zero ('0' per PIC 9, ' ' per PIC X non è zero)</td></tr>
+          <tr><td><code>ZERO / ZEROS / ZEROES</code></td><td>Caratteri '0': riempie PIC 9 con zero numerico, PIC X con carattere '0'</td></tr>
           <tr><td><code>SPACE / SPACES</code></td><td>Tutti i caratteri = spazio</td></tr>
           <tr><td><code>HIGH-VALUE / HIGH-VALUES</code></td><td>Valore massimo del tipo (x'FF')</td></tr>
           <tr><td><code>LOW-VALUE / LOW-VALUES</code></td><td>Valore minimo del tipo (x'00')</td></tr>
@@ -469,12 +620,12 @@ nome-sezione <span class="kw">SECTION.</span>
       <tr><td><code>*</code></td><td>Riempie zero a sinistra con asterisco</td><td><code>***9</code></td><td>0012 → "**12"</td></tr>
       <tr><td><code>$</code></td><td>Simbolo valuta mobile</td><td><code>$$,$$$,$$9.99</code></td><td>1234.56 → "$1,234.56"</td></tr>
       <tr><td><code>+</code></td><td>Mostra segno + o -</td><td><code>+9(4)</code></td><td>+1234 → "+1234"</td></tr>
-      <tr><td><code>-</code></td><td>Mostra - se negativo, spazio se positivo</td><td><code>-9(4)</code></td><td>-42 → "-  42"</td></tr>
+      <tr><td><code>-</code></td><td>Mostra - se negativo, spazio se positivo</td><td><code>-(5)</code></td><td>-42 → "  -42"</td></tr>
       <tr><td><code>,</code></td><td>Inserisce virgola</td><td><code>9,999</code></td><td>1234 → "1,234"</td></tr>
       <tr><td><code>.</code></td><td>Punto decimale fisico</td><td><code>9(4).99</code></td><td>1234.56 → "1234.56"</td></tr>
       <tr><td><code>/</code></td><td>Inserisce slash</td><td><code>99/99/9999</code></td><td>12212024 → "12/21/2024"</td></tr>
       <tr><td><code>B</code></td><td>Inserisce spazio</td><td><code>99B99</code></td><td>1234 → "12 34"</td></tr>
-      <tr><td><code>0</code></td><td>Inserisce zero fisso</td><td><code>9(4)099</code></td><td>1234.5 → "12340050"</td></tr>
+      <tr><td><code>0</code></td><td>Inserisce zero letterale in posizione</td><td><code>990099</code></td><td>1234 → "120034"</td></tr>
       <tr><td><code>CR</code></td><td>Stampa CR se negativo</td><td><code>9(6).99CR</code></td><td>-100 → "    100.00CR"</td></tr>
       <tr><td><code>DB</code></td><td>Stampa DB se negativo</td><td><code>9(6).99DB</code></td><td></td></tr>
     </table>
@@ -674,6 +825,38 @@ nome-sezione <span class="kw">SECTION.</span>
   </div>
 </div>
 
+<!-- ─── INITIALIZE ────────────────────────────────────────────── -->
+<a class="anchor" id="s-initialize"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> INITIALIZE — INIZIALIZZAZIONE STRUTTURATA</div>
+  <div class="section-body">
+    <p>INITIALIZE imposta i campi ai valori di default per tipo: <b>SPACES</b> per alfanumerici, <b>ZEROS</b> per numerici. Molto più sicuro di MOVE SPACES su un intero gruppo.</p>
+    <pre><span class="cmt">*> Inizializza tutti i campi di un record ai default</span>
+<span class="kw">INITIALIZE</span> Cliente.
+<span class="cmt">*> Equivale a: MOVE SPACES TO ogni PIC X, MOVE ZEROS TO ogni PIC 9</span>
+
+<span class="cmt">*> Inizializza solo i campi alfanumerici</span>
+<span class="kw">INITIALIZE</span> Cliente <span class="kw">REPLACING ALPHANUMERIC DATA BY SPACES</span>.
+
+<span class="cmt">*> Inizializza solo i numerici con un valore specifico</span>
+<span class="kw">INITIALIZE</span> Tabella <span class="kw">REPLACING NUMERIC DATA BY</span> <span class="num">-1</span>.
+
+<span class="cmt">*> INITIALIZE con ALL (COBOL 2002+): resetta anche FILLER</span>
+<span class="kw">INITIALIZE</span> Record1 <span class="kw">WITH FILLER</span>.
+
+<span class="cmt">*> Categorie disponibili per REPLACING:</span>
+<span class="cmt">*>   ALPHABETIC, ALPHANUMERIC, NUMERIC,</span>
+<span class="cmt">*>   ALPHANUMERIC-EDITED, NUMERIC-EDITED,</span>
+<span class="cmt">*>   NATIONAL, DBCS</span>
+
+<span class="cmt">*> DEFAULT (COBOL 2014+): usa i VALUE dichiarati nei campi</span>
+<span class="kw">INITIALIZE</span> Cliente <span class="kw">TO VALUE</span>.
+<span class="cmt">*> Ripristina i VALUE originali dalla definizione in DATA DIVISION</span></pre>
+
+    <div class="note">INITIALIZE non tocca i campi FILLER (a meno di WITH FILLER). Non tocca i campi con REDEFINES. Non resetta gli indici (INDEX). Per azzerare una tabella intera: <code>INITIALIZE TabRec</code> è più sicuro di <code>MOVE SPACES TO TabRec</code> che corrompe i campi numerici.</div>
+  </div>
+</div>
+
 <!-- ─── IF / EVALUATE ────────────────────────────────────────── -->
 <a class="anchor" id="s-if"></a>
 <div class="section">
@@ -684,10 +867,12 @@ nome-sezione <span class="kw">SECTION.</span>
         <div class="sub-title">IF</div>
         <pre><span class="kw">IF</span> Eta > <span class="num">18</span>
     <span class="kw">DISPLAY</span> <span class="str">"Maggiorenne"</span>
-<span class="kw">ELSE IF</span> Eta = <span class="num">18</span>
-    <span class="kw">DISPLAY</span> <span class="str">"Appena maggiorenne"</span>
 <span class="kw">ELSE</span>
-    <span class="kw">DISPLAY</span> <span class="str">"Minore"</span>
+    <span class="kw">IF</span> Eta = <span class="num">18</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Appena maggiorenne"</span>
+    <span class="kw">ELSE</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Minore"</span>
+    <span class="kw">END-IF</span>
 <span class="kw">END-IF</span>.
 
 <span class="cmt">*> Operatori di confronto</span>
@@ -1272,7 +1457,7 @@ nome-sezione <span class="kw">SECTION.</span>
       <tr><td><code>char[n]</code></td><td>—</td><td><code>PIC X(n)</code></td><td>n</td></tr>
       <tr><td><code>char*</code> (null-term)</td><td><code>USAGE POINTER</code></td><td><code>PIC X(n)</code> + <code>\x00</code></td><td>ptr size</td></tr>
       <tr><td><code>void*</code></td><td><code>USAGE POINTER</code></td><td>—</td><td>4/8</td></tr>
-      <tr><td><code>size_t</code></td><td><code>USAGE BINARY-LONG UNSIGNED</code></td><td><code>PIC 9(10)</code></td><td>4/8</td></tr>
+      <tr><td><code>size_t</code></td><td><code>USAGE BINARY-LONG UNSIGNED</code> (32-bit)<br><code>USAGE BINARY-DOUBLE UNSIGNED</code> (64-bit)</td><td><code>PIC 9(10)</code> / <code>PIC 9(18)</code></td><td>4/8</td></tr>
       <tr><td><code>bool</code> (C99)</td><td><code>PIC 9(1)</code> o <code>PIC 1 USAGE BIT</code></td><td><code>PIC 9</code></td><td>1</td></tr>
     </table>
     <pre><span class="cmt">*> Esempio pratico</span>
@@ -1741,6 +1926,189 @@ modulo1.so: modulo1.cob
 
 clean:
     rm -f mioprog *.so *.o *.c</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- GESTIONE ERRORI                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-errorhandling"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> GESTIONE ERRORI</div>
+  <div class="section-body">
+    <div class="sub-title">FILE STATUS — Controllo errori I/O</div>
+    <p>Il metodo più comune: controllare il FILE STATUS dopo ogni operazione I/O.</p>
+    <pre><span class="kw">FILE-CONTROL.</span>
+<span class="kw">SELECT</span> ClienteFile <span class="kw">ASSIGN TO</span> <span class="str">"clienti.dat"</span>
+    <span class="kw">FILE STATUS IS</span> WS-FS.
+
+<span class="kw">WORKING-STORAGE SECTION.</span>
+<span class="num">01</span> WS-FS  <span class="kw">PIC XX</span>.
+   <span class="num">88</span> FS-OK     <span class="kw">VALUE</span> <span class="str">"00"</span>.
+   <span class="num">88</span> FS-EOF    <span class="kw">VALUE</span> <span class="str">"10"</span>.
+   <span class="num">88</span> FS-NOTFND <span class="kw">VALUE</span> <span class="str">"23"</span>.
+   <span class="num">88</span> FS-DUPKEY <span class="kw">VALUE</span> <span class="str">"22"</span>.
+
+<span class="kw">OPEN INPUT</span> ClienteFile.
+<span class="kw">IF NOT</span> FS-OK
+    <span class="kw">DISPLAY</span> <span class="str">"Errore apertura: "</span> WS-FS
+    <span class="kw">STOP RUN</span>
+<span class="kw">END-IF</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Tabella completa FILE STATUS</div>
+    <table>
+      <tr><th>Codice</th><th>Categoria</th><th>Significato</th></tr>
+      <tr><td><code>00</code></td><td>Successo</td><td>Operazione completata con successo</td></tr>
+      <tr><td><code>02</code></td><td>Successo</td><td>READ riuscita, chiave duplicata presente (alternate key)</td></tr>
+      <tr><td><code>04</code></td><td>Successo</td><td>Lunghezza record diversa da quella attesa</td></tr>
+      <tr><td><code>05</code></td><td>Successo</td><td>OPEN su file opzionale inesistente (creato)</td></tr>
+      <tr><td><code>10</code></td><td>EOF</td><td>Fine file raggiunta (AT END)</td></tr>
+      <tr><td><code>14</code></td><td>EOF</td><td>READ sequenziale: numero relativo troppo grande</td></tr>
+      <tr><td><code>21</code></td><td>Errore chiave</td><td>Chiave fuori sequenza (sequential write su indexed)</td></tr>
+      <tr><td><code>22</code></td><td>Errore chiave</td><td>Chiave duplicata su WRITE</td></tr>
+      <tr><td><code>23</code></td><td>Errore chiave</td><td>Record non trovato (READ/START/DELETE)</td></tr>
+      <tr><td><code>24</code></td><td>Errore chiave</td><td>Boundary violation (disco pieno, record troppo grande)</td></tr>
+      <tr><td><code>30</code></td><td>Errore permanente</td><td>Errore I/O generico permanente</td></tr>
+      <tr><td><code>34</code></td><td>Errore permanente</td><td>Boundary violation (file sequenziale)</td></tr>
+      <tr><td><code>35</code></td><td>Errore permanente</td><td>OPEN su file non esistente (non opzionale)</td></tr>
+      <tr><td><code>37</code></td><td>Errore permanente</td><td>OPEN modo non supportato dal dispositivo</td></tr>
+      <tr><td><code>38</code></td><td>Errore permanente</td><td>OPEN su file chiuso con LOCK</td></tr>
+      <tr><td><code>39</code></td><td>Errore permanente</td><td>Attributi file conflittuali</td></tr>
+      <tr><td><code>41</code></td><td>Errore logico</td><td>OPEN su file già aperto</td></tr>
+      <tr><td><code>42</code></td><td>Errore logico</td><td>CLOSE su file non aperto</td></tr>
+      <tr><td><code>43</code></td><td>Errore logico</td><td>READ/REWRITE senza READ precedente (random/dynamic)</td></tr>
+      <tr><td><code>44</code></td><td>Errore logico</td><td>REWRITE: dimensione record cambiata (sequenziale)</td></tr>
+      <tr><td><code>46</code></td><td>Errore logico</td><td>READ sequenziale fallita: nessun record valido corrente</td></tr>
+      <tr><td><code>47</code></td><td>Errore logico</td><td>READ su file non aperto in INPUT o I-O</td></tr>
+      <tr><td><code>48</code></td><td>Errore logico</td><td>WRITE su file non aperto in OUTPUT, I-O o EXTEND</td></tr>
+      <tr><td><code>49</code></td><td>Errore logico</td><td>DELETE/REWRITE su file non aperto in I-O</td></tr>
+      <tr><td><code>9x</code></td><td>Impl. defined</td><td>Errori specifici del compilatore/sistema operativo</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">DECLARATIVES — Gestione errori centralizzata</div>
+    <pre><span class="hd">PROCEDURE DIVISION.</span>
+<span class="kw">DECLARATIVES.</span>
+<span class="lbl">File-Error-Handler SECTION.</span>
+    <span class="kw">USE AFTER STANDARD ERROR PROCEDURE ON</span> ClienteFile.
+<span class="lbl">File-Error-Para.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Errore I/O su ClienteFile: "</span> WS-FS.
+    <span class="kw">EVALUATE</span> WS-FS
+        <span class="kw">WHEN</span> <span class="str">"35"</span> <span class="kw">DISPLAY</span> <span class="str">"File non trovato"</span>
+        <span class="kw">WHEN</span> <span class="str">"30"</span> <span class="kw">DISPLAY</span> <span class="str">"Errore I/O permanente"</span>
+        <span class="kw">WHEN OTHER</span> <span class="kw">DISPLAY</span> <span class="str">"Errore sconosciuto"</span>
+    <span class="kw">END-EVALUATE</span>.
+    <span class="kw">STOP RUN</span>.
+<span class="kw">END DECLARATIVES.</span>
+
+<span class="cmt">*> La sezione DECLARATIVES va PRIMA di qualsiasi altro codice</span>
+<span class="cmt">*> nella PROCEDURE DIVISION. Viene invocata automaticamente</span>
+<span class="cmt">*> quando si verifica un errore I/O sul file specificato.</span>
+<span class="lbl">Main-Logic SECTION.</span>
+    <span class="kw">OPEN INPUT</span> ClienteFile.
+    ...</pre>
+
+    <div class="sub-title" style="margin-top:10px">INVALID KEY / AT END — Gestione inline</div>
+    <pre><span class="kw">READ</span> ClienteFile
+    <span class="kw">AT END</span>
+        <span class="kw">SET</span> EOF-Flag <span class="kw">TO TRUE</span>
+    <span class="kw">NOT AT END</span>
+        <span class="kw">PERFORM</span> ProcessaRecord
+<span class="kw">END-READ</span>.
+
+<span class="kw">WRITE</span> ClienteData
+    <span class="kw">INVALID KEY</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Chiave duplicata o errore"</span>
+    <span class="kw">NOT INVALID KEY</span>
+        <span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> RecordCount
+<span class="kw">END-WRITE</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">ON SIZE ERROR — Overflow aritmetico</div>
+    <pre><span class="kw">ADD</span> A <span class="kw">TO</span> B
+    <span class="kw">ON SIZE ERROR</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Overflow aritmetico!"</span>
+        <span class="kw">MOVE ZEROS TO</span> B
+    <span class="kw">NOT ON SIZE ERROR</span>
+        <span class="kw">CONTINUE</span>
+<span class="kw">END-ADD</span>.
+
+<span class="kw">COMPUTE</span> Result = X / Y
+    <span class="kw">ON SIZE ERROR</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Divisione per zero o overflow"</span>
+<span class="kw">END-COMPUTE</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">ON EXCEPTION — Errore su CALL</div>
+    <pre><span class="kw">CALL</span> <span class="str">"MODULO-ESTERNO"</span> <span class="kw">USING</span> Dati
+    <span class="kw">ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Modulo non trovato o errore nel caricamento"</span>
+    <span class="kw">NOT ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Chiamata riuscita"</span>
+<span class="kw">END-CALL</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">RAISE / RESUME (COBOL 2014+)</div>
+    <pre><span class="cmt">*> Exception handling moderno (supporto limitato nei compilatori)</span>
+<span class="kw">RAISE EXCEPTION</span> EC-DATA-INCOMPATIBLE.
+
+<span class="cmt">*> Categorie di eccezioni standard (EC-*):</span>
+<span class="cmt">*> EC-ALL, EC-ARGUMENT, EC-BOUND, EC-DATA,</span>
+<span class="cmt">*> EC-FLOW, EC-I-O, EC-IMP, EC-MLD,</span>
+<span class="cmt">*> EC-OO, EC-ORDER, EC-OVERFLOW, EC-PROGRAM,</span>
+<span class="cmt">*> EC-RANGE, EC-SIZE, EC-SORT-MERGE, EC-STORAGE</span></pre>
+
+    <div class="warn">La gestione errori in COBOL è frammentata: FILE STATUS + INVALID KEY per I/O, ON SIZE ERROR per aritmetica, ON EXCEPTION per CALL. Non esiste un meccanismo try/catch unificato come in linguaggi moderni (RAISE/RESUME è poco supportato).</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PROGRAMMI ANNIDATI                                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-nested"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PROGRAMMI ANNIDATI (NESTED PROGRAMS)</div>
+  <div class="section-body">
+    <p>Da COBOL-85 è possibile annidare programmi all'interno di un programma contenitore. Ogni programma annidato ha il proprio scope di dati. Alternativa a CALL con moduli separati.</p>
+    <pre><span class="hd">IDENTIFICATION DIVISION.</span>
+<span class="kw">PROGRAM-ID.</span> ProgrammaEsterno.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">WORKING-STORAGE SECTION.</span>
+<span class="num">01</span> Risultato   <span class="kw">PIC 9(6)</span> <span class="kw">VALUE ZEROS</span>.
+<span class="num">01</span> Dato1       <span class="kw">PIC 9(3)</span> <span class="kw">VALUE</span> <span class="num">100</span>.
+<span class="num">01</span> Dato2       <span class="kw">PIC 9(3)</span> <span class="kw">VALUE</span> <span class="num">200</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+    <span class="kw">CALL</span> <span class="str">"Calcolatore"</span> <span class="kw">USING</span> Dato1 Dato2 Risultato.
+    <span class="kw">DISPLAY</span> <span class="str">"Risultato: "</span> Risultato.
+    <span class="kw">STOP RUN</span>.
+
+    <span class="cmt">*> ─── Programma annidato ───</span>
+    <span class="hd">IDENTIFICATION DIVISION.</span>
+    <span class="kw">PROGRAM-ID.</span> Calcolatore.
+    <span class="hd">DATA DIVISION.</span>
+    <span class="kw">WORKING-STORAGE SECTION.</span>
+    <span class="num">01</span> Temporaneo <span class="kw">PIC 9(6)</span>.
+    <span class="kw">LINKAGE SECTION.</span>
+    <span class="num">01</span> L-A        <span class="kw">PIC 9(3)</span>.
+    <span class="num">01</span> L-B        <span class="kw">PIC 9(3)</span>.
+    <span class="num">01</span> L-Result   <span class="kw">PIC 9(6)</span>.
+
+    <span class="hd">PROCEDURE DIVISION</span> <span class="kw">USING</span> L-A L-B L-Result.
+        <span class="kw">COMPUTE</span> L-Result = L-A + L-B.
+    <span class="kw">END PROGRAM</span> Calcolatore.
+
+<span class="kw">END PROGRAM</span> ProgrammaEsterno.</pre>
+
+    <div class="sub-title">COMMON e INITIAL</div>
+    <pre><span class="cmt">*> COMMON: il programma annidato è visibile anche dai fratelli</span>
+<span class="kw">PROGRAM-ID.</span> Utilita <span class="kw">IS COMMON</span>.
+
+<span class="cmt">*> INITIAL: il programma viene reinizializzato ad ogni CALL</span>
+<span class="kw">PROGRAM-ID.</span> Contatore <span class="kw">IS INITIAL</span>.
+<span class="cmt">*> Tutte le variabili tornano al VALUE originale ad ogni invocazione</span>
+
+<span class="cmt">*> GLOBAL: variabili visibili nei programmi annidati</span>
+<span class="num">01</span> SharedData <span class="kw">PIC X(50) IS GLOBAL</span>.
+<span class="cmt">*> I programmi figli possono accedere a SharedData senza LINKAGE</span></pre>
+
+    <div class="note">I programmi annidati evitano i problemi del linking dinamico (CALL con .so) e sono compilati insieme in un unico binario. Utili per subroutine interne senza esporre moduli separati.</div>
   </div>
 </div>
 
