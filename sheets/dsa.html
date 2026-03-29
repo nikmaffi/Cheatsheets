@@ -1460,19 +1460,26 @@
 <pre><span class="kw">def</span> <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">lo</span>=<span class="num">0</span>, <span class="var">hi</span>=<span class="kw">None</span>):
     <span class="kw">if</span> <span class="var">hi</span> <span class="kw">is</span> <span class="kw">None</span>: <span class="var">hi</span> = <span class="fn">len</span>(<span class="var">arr</span>) - <span class="num">1</span>
     <span class="kw">if</span> <span class="var">lo</span> &lt; <span class="var">hi</span>:
-        <span class="var">p</span> = <span class="fn">partition</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">hi</span>)
-        <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">p</span> - <span class="num">1</span>)
-        <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">p</span> + <span class="num">1</span>, <span class="var">hi</span>)
+        <span class="var">lt</span>, <span class="var">gt</span> = <span class="fn">partition</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">hi</span>)
+        <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">lt</span> - <span class="num">1</span>)
+        <span class="fn">quick_sort</span>(<span class="var">arr</span>, <span class="var">gt</span> + <span class="num">1</span>, <span class="var">hi</span>)
+
+<span class="kw">def</span> <span class="fn">median_of_three</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">hi</span>):
+    <span class="var">mid</span> = (<span class="var">lo</span> + <span class="var">hi</span>) // <span class="num">2</span>
+    <span class="kw">if</span> <span class="var">arr</span>[<span class="var">lo</span>] &gt; <span class="var">arr</span>[<span class="var">mid</span>]: <span class="var">arr</span>[<span class="var">lo</span>], <span class="var">arr</span>[<span class="var">mid</span>] = <span class="var">arr</span>[<span class="var">mid</span>], <span class="var">arr</span>[<span class="var">lo</span>]
+    <span class="kw">if</span> <span class="var">arr</span>[<span class="var">lo</span>] &gt; <span class="var">arr</span>[<span class="var">hi</span>]:  <span class="var">arr</span>[<span class="var">lo</span>], <span class="var">arr</span>[<span class="var">hi</span>]  = <span class="var">arr</span>[<span class="var">hi</span>],  <span class="var">arr</span>[<span class="var">lo</span>]
+    <span class="kw">if</span> <span class="var">arr</span>[<span class="var">mid</span>] &gt; <span class="var">arr</span>[<span class="var">hi</span>]: <span class="var">arr</span>[<span class="var">mid</span>], <span class="var">arr</span>[<span class="var">hi</span>] = <span class="var">arr</span>[<span class="var">hi</span>],  <span class="var">arr</span>[<span class="var">mid</span>]
+    <span class="var">arr</span>[<span class="var">mid</span>], <span class="var">arr</span>[<span class="var">hi</span>] = <span class="var">arr</span>[<span class="var">hi</span>], <span class="var">arr</span>[<span class="var">mid</span>]
+    <span class="kw">return</span> <span class="var">arr</span>[<span class="var">hi</span>]
 
 <span class="kw">def</span> <span class="fn">partition</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">hi</span>):
-    <span class="var">pivot</span> = <span class="var">arr</span>[<span class="var">hi</span>]  <span class="cmt"># ultimo elemento come pivot</span>
-    <span class="var">i</span> = <span class="var">lo</span>
-    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">lo</span>, <span class="var">hi</span>):
-        <span class="kw">if</span> <span class="var">arr</span>[<span class="var">j</span>] &lt; <span class="var">pivot</span>:
-            <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">j</span>] = <span class="var">arr</span>[<span class="var">j</span>], <span class="var">arr</span>[<span class="var">i</span>]
-            <span class="var">i</span> += <span class="num">1</span>
-    <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">hi</span>] = <span class="var">arr</span>[<span class="var">hi</span>], <span class="var">arr</span>[<span class="var">i</span>]
-    <span class="kw">return</span> <span class="var">i</span></pre>
+    <span class="var">pivot</span> = <span class="fn">median_of_three</span>(<span class="var">arr</span>, <span class="var">lo</span>, <span class="var">hi</span>)
+    <span class="var">lt</span>, <span class="var">i</span>, <span class="var">gt</span> = <span class="var">lo</span>, <span class="var">lo</span>, <span class="var">hi</span>
+    <span class="kw">while</span> <span class="var">i</span> &lt;= <span class="var">gt</span>:
+        <span class="kw">if</span>   <span class="var">arr</span>[<span class="var">i</span>] &lt; <span class="var">pivot</span>: <span class="var">arr</span>[<span class="var">lt</span>], <span class="var">arr</span>[<span class="var">i</span>] = <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">lt</span>]; <span class="var">lt</span> += <span class="num">1</span>; <span class="var">i</span> += <span class="num">1</span>
+        <span class="kw">elif</span> <span class="var">arr</span>[<span class="var">i</span>] &gt; <span class="var">pivot</span>: <span class="var">arr</span>[<span class="var">i</span>], <span class="var">arr</span>[<span class="var">gt</span>] = <span class="var">arr</span>[<span class="var">gt</span>], <span class="var">arr</span>[<span class="var">i</span>]; <span class="var">gt</span> -= <span class="num">1</span>
+        <span class="kw">else</span>:                <span class="var">i</span> += <span class="num">1</span>
+    <span class="kw">return</span> <span class="var">lt</span>, <span class="var">gt</span></pre>
     </div>
 
     <div class="sub">
