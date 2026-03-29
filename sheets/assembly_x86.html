@@ -142,6 +142,9 @@
     <a href="#s-float">SSE / Virgola Mobile</a>
     <a href="#s-inline">Inline Assembly in C</a>
     <a href="#s-opt">Ottimizzazione</a>
+    <a href="#s-atomic">Istruzioni Atomiche</a>
+    <a href="#s-patterns">Pattern Comuni</a>
+    <a href="#s-gdb">Debugging con GDB</a>
   </div>
 </nav>
 
@@ -1263,7 +1266,9 @@ $ <span class="ins">gcc</span> -static -o program program.s</pre>
 
 <span class="cmt"># ─── Conversioni ───</span>
 <span class="ins">cvtsi2sdq</span>  <span class="reg">%rax</span>, <span class="reg">%xmm0</span>       <span class="cmt"># int64 &rarr; double</span>
-<span class="ins">cvtsd2siq</span>  <span class="reg">%xmm0</span>, <span class="reg">%rax</span>       <span class="cmt"># double &rarr; int64 (troncamento)</span>
+<span class="ins">cvtsd2siq</span>  <span class="reg">%xmm0</span>, <span class="reg">%rax</span>       <span class="cmt"># double &rarr; int64 (arrotonda secondo MXCSR)</span>
+<span class="ins">cvttsd2siq</span> <span class="reg">%xmm0</span>, <span class="reg">%rax</span>       <span class="cmt"># double &rarr; int64 (tronca verso zero)</span>
+<span class="ins">cvttss2sil</span> <span class="reg">%xmm0</span>, <span class="reg">%eax</span>       <span class="cmt"># float  &rarr; int32 (tronca verso zero)</span>
 <span class="ins">cvtss2sd</span>   <span class="reg">%xmm0</span>, <span class="reg">%xmm0</span>      <span class="cmt"># float &rarr; double</span>
 <span class="ins">cvtsd2ss</span>   <span class="reg">%xmm0</span>, <span class="reg">%xmm0</span>      <span class="cmt"># double &rarr; float</span></pre>
     </div>
@@ -1493,6 +1498,375 @@ $ <span class="ins">gcc</span> -static -o program program.s</pre>
 <span class="ins">sfence</span>                     <span class="cmt"># Store fence (serializza store)</span>
 <span class="ins">mfence</span>                     <span class="cmt"># Full memory fence</span></pre>
     </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     ISTRUZIONI ATOMICHE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-atomic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ISTRUZIONI ATOMICHE &amp; LOCK PREFIX</div>
+  <div class="section-body">
+    <p>Il prefisso <code>lock</code> rende atomica un'operazione read-modify-write su memoria. Essenziale per codice multithread. Senza <code>lock</code>, un'altra CPU pu&ograve; intervenire tra la lettura e la scrittura.</p>
+
+    <div class="sub">
+      <div class="sub-title">OPERAZIONI CON LOCK PREFIX</div>
+<pre><span class="cmt"># ─── Incremento / Decremento atomico ───</span>
+<span class="ins">lock incq</span>  (<span class="reg">%rdi</span>)            <span class="cmt"># atomic: mem[RDI]++</span>
+<span class="ins">lock decq</span>  (<span class="reg">%rdi</span>)            <span class="cmt"># atomic: mem[RDI]--</span>
+
+<span class="cmt"># ─── Add / Sub atomico ───</span>
+<span class="ins">lock addq</span>  <span class="num">$1</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># atomic: mem[RDI] += 1</span>
+<span class="ins">lock subq</span>  <span class="num">$1</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># atomic: mem[RDI] -= 1</span>
+
+<span class="cmt"># ─── Operazioni logiche atomiche ───</span>
+<span class="ins">lock orq</span>   <span class="num">$0x01</span>, (<span class="reg">%rdi</span>)   <span class="cmt"># atomic: mem[RDI] |= 0x01  (set bit)</span>
+<span class="ins">lock andq</span>  <span class="num">$~0x01</span>, (<span class="reg">%rdi</span>)  <span class="cmt"># atomic: mem[RDI] &amp;= ~0x01 (clear bit)</span>
+<span class="ins">lock xorq</span>  <span class="num">$0xFF</span>, (<span class="reg">%rdi</span>)   <span class="cmt"># atomic: mem[RDI] ^= 0xFF  (toggle bits)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">XADD &mdash; EXCHANGE AND ADD</div>
+<pre><span class="cmt"># lock xaddq %rax, (%rdi)</span>
+<span class="cmt"># Atomicamente: temp = mem[RDI]; mem[RDI] += RAX; RAX = temp</span>
+<span class="cmt"># Utile per: fetch-and-add (contatori atomici)</span>
+
+<span class="ins">movq</span>       <span class="num">$1</span>, <span class="reg">%rax</span>
+<span class="ins">lock xaddq</span> <span class="reg">%rax</span>, (<span class="reg">%rdi</span>)     <span class="cmt"># RAX = vecchio valore, mem[RDI] += 1</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CMPXCHG &mdash; COMPARE AND EXCHANGE (CAS)</div>
+<pre><span class="cmt"># lock cmpxchgq %rcx, (%rdi)</span>
+<span class="cmt"># Atomicamente:</span>
+<span class="cmt">#   se mem[RDI] == RAX:  mem[RDI] = RCX, ZF=1  (successo)</span>
+<span class="cmt">#   altrimenti:          RAX = mem[RDI], ZF=0  (fallimento)</span>
+
+<span class="cmt"># ─── Tipico pattern CAS con retry ───</span>
+<span class="lbl">.Lretry:</span>
+    <span class="ins">movq</span>         (<span class="reg">%rdi</span>), <span class="reg">%rax</span>   <span class="cmt"># Leggi valore attuale (expected)</span>
+    <span class="ins">leaq</span>         <span class="num">1</span>(<span class="reg">%rax</span>), <span class="reg">%rcx</span> <span class="cmt"># Calcola nuovo valore (desired)</span>
+    <span class="ins">lock cmpxchgq</span> <span class="reg">%rcx</span>, (<span class="reg">%rdi</span>) <span class="cmt"># Prova a scambiare</span>
+    <span class="ins">jnz</span>          <span class="lbl">.Lretry</span>       <span class="cmt"># Ritenta se fallito</span>
+
+<span class="cmt"># ─── CMPXCHG16B: CAS su 128 bit (richiede RBX:RCX e RDX:RAX) ───</span>
+<span class="ins">lock cmpxchg16b</span> (<span class="reg">%rdi</span>)        <span class="cmt"># Confronta RDX:RAX con mem[RDI] (128 bit)</span>
+                                <span class="cmt"># Se uguale: mem[RDI] = RCX:RBX</span>
+                                <span class="cmt"># Altrimenti: RDX:RAX = mem[RDI]</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">XCHG &mdash; SCAMBIO (SEMPRE ATOMICO CON MEMORIA)</div>
+<pre><span class="cmt"># xchg con operando in memoria ha lock implicito (non serve lock prefix)</span>
+<span class="ins">xchgq</span>  <span class="reg">%rax</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># Atomicamente: swap RAX e mem[RDI]</span>
+
+<span class="cmt"># ─── Spinlock con xchg ───</span>
+<span class="lbl">.Lacquire:</span>
+    <span class="ins">movq</span>   <span class="num">$1</span>, <span class="reg">%rax</span>
+    <span class="ins">xchgq</span>  <span class="reg">%rax</span>, (<span class="reg">%rdi</span>)     <span class="cmt"># Prova ad acquisire (set lock=1)</span>
+    <span class="ins">testq</span>  <span class="reg">%rax</span>, <span class="reg">%rax</span>       <span class="cmt"># Era gi&agrave; 1 (locked)?</span>
+    <span class="ins">jnz</span>    <span class="lbl">.Lspin</span>
+    <span class="ins">ret</span>                       <span class="cmt"># Lock acquisito!</span>
+<span class="lbl">.Lspin:</span>
+    <span class="ins">pause</span>                     <span class="cmt"># Hint CPU: spin-wait</span>
+    <span class="ins">cmpq</span>   <span class="num">$0</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># Test-and-test-and-set (riduce traffico bus)</span>
+    <span class="ins">jne</span>    <span class="lbl">.Lspin</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lacquire</span>
+
+<span class="lbl">.Lrelease:</span>
+    <span class="ins">movq</span>   <span class="num">$0</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># Rilascio: store normale (sufficiente su x86)</span>
+    <span class="ins">ret</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BTS / BTR / BTC ATOMICI</div>
+<pre><span class="ins">lock btsq</span>  <span class="num">$5</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># Atomic test-and-set bit 5 &rarr; CF = vecchio bit</span>
+<span class="ins">lock btrq</span>  <span class="num">$5</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># Atomic test-and-reset bit 5</span>
+<span class="ins">lock btcq</span>  <span class="num">$5</span>, (<span class="reg">%rdi</span>)       <span class="cmt"># Atomic test-and-complement bit 5</span></pre>
+    </div>
+
+    <div class="note">Su x86/x86_64, gli store normali sono gi&agrave; release-ordered e i load sono acquire-ordered (modello TSO). <code>lock</code> aggiunge una full barrier. <code>mfence</code> &egrave; necessario solo in casi rari (es. pattern store-load). <code>xchg</code> con operando memoria &egrave; sempre atomico, anche senza <code>lock</code>.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     PATTERN COMUNI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-patterns"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PATTERN COMUNI IN ASSEMBLY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">SWITCH / JUMP TABLE</div>
+<pre><span class="cmt"># switch(n) con jump table (compilato da GCC per switch densi)</span>
+<span class="cmt"># Assume: n gi&agrave; in %edi, valori 0..3</span>
+
+<span class="dir">.section</span> .rodata
+    <span class="dir">.align</span> <span class="num">8</span>
+<span class="lbl">.Ljumptable:</span>
+    <span class="dir">.quad</span>  <span class="lbl">.Lcase0</span>
+    <span class="dir">.quad</span>  <span class="lbl">.Lcase1</span>
+    <span class="dir">.quad</span>  <span class="lbl">.Lcase2</span>
+    <span class="dir">.quad</span>  <span class="lbl">.Lcase3</span>
+
+<span class="dir">.section</span> .text
+    <span class="ins">cmpl</span>   <span class="num">$3</span>, <span class="reg">%edi</span>
+    <span class="ins">ja</span>     <span class="lbl">.Ldefault</span>             <span class="cmt"># n &gt; 3 &rarr; default</span>
+    <span class="ins">leaq</span>   <span class="lbl">.Ljumptable</span>(<span class="reg">%rip</span>), <span class="reg">%rax</span>
+    <span class="ins">movslq</span> <span class="reg">%edi</span>, <span class="reg">%rdi</span>           <span class="cmt"># Estendi indice a 64 bit</span>
+    <span class="ins">jmpq</span>   *(<span class="reg">%rax</span>,<span class="reg">%rdi</span>,<span class="num">8</span>)      <span class="cmt"># Salto indiretto: jumptable[n]</span>
+
+<span class="lbl">.Lcase0:</span>
+    <span class="cmt"># ... codice caso 0 ...</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lend_switch</span>
+<span class="lbl">.Lcase1:</span>
+    <span class="cmt"># ... codice caso 1 ...</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lend_switch</span>
+<span class="lbl">.Lcase2:</span>
+    <span class="cmt"># ... codice caso 2 ...</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lend_switch</span>
+<span class="lbl">.Lcase3:</span>
+    <span class="cmt"># ... codice caso 3 ...</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lend_switch</span>
+<span class="lbl">.Ldefault:</span>
+    <span class="cmt"># ... codice default ...</span>
+<span class="lbl">.Lend_switch:</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ACCESSO A CAMPI DI STRUTTURA</div>
+<pre><span class="cmt"># struct Point { long x; long y; long z; };</span>
+<span class="cmt"># Offset: x=0, y=8, z=16 (sizeof = 24)</span>
+<span class="dir">.equ</span> <span class="lbl">POINT_X</span>, <span class="num">0</span>
+<span class="dir">.equ</span> <span class="lbl">POINT_Y</span>, <span class="num">8</span>
+<span class="dir">.equ</span> <span class="lbl">POINT_Z</span>, <span class="num">16</span>
+<span class="dir">.equ</span> <span class="lbl">SIZEOF_POINT</span>, <span class="num">24</span>
+
+<span class="cmt"># Accesso: RDI = puntatore a struct Point</span>
+    <span class="ins">movq</span>   <span class="lbl">POINT_X</span>(<span class="reg">%rdi</span>), <span class="reg">%rax</span>   <span class="cmt"># rax = p-&gt;x</span>
+    <span class="ins">movq</span>   <span class="lbl">POINT_Y</span>(<span class="reg">%rdi</span>), <span class="reg">%rbx</span>   <span class="cmt"># rbx = p-&gt;y</span>
+    <span class="ins">addq</span>   <span class="reg">%rbx</span>, <span class="reg">%rax</span>             <span class="cmt"># rax = p-&gt;x + p-&gt;y</span>
+    <span class="ins">movq</span>   <span class="reg">%rax</span>, <span class="lbl">POINT_Z</span>(<span class="reg">%rdi</span>)   <span class="cmt"># p-&gt;z = rax</span>
+
+<span class="cmt"># Iterare su un array di struct:</span>
+<span class="cmt"># for (int i = 0; i &lt; n; i++) arr[i].z = arr[i].x + arr[i].y;</span>
+    <span class="ins">xorl</span>   <span class="reg">%ecx</span>, <span class="reg">%ecx</span>
+<span class="lbl">.Lstruct_loop:</span>
+    <span class="ins">cmpl</span>   <span class="reg">%esi</span>, <span class="reg">%ecx</span>             <span class="cmt"># i &lt; n ?</span>
+    <span class="ins">jge</span>    <span class="lbl">.Lstruct_end</span>
+    <span class="ins">movq</span>   <span class="lbl">POINT_X</span>(<span class="reg">%rdi</span>), <span class="reg">%rax</span>
+    <span class="ins">addq</span>   <span class="lbl">POINT_Y</span>(<span class="reg">%rdi</span>), <span class="reg">%rax</span>
+    <span class="ins">movq</span>   <span class="reg">%rax</span>, <span class="lbl">POINT_Z</span>(<span class="reg">%rdi</span>)
+    <span class="ins">addq</span>   <span class="num">$SIZEOF_POINT</span>, <span class="reg">%rdi</span>   <span class="cmt"># Avanza al prossimo elemento</span>
+    <span class="ins">incl</span>   <span class="reg">%ecx</span>
+    <span class="ins">jmp</span>    <span class="lbl">.Lstruct_loop</span>
+<span class="lbl">.Lstruct_end:</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FUNCTION POINTER &amp; CHIAMATA INDIRETTA</div>
+<pre><span class="cmt"># Chiamata tramite puntatore a funzione</span>
+    <span class="ins">movq</span>   <span class="lbl">func_ptr</span>(<span class="reg">%rip</span>), <span class="reg">%rax</span>  <span class="cmt"># Carica puntatore a funzione</span>
+    <span class="ins">movq</span>   <span class="num">$42</span>, <span class="reg">%rdi</span>              <span class="cmt"># Primo argomento</span>
+    <span class="ins">call</span>   *<span class="reg">%rax</span>                   <span class="cmt"># Chiamata indiretta</span>
+
+<span class="cmt"># Vtable (array di function pointer, es. C++ virtual dispatch)</span>
+<span class="cmt"># RDI = puntatore a oggetto, primo campo = puntatore a vtable</span>
+    <span class="ins">movq</span>   (<span class="reg">%rdi</span>), <span class="reg">%rax</span>           <span class="cmt"># RAX = vtable ptr</span>
+    <span class="ins">call</span>   *<span class="num">16</span>(<span class="reg">%rax</span>)              <span class="cmt"># Chiama il 3&deg; metodo virtuale (offset 16)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DO-WHILE (TEST ALLA FINE)</div>
+<pre><span class="cmt"># do { ... } while (--n);</span>
+<span class="cmt"># Forma pi&ugrave; efficiente di un while: evita un salto iniziale</span>
+<span class="lbl">.Ldo:</span>
+    <span class="cmt"># --- corpo del loop ---</span>
+    <span class="ins">decl</span>   <span class="reg">%ecx</span>
+    <span class="ins">jnz</span>    <span class="lbl">.Ldo</span>                 <span class="cmt"># Ripete finch&eacute; ECX != 0</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MIN / MAX / ABS / SIGN SENZA BRANCH</div>
+<pre><span class="cmt"># ─── min(a, b) senza branch ───</span>
+<span class="cmt"># EDI = a, ESI = b</span>
+    <span class="ins">cmpl</span>   <span class="reg">%esi</span>, <span class="reg">%edi</span>
+    <span class="ins">cmovgl</span> <span class="reg">%esi</span>, <span class="reg">%edi</span>        <span class="cmt"># EDI = min(a, b)</span>
+
+<span class="cmt"># ─── abs(a) senza branch ───</span>
+<span class="cmt"># EDI = a</span>
+    <span class="ins">movl</span>   <span class="reg">%edi</span>, <span class="reg">%eax</span>
+    <span class="ins">sarl</span>   <span class="num">$31</span>, <span class="reg">%eax</span>         <span class="cmt"># EAX = 0 se a &ge; 0, -1 se a &lt; 0</span>
+    <span class="ins">xorl</span>   <span class="reg">%eax</span>, <span class="reg">%edi</span>        <span class="cmt"># Complementa se negativo</span>
+    <span class="ins">subl</span>   <span class="reg">%eax</span>, <span class="reg">%edi</span>        <span class="cmt"># +1 se era negativo &rarr; EDI = abs(a)</span>
+
+<span class="cmt"># ─── sign(a): -1, 0, +1 senza branch ───</span>
+    <span class="ins">movl</span>   <span class="reg">%edi</span>, <span class="reg">%eax</span>
+    <span class="ins">sarl</span>   <span class="num">$31</span>, <span class="reg">%eax</span>         <span class="cmt"># EAX = -1 se negativo, 0 altrimenti</span>
+    <span class="ins">testl</span>  <span class="reg">%edi</span>, <span class="reg">%edi</span>
+    <span class="ins">movl</span>   <span class="num">$1</span>, <span class="reg">%edx</span>
+    <span class="ins">cmovgl</span> <span class="reg">%edx</span>, <span class="reg">%eax</span>        <span class="cmt"># EAX = 1 se positivo</span>
+
+<span class="cmt"># ─── clamp(x, lo, hi) ───</span>
+<span class="cmt"># EDI = x, ESI = lo, EDX = hi</span>
+    <span class="ins">cmpl</span>   <span class="reg">%esi</span>, <span class="reg">%edi</span>
+    <span class="ins">cmovll</span> <span class="reg">%esi</span>, <span class="reg">%edi</span>        <span class="cmt"># x = max(x, lo)</span>
+    <span class="ins">cmpl</span>   <span class="reg">%edx</span>, <span class="reg">%edi</span>
+    <span class="ins">cmovgl</span> <span class="reg">%edx</span>, <span class="reg">%edi</span>        <span class="cmt"># x = min(x, hi)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BITWISE: POTENZA DI 2, POPCOUNT, ALLINEAMENTO</div>
+<pre><span class="cmt"># ─── Test se x &egrave; potenza di 2 ───</span>
+<span class="cmt"># x &amp; (x - 1) == 0 &amp;&amp; x != 0</span>
+    <span class="ins">leaq</span>   <span class="num">-1</span>(<span class="reg">%rdi</span>), <span class="reg">%rax</span>    <span class="cmt"># RAX = x - 1</span>
+    <span class="ins">testq</span>  <span class="reg">%rdi</span>, <span class="reg">%rax</span>        <span class="cmt"># x &amp; (x - 1)</span>
+    <span class="ins">setz</span>   <span class="reg">%al</span>               <span class="cmt"># AL = 1 se potenza di 2 (o zero)</span>
+
+<span class="cmt"># ─── Allinea x al prossimo multiplo di align (potenza di 2) ───</span>
+<span class="cmt"># aligned = (x + align - 1) &amp; ~(align - 1)</span>
+    <span class="ins">leaq</span>   <span class="num">15</span>(<span class="reg">%rdi</span>), <span class="reg">%rax</span>    <span class="cmt"># RAX = x + 15 (align=16)</span>
+    <span class="ins">andq</span>   <span class="num">$-16</span>, <span class="reg">%rax</span>        <span class="cmt"># RAX = aligned to 16</span>
+
+<span class="cmt"># ─── popcount (conta bit a 1) ─── (richiede POPCNT, SSE4.2)</span>
+<span class="ins">popcntq</span> <span class="reg">%rdi</span>, <span class="reg">%rax</span>         <span class="cmt"># RAX = numero di bit a 1 in RDI</span>
+
+<span class="cmt"># ─── lzcnt / tzcnt (leading/trailing zero count) ─── (ABM/BMI1)</span>
+<span class="ins">lzcntq</span>  <span class="reg">%rdi</span>, <span class="reg">%rax</span>         <span class="cmt"># RAX = zeri iniziali (da MSB)</span>
+<span class="ins">tzcntq</span>  <span class="reg">%rdi</span>, <span class="reg">%rax</span>         <span class="cmt"># RAX = zeri finali (da LSB)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DEBUGGING CON GDB
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-gdb"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DEBUGGING CON GDB</div>
+  <div class="section-body">
+    <p>GDB &egrave; lo strumento essenziale per il debugging di programmi assembly su Linux. Compilare sempre con <code>-g</code> per i debug symbols.</p>
+
+    <div class="sub">
+      <div class="sub-title">AVVIO E COMANDI BASE</div>
+<pre><span class="cmt"># Compila con debug symbols</span>
+$ <span class="ins">as</span> -g --64 -o prog.o prog.s && <span class="ins">ld</span> -o prog prog.o
+$ <span class="ins">gcc</span> -g -no-pie -o prog prog.s
+
+<span class="cmt"># Avvia GDB</span>
+$ <span class="ins">gdb</span> ./prog
+$ <span class="ins">gdb</span> -tui ./prog                <span class="cmt"># Con interfaccia TUI (mostra sorgente)</span>
+
+<span class="cmt"># Comandi base</span>
+(gdb) <span class="ins">run</span>                        <span class="cmt"># Esegui il programma</span>
+(gdb) <span class="ins">run</span> arg1 arg2              <span class="cmt"># Esegui con argomenti</span>
+(gdb) <span class="ins">quit</span>                       <span class="cmt"># Esci</span>
+(gdb) <span class="ins">start</span>                      <span class="cmt"># Esegui e fermati a main/_start</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BREAKPOINT</div>
+<pre>(gdb) <span class="ins">break</span> _start               <span class="cmt"># Breakpoint su label</span>
+(gdb) <span class="ins">break</span> *0x401000             <span class="cmt"># Breakpoint su indirizzo</span>
+(gdb) <span class="ins">break</span> *_start+20            <span class="cmt"># Offset da label</span>
+(gdb) <span class="ins">info break</span>                  <span class="cmt"># Lista breakpoint</span>
+(gdb) <span class="ins">delete</span> 1                   <span class="cmt"># Rimuovi breakpoint #1</span>
+(gdb) <span class="ins">disable</span> 2                  <span class="cmt"># Disabilita breakpoint #2</span>
+
+<span class="cmt"># Watchpoint: ferma quando un valore cambia</span>
+(gdb) <span class="ins">watch</span> *0x601000            <span class="cmt"># Watch su indirizzo di memoria</span>
+(gdb) <span class="ins">watch</span> $rax                  <span class="cmt"># Watch su registro</span>
+(gdb) <span class="ins">rwatch</span> *0x601000           <span class="cmt"># Read watchpoint (ferma alla lettura)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESECUZIONE STEP-BY-STEP</div>
+<pre>(gdb) <span class="ins">si</span>                         <span class="cmt"># Step Instruction: esegui 1 istruzione (entra nelle call)</span>
+(gdb) <span class="ins">ni</span>                         <span class="cmt"># Next Instruction: esegui 1 istruzione (scavalca le call)</span>
+(gdb) <span class="ins">si</span> 5                       <span class="cmt"># Esegui 5 istruzioni</span>
+(gdb) <span class="ins">continue</span>                   <span class="cmt"># Continua fino al prossimo breakpoint</span>
+(gdb) <span class="ins">finish</span>                     <span class="cmt"># Esegui fino al ret della funzione corrente</span>
+(gdb) <span class="ins">until</span> *_start+40           <span class="cmt"># Esegui fino all'indirizzo specificato</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ISPEZIONE REGISTRI</div>
+<pre>(gdb) <span class="ins">info registers</span>             <span class="cmt"># Mostra tutti i registri general purpose</span>
+(gdb) <span class="ins">info all-registers</span>         <span class="cmt"># Mostra TUTTI i registri (inclusi XMM, flag, segmento)</span>
+(gdb) <span class="ins">print</span> $rax                 <span class="cmt"># Stampa valore di RAX (decimale)</span>
+(gdb) <span class="ins">print/x</span> $rax               <span class="cmt"># Stampa in esadecimale</span>
+(gdb) <span class="ins">print/t</span> $rax               <span class="cmt"># Stampa in binario</span>
+(gdb) <span class="ins">print/d</span> $eax               <span class="cmt"># Stampa come signed decimal</span>
+(gdb) <span class="ins">print/u</span> $eax               <span class="cmt"># Stampa come unsigned decimal</span>
+(gdb) <span class="ins">set</span> $rax = 42              <span class="cmt"># Modifica un registro</span>
+(gdb) <span class="ins">print</span> $eflags              <span class="cmt"># Mostra flag: [ CF ZF SF OF ... ]</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ISPEZIONE MEMORIA</div>
+<pre><span class="cmt"># Formato: x/NFU indirizzo</span>
+<span class="cmt">#   N = numero di unit&agrave;</span>
+<span class="cmt">#   F = formato: x(hex) d(dec) u(unsigned) t(binary) s(string) i(instruction) c(char)</span>
+<span class="cmt">#   U = unit&agrave;: b(byte) h(halfword/2B) w(word/4B) g(giant/8B)</span>
+
+(gdb) <span class="ins">x/10xb</span> $rsp               <span class="cmt"># 10 byte in hex dallo stack</span>
+(gdb) <span class="ins">x/4xg</span> $rsp                <span class="cmt"># 4 quadword (64-bit) in hex dallo stack</span>
+(gdb) <span class="ins">x/s</span> 0x402000               <span class="cmt"># Stringa all'indirizzo</span>
+(gdb) <span class="ins">x/10i</span> $rip                <span class="cmt"># Disassembla 10 istruzioni da RIP</span>
+(gdb) <span class="ins">x/10i</span> _start               <span class="cmt"># Disassembla da label</span>
+(gdb) <span class="ins">x/20xb</span> &amp;msg               <span class="cmt"># 20 byte dalla label msg</span>
+
+<span class="cmt"># Modifica memoria</span>
+(gdb) <span class="ins">set</span> *(long*)0x601000 = 42  <span class="cmt"># Scrivi valore in memoria</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DISASSEMBLY &amp; LAYOUT</div>
+<pre>(gdb) <span class="ins">disassemble</span> _start        <span class="cmt"># Disassembla funzione/label</span>
+(gdb) <span class="ins">disassemble</span> /r _start      <span class="cmt"># Con byte della macchina (raw hex)</span>
+(gdb) <span class="ins">set disassembly-flavor att</span>  <span class="cmt"># Sintassi AT&amp;T (default)</span>
+(gdb) <span class="ins">set disassembly-flavor intel</span> <span class="cmt"># Sintassi Intel</span>
+
+<span class="cmt"># TUI (Text User Interface)</span>
+(gdb) <span class="ins">layout asm</span>                 <span class="cmt"># Mostra assembly nel pannello superiore</span>
+(gdb) <span class="ins">layout regs</span>                <span class="cmt"># Mostra registri + assembly</span>
+(gdb) <span class="ins">layout split</span>               <span class="cmt"># Mostra sorgente + assembly</span>
+(gdb) <span class="ins">tui reg float</span>              <span class="cmt"># Mostra registri float/XMM</span>
+(gdb) <span class="ins">focus asm</span>                  <span class="cmt"># Sposta il focus sul pannello asm</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">STACK &amp; BACKTRACE</div>
+<pre>(gdb) <span class="ins">backtrace</span>                  <span class="cmt"># Mostra call stack (bt)</span>
+(gdb) <span class="ins">info frame</span>                  <span class="cmt"># Info sullo stack frame corrente</span>
+(gdb) <span class="ins">info stack</span>                  <span class="cmt"># Alias per backtrace</span>
+(gdb) <span class="ins">x/8xg</span> $rsp                 <span class="cmt"># Ispeziona le prime 8 quadword sullo stack</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">STRUMENTI COMPLEMENTARI</div>
+<pre><span class="cmt"># objdump: disassembla un binario</span>
+$ <span class="ins">objdump</span> -d prog               <span class="cmt"># Disassembla sezioni eseguibili</span>
+$ <span class="ins">objdump</span> -d -M intel prog      <span class="cmt"># In sintassi Intel</span>
+$ <span class="ins">objdump</span> -d -M intel -S prog   <span class="cmt"># Intermezza con sorgente C (-g richiesto)</span>
+
+<span class="cmt"># readelf: ispeziona struttura ELF</span>
+$ <span class="ins">readelf</span> -h prog               <span class="cmt"># Header ELF</span>
+$ <span class="ins">readelf</span> -S prog               <span class="cmt"># Tabella delle sezioni</span>
+$ <span class="ins">readelf</span> -s prog               <span class="cmt"># Tabella dei simboli</span>
+$ <span class="ins">readelf</span> -l prog               <span class="cmt"># Program headers (segmenti)</span>
+
+<span class="cmt"># strace: traccia syscall in tempo reale</span>
+$ <span class="ins">strace</span> ./prog                  <span class="cmt"># Mostra ogni syscall</span>
+$ <span class="ins">strace</span> -e trace=write ./prog   <span class="cmt"># Filtra solo write</span>
+
+<span class="cmt"># nm: lista simboli</span>
+$ <span class="ins">nm</span> prog                        <span class="cmt"># Mostra simboli e indirizzi</span></pre>
+    </div>
+
+    <div class="note">Suggerimento: <code>gdb -tui</code> con <code>layout regs</code> offre la migliore esperienza di debugging per assembly. I registri si evidenziano in tempo reale quando cambiano valore. Usare <code>si</code> (step instruction) per avanzare istruzione per istruzione.</div>
   </div>
 </div>
 
