@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADA CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #000805;
+    --bg2:       #001208;
+    --panel:     #001a0e;
+    --panel2:    #002014;
+    --border:    #003a20;
+    --border2:   #005c32;
+    --glow:      #00b860;
+    --glow2:     #33ff88;
+    --dim:       #004a28;
+    --text:      #80c8a0;
+    --text2:     #a0e0b8;
+    --bright:    #aaffcc;
+    --accent:    #00cc66;
+    --accent2:   #44ddaa;
+    --key:       #008044;
+    --kw:        #55ddaa;
+    --str:       #ccaa55;
+    --num:       #ff8866;
+    --cmt:       #2a6040;
+    --lbl:       #44ddaa;
+    --head:      #aaffcc;
+    --hr:        #002a16;
+    --scan:      rgba(0,184,96,0.035);
+    --hd:        #33cc88;
+    --glow-dim:  #003b1e;
+    --sidebar-w:         240px;
+    --vignette:          rgba(0,10,4,0.75);
+    --header-top:        #001c0d;
+    --header-shadow:     rgba(0,184,96,0.5);
+    --sidebar-hover-bg:  rgba(0,184,96,0.12);
+    --section-shadow:    rgba(0,120,50,0.5);
+    --section-header-bg: var(--glow);
+    --th-bg:             rgba(0,100,50,0.45);
+    --tr-even-bg:        rgba(0,60,30,0.3);
+    --tr-hover-bg:       rgba(0,100,50,0.15);
+    --note-bg:           rgba(0,100,50,0.2);
+    --warn-bg:           rgba(120,60,0,0.25);
+    --warn-brd:          #cc6600;
+    --warn-txt:          #ffbb88;
+  }
+
+  .hd  { color: var(--hd); font-weight:bold; }
+  .bright { color: var(--bright); }
+  .acc { color: var(--accent); }
+  .safety { color: #44dd88; }
+
+  code {
+    background: rgba(0,80,40,0.4);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 1px;
+    font-size: 11.5px;
+    color: var(--accent2);
+  }
+
+  .ver {
+    display:inline-block;
+    font-size:9px;
+    padding:1px 5px;
+    border-radius:2px;
+    margin-left:4px;
+    font-family:'Share Tech Mono',monospace;
+    letter-spacing:1px;
+    vertical-align:middle;
+  }
+  .v83  { background:#1a1a00; color:#aaaa33; border:1px solid #3a3a00; }
+  .v95  { background:#001a2a; color:#3388aa; border:1px solid #002a4a; }
+  .v05  { background:#0a1a0a; color:#55bb55; border:1px solid #1a3a1a; }
+  .v12  { background:#1a0a1a; color:#bb55bb; border:1px solid #3a1a3a; }
+  .v22  { background:#1a0000; color:#cc5555; border:1px solid #3a0a0a; }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─────────────────────────────────────────────────── -->
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; ADA REFERENCE MANUAL <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS — <span>Ada 83 / 95 / 2005 / 2012 / 2022</span> — v1.0</div>
+</div>
+
+<div id="layout">
+
+<!-- ─── SIDEBAR ────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="nav-head">◈ INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Storia</div>
+    <a href="#s-versions">Versioni Ada</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenta</div>
+    <a href="#s-basics">Struttura Base</a>
+    <a href="#s-types">Tipi Scalari</a>
+    <a href="#s-vars">Variabili / Costanti</a>
+    <a href="#s-operators">Operatori</a>
+    <a href="#s-io">Input / Output</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Controllo Flusso</div>
+    <a href="#s-if">If / Elsif / Else</a>
+    <a href="#s-case">Case Statement</a>
+    <a href="#s-loops">Loop / While / For</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Sistema dei Tipi</div>
+    <a href="#s-subtypes">Subtypes</a>
+    <a href="#s-derived">Derived Types</a>
+    <a href="#s-enum">Enumerazioni</a>
+    <a href="#s-arrays">Array</a>
+    <a href="#s-records">Record</a>
+    <a href="#s-access">Access Types (Puntatori)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Modularità</div>
+    <a href="#s-packages">Package (Spec &amp; Body)</a>
+    <a href="#s-visibility">Visibilità (Private)</a>
+    <a href="#s-generics">Generics</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Procedure</div>
+    <a href="#s-subprograms">Procedure / Function</a>
+    <a href="#s-overload">Overloading</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">OOP</div>
+    <a href="#s-tagged">Tagged Types</a>
+    <a href="#s-inherit">Ereditarietà</a>
+    <a href="#s-dispatch">Polimorfismo / Dispatch</a>
+    <a href="#s-interfaces">Interfacce</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Concorrenza</div>
+    <a href="#s-tasks">Task (Tasking)</a>
+    <a href="#s-protected">Protected Objects</a>
+    <a href="#s-rendezvous">Rendezvous / Select</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Contratti</div>
+    <a href="#s-contracts">Pre/Post/Invariant</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Eccezioni</div>
+    <a href="#s-exceptions">Exception Handling</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-pragmas">Pragma &amp; Aspect</a>
+    <a href="#s-representation">Representation Clauses</a>
+    <a href="#s-lowlevel">Low-Level / Interfacing</a>
+    <a href="#s-compile">Compilazione (GNAT)</a>
+  </div>
+</nav>
+
+<!-- ─── MAIN ────────────────────────────────────────────────────── -->
+<main id="main">
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- VERSIONI                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-versions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TABELLA COMPARATIVA DELLE VERSIONI</div>
+  <div class="section-body">
+    <p>Ada è un linguaggio progettato dal <span class="acc">DoD statunitense</span> per sistemi safety-critical e real-time.
+       Ogni revisione espande le capacità mantenendo la <span class="safety">retrocompatibilità</span> e la verificabilità formale.</p>
+
+    <table>
+      <tr>
+        <th>Versione</th><th>Anno</th><th>Standard</th><th>Novità Principali</th>
+      </tr>
+      <tr>
+        <td><span class="ver v83">Ada 83</span></td>
+        <td>1983</td>
+        <td>MIL-STD-1815 / ISO 8652:1987</td>
+        <td>L'originale. Strong typing, packages, tasking nativo, generics, exception handling, representation clauses. Progettato per embedded DoD.</td>
+      </tr>
+      <tr>
+        <td><span class="ver v95">Ada 95</span></td>
+        <td>1995</td>
+        <td>ISO/IEC 8652:1995</td>
+        <td><span class="kw">OOP</span>: tagged types, ereditarietà, polimorfismo con dispatching dinamico. Protected objects. Child packages. Annexes specializzati (Real-Time, Distributed, Systems Programming, Safety &amp; Security).</td>
+      </tr>
+      <tr>
+        <td><span class="ver v05">Ada 2005</span></td>
+        <td>2007</td>
+        <td>ISO/IEC 8652:1995/Amd 1:2007</td>
+        <td><span class="kw">Interfacce</span> (multiple inheritance of interfaces). Prefixed notation <code>Obj.Method</code>. <code>Ada.Containers</code> (Vectors, Maps, Sets). Access su subprograms migliorato. Limited aggregates. Nested generics semplificati.</td>
+      </tr>
+      <tr>
+        <td><span class="ver v12">Ada 2012</span></td>
+        <td>2012</td>
+        <td>ISO/IEC 8652:2012</td>
+        <td><span class="kw">Design by Contract</span>: Pre, Post, Type_Invariant come aspect. Expression functions. Conditional/quantified expressions (<code>if</code>/<code>case</code> expressions, <code>for all</code>/<code>for some</code>). Flexible containers migliorati. Aspect specifications unificate.</td>
+      </tr>
+      <tr>
+        <td><span class="ver v22">Ada 2022</span></td>
+        <td>2023</td>
+        <td>ISO/IEC 8652:2023</td>
+        <td><span class="kw">Parallel blocks/loops</span>. Iteratori generalizzati e procedural iterators. Light-weight user-defined literals. Delta aggregates. Target name <code>@</code>. <code>'Reduce</code> attribute. Dichiarazione variabili in-place. Contratti rafforzati. Miglioramenti containers.</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <strong>Nota:</strong> Ada prende il nome da <span class="acc">Ada Lovelace</span>, considerata la prima programmatrice della storia.
+      Ogni revisione mantiene la retrocompatibilità: codice Ada 83 valido compila con un compilatore Ada 2022.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- STRUTTURA BASE                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-basics"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRUTTURA BASE</div>
+  <div class="section-body">
+    <p>Ogni programma Ada ha un <span class="acc">sottoprogramma principale</span> (procedura senza package obbligatorio).
+       Il linguaggio è <span class="safety">case-insensitive</span>. I statement terminano con <code>;</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">HELLO WORLD</div>
+<pre>
+<span class="kw">with</span> Ada.Text_IO;  <span class="cmt">-- importa il package di I/O testuale</span>
+
+<span class="kw">procedure</span> <span class="hd">Hello</span> <span class="kw">is</span>
+<span class="kw">begin</span>
+   Ada.Text_IO.Put_Line (<span class="str">"Hello, Ada World!"</span>);
+<span class="kw">end</span> Hello;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">STRUTTURA CON USE CLAUSE</div>
+<pre>
+<span class="kw">with</span> Ada.Text_IO;  <span class="kw">use</span> Ada.Text_IO;   <span class="cmt">-- rende visibili i nomi direttamente</span>
+<span class="kw">with</span> Ada.Integer_Text_IO; <span class="kw">use</span> Ada.Integer_Text_IO;
+
+<span class="kw">procedure</span> <span class="hd">Main</span> <span class="kw">is</span>
+   X : <span class="kw">Integer</span> := <span class="num">42</span>;
+<span class="kw">begin</span>
+   Put (<span class="str">"Valore: "</span>);
+   Put (X, Width =&gt; <span class="num">0</span>);   <span class="cmt">-- stampa senza padding</span>
+   New_Line;
+<span class="kw">end</span> Main;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">COMMENTI</div>
+<pre>
+<span class="cmt">-- Questo è un commento (unico stile: doppio trattino fino a fine riga)</span>
+<span class="cmt">-- Ada NON ha commenti multi-riga: si usano più righe con --</span>
+</pre>
+    </div>
+
+    <div class="note">
+      <strong>with</strong> importa un package (simile a <code>#include</code> in C).
+      <strong>use</strong> rende i nomi visibili senza qualifica (opzionale, preferire la qualifica per chiarezza).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- TIPI SCALARI                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-types"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TIPI SCALARI</div>
+  <div class="section-body">
+    <p>Ada ha un sistema di tipi <span class="safety">fortemente tipizzato</span>: non esistono conversioni implicite tra tipi diversi.</p>
+
+    <table>
+      <tr>
+        <th>Tipo</th><th>Descrizione</th><th>Esempio</th>
+      </tr>
+      <tr>
+        <td><code>Integer</code></td>
+        <td>Intero con segno (almeno 16 bit, tipicamente 32)</td>
+        <td><code>X : Integer := -42;</code></td>
+      </tr>
+      <tr>
+        <td><code>Natural</code></td>
+        <td>Subtype di Integer: 0 .. Integer'Last</td>
+        <td><code>N : Natural := 0;</code></td>
+      </tr>
+      <tr>
+        <td><code>Positive</code></td>
+        <td>Subtype di Integer: 1 .. Integer'Last</td>
+        <td><code>P : Positive := 1;</code></td>
+      </tr>
+      <tr>
+        <td><code>Float</code></td>
+        <td>Virgola mobile (almeno 6 cifre significative)</td>
+        <td><code>F : Float := 3.14;</code></td>
+      </tr>
+      <tr>
+        <td><code>Long_Float</code></td>
+        <td>Virgola mobile a doppia precisione</td>
+        <td><code>D : Long_Float := 3.14159_26535;</code></td>
+      </tr>
+      <tr>
+        <td><code>Character</code></td>
+        <td>Singolo carattere (Latin-1)</td>
+        <td><code>C : Character := 'A';</code></td>
+      </tr>
+      <tr>
+        <td><code>Wide_Character</code></td>
+        <td>Carattere Unicode BMP</td>
+        <td><code>W : Wide_Character := 'Ω';</code></td>
+      </tr>
+      <tr>
+        <td><code>Boolean</code></td>
+        <td>True / False</td>
+        <td><code>B : Boolean := True;</code></td>
+      </tr>
+      <tr>
+        <td><code>String</code></td>
+        <td>Array di Character a lunghezza fissa</td>
+        <td><code>S : String (1..5) := "Hello";</code></td>
+      </tr>
+      <tr>
+        <td><code>Duration</code></td>
+        <td>Tipo fixed-point per intervalli di tempo</td>
+        <td><code>D : Duration := 1.5;</code></td>
+      </tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">TIPI NUMERICI DEFINITI DALL'UTENTE</div>
+<pre>
+<span class="cmt">-- Tipo intero con range esplicito (il compilatore sceglie la rappresentazione)</span>
+<span class="kw">type</span> <span class="hd">Day_Number</span> <span class="kw">is range</span> <span class="num">1</span> .. <span class="num">31</span>;
+
+<span class="cmt">-- Tipo floating-point con precisione minima (cifre significative)</span>
+<span class="kw">type</span> <span class="hd">Velocity</span> <span class="kw">is digits</span> <span class="num">8</span>;               <span class="cmt">-- almeno 8 cifre</span>
+<span class="kw">type</span> <span class="hd">Probability</span> <span class="kw">is digits</span> <span class="num">6</span> <span class="kw">range</span> <span class="num">0.0</span> .. <span class="num">1.0</span>;
+
+<span class="cmt">-- Tipo fixed-point (aritmetica esatta, usato in sistemi finanziari/embedded)</span>
+<span class="kw">type</span> <span class="hd">Voltage</span> <span class="kw">is delta</span> <span class="num">0.001</span> <span class="kw">range</span> <span class="num">0.0</span> .. <span class="num">5.0</span>;       <span class="cmt">-- ordinary fixed</span>
+<span class="kw">type</span> <span class="hd">Money</span>   <span class="kw">is delta</span> <span class="num">0.01</span> <span class="kw">digits</span> <span class="num">12</span>;                 <span class="cmt">-- decimal fixed</span>
+
+<span class="cmt">-- Tipo modular (aritmetica unsigned con wrapping)</span>
+<span class="kw">type</span> <span class="hd">Byte</span>  <span class="kw">is mod</span> <span class="num">256</span>;          <span class="cmt">-- 0..255, overflow fa wrap</span>
+<span class="kw">type</span> <span class="hd">Word</span>  <span class="kw">is mod</span> <span class="num">2</span>**<span class="num">16</span>;       <span class="cmt">-- 0..65535</span>
+</pre>
+    </div>
+
+    <div class="note">
+      <strong>Safety:</strong> I range vengono verificati a runtime. Assegnare <code>32</code> a un <code>Day_Number</code> solleva
+      <code>Constraint_Error</code>. Questo previene intere classi di bug tipiche di C/C++.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- VARIABILI / COSTANTI                                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-vars"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> VARIABILI E COSTANTI</div>
+  <div class="section-body">
+<pre>
+<span class="kw">procedure</span> <span class="hd">Vars_Demo</span> <span class="kw">is</span>
+   <span class="cmt">-- Variabili (dichiarate nella parte dichiarativa, prima di begin)</span>
+   Count   : <span class="kw">Integer</span> := <span class="num">0</span>;              <span class="cmt">-- inizializzata</span>
+   Name    : <span class="kw">String</span> (<span class="num">1</span>..<span class="num">10</span>);            <span class="cmt">-- non inizializzata (attenzione!)</span>
+   Active  : <span class="kw">Boolean</span> := <span class="kw">False</span>;
+
+   <span class="cmt">-- Costanti (valore immutabile)</span>
+   Pi      : <span class="kw">constant</span> <span class="kw">Float</span>   := <span class="num">3.14159_26535</span>;
+   Max_Len : <span class="kw">constant</span> <span class="kw">Integer</span> := <span class="num">1024</span>;
+
+   <span class="cmt">-- Costante con tipo dedotto dal contesto (named number)</span>
+   Factor  : <span class="kw">constant</span> := <span class="num">2</span> * <span class="num">3</span>;        <span class="cmt">-- universal_integer, nessun tipo specifico</span>
+
+   <span class="cmt">-- Rinomina (alias, zero-cost)</span>
+   C : <span class="kw">Integer</span> <span class="kw">renames</span> Count;
+<span class="kw">begin</span>
+   C := C + <span class="num">1</span>;  <span class="cmt">-- modifica Count tramite alias</span>
+<span class="kw">end</span> Vars_Demo;
+</pre>
+
+    <div class="note">
+      <strong>Separatore numerico:</strong> L'underscore <code>_</code> è ammesso nei letterali numerici per leggibilità:
+      <code>1_000_000</code>, <code>3.14_159</code>, <code>16#FF_FF#</code>.
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BASI NUMERICHE</div>
+<pre>
+<span class="cmt">-- Letterali in base diversa: base#valore#</span>
+Hex  : <span class="kw">Integer</span> := <span class="num">16#FF#</span>;      <span class="cmt">-- 255 in esadecimale</span>
+Oct  : <span class="kw">Integer</span> := <span class="num">8#77#</span>;       <span class="cmt">-- 63 in ottale</span>
+Bin  : <span class="kw">Integer</span> := <span class="num">2#1010_0011#</span>; <span class="cmt">-- 163 in binario</span>
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OPERATORI                                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-operators"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OPERATORI</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">ARITMETICI</div>
+        <table>
+          <tr><th>Op</th><th>Significato</th></tr>
+          <tr><td><code>+</code> <code>-</code></td><td>Somma, sottrazione</td></tr>
+          <tr><td><code>*</code> <code>/</code></td><td>Moltiplicazione, divisione</td></tr>
+          <tr><td><code>mod</code></td><td>Modulo (segno del divisore)</td></tr>
+          <tr><td><code>rem</code></td><td>Resto (segno del dividendo)</td></tr>
+          <tr><td><code>**</code></td><td>Elevamento a potenza</td></tr>
+          <tr><td><code>abs</code></td><td>Valore assoluto</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="sub-title">RELAZIONALI / LOGICI</div>
+        <table>
+          <tr><th>Op</th><th>Significato</th></tr>
+          <tr><td><code>=</code> <code>/=</code></td><td>Uguale, diverso</td></tr>
+          <tr><td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td><td>Confronto</td></tr>
+          <tr><td><code>and</code> <code>or</code> <code>xor</code></td><td>Logici (booleani e bit-a-bit)</td></tr>
+          <tr><td><code>not</code></td><td>Negazione logica</td></tr>
+          <tr><td><code>and then</code></td><td>Short-circuit AND</td></tr>
+          <tr><td><code>or else</code></td><td>Short-circuit OR</td></tr>
+          <tr><td><code>&amp;</code></td><td>Concatenazione stringhe</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="warn">
+      <strong>Attenzione:</strong> <code>and</code>/<code>or</code> valutano ENTRAMBI gli operandi. Usare <code>and then</code>/<code>or else</code>
+      per la valutazione cortocircuitata (essenziale per guardie null-check).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- I/O                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-io"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> INPUT / OUTPUT</div>
+  <div class="section-body">
+<pre>
+<span class="kw">with</span> Ada.Text_IO;          <span class="kw">use</span> Ada.Text_IO;
+<span class="kw">with</span> Ada.Integer_Text_IO;  <span class="kw">use</span> Ada.Integer_Text_IO;
+<span class="kw">with</span> Ada.Float_Text_IO;    <span class="kw">use</span> Ada.Float_Text_IO;
+
+<span class="kw">procedure</span> <span class="hd">IO_Demo</span> <span class="kw">is</span>
+   N    : <span class="kw">Integer</span>;
+   Line : <span class="kw">String</span> (<span class="num">1</span>..<span class="num">80</span>);
+   Last : <span class="kw">Natural</span>;
+<span class="kw">begin</span>
+   <span class="cmt">-- Output</span>
+   Put (<span class="str">"Testo senza a-capo"</span>);
+   Put_Line (<span class="str">"Testo con a-capo"</span>);
+   New_Line;                          <span class="cmt">-- riga vuota</span>
+   Put (N, Width =&gt; <span class="num">5</span>);              <span class="cmt">-- intero con padding</span>
+   Put (<span class="num">3.14</span>, Fore =&gt; <span class="num">1</span>, Aft =&gt; <span class="num">2</span>, Exp =&gt; <span class="num">0</span>);  <span class="cmt">-- "3.14"</span>
+
+   <span class="cmt">-- Input</span>
+   Get (N);                           <span class="cmt">-- legge un intero</span>
+   Skip_Line;                         <span class="cmt">-- consuma il newline residuo</span>
+   Get_Line (Line, Last);             <span class="cmt">-- legge una riga, Last = ultimo carattere usato</span>
+   Put_Line (Line (<span class="num">1</span>..Last));         <span class="cmt">-- stampa solo la parte letta</span>
+<span class="kw">end</span> IO_Demo;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">PACKAGE I/O PRINCIPALI</div>
+      <table>
+        <tr><th>Package</th><th>Uso</th></tr>
+        <tr><td><code>Ada.Text_IO</code></td><td>Stringhe e caratteri</td></tr>
+        <tr><td><code>Ada.Integer_Text_IO</code></td><td>Integer standard</td></tr>
+        <tr><td><code>Ada.Float_Text_IO</code></td><td>Float standard</td></tr>
+        <tr><td><code>Ada.Text_IO.Unbounded_IO</code></td><td>Unbounded_String I/O</td></tr>
+        <tr><td><code>Ada.Sequential_IO</code></td><td>File binari sequenziali</td></tr>
+        <tr><td><code>Ada.Direct_IO</code></td><td>File binari ad accesso diretto</td></tr>
+        <tr><td><code>Ada.Streams.Stream_IO</code></td><td>I/O basato su stream</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- IF / ELSIF / ELSE                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-if"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> IF / ELSIF / ELSE</div>
+  <div class="section-body">
+<pre>
+<span class="kw">if</span> Temp &gt; <span class="num">100.0</span> <span class="kw">then</span>
+   Put_Line (<span class="str">"Ebollizione"</span>);
+<span class="kw">elsif</span> Temp &gt; <span class="num">0.0</span> <span class="kw">then</span>
+   Put_Line (<span class="str">"Liquido"</span>);
+<span class="kw">else</span>
+   Put_Line (<span class="str">"Ghiaccio"</span>);
+<span class="kw">end if</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">IF EXPRESSION (Ada 2012+)</div>
+<pre>
+<span class="cmt">-- Espressione condizionale (simile al ternario di C)</span>
+Status : <span class="kw">String</span> := (<span class="kw">if</span> Active <span class="kw">then</span> <span class="str">"ON "</span> <span class="kw">else</span> <span class="str">"OFF"</span>);
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CASE STATEMENT                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-case"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CASE STATEMENT</div>
+  <div class="section-body">
+<pre>
+<span class="kw">case</span> Day <span class="kw">is</span>
+   <span class="kw">when</span> Mon          =&gt; Put_Line (<span class="str">"Lunedì"</span>);
+   <span class="kw">when</span> Tue .. Thu   =&gt; Put_Line (<span class="str">"Infrasettimanale"</span>);
+   <span class="kw">when</span> Fri          =&gt; Put_Line (<span class="str">"Venerdì!"</span>);
+   <span class="kw">when</span> Sat | Sun    =&gt; Put_Line (<span class="str">"Weekend"</span>);
+<span class="kw">end case</span>;
+</pre>
+
+    <div class="note">
+      <strong>Safety:</strong> Il <code>case</code> deve coprire <span class="safety">TUTTI</span> i valori possibili del tipo.
+      Il compilatore genera un errore se manca un valore. Usa <code>when others =></code> come default obbligatorio
+      se non elenchi tutti i valori.
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CASE EXPRESSION (Ada 2012+)</div>
+<pre>
+Msg : <span class="kw">String</span> := (<span class="kw">case</span> Level <span class="kw">is</span>
+   <span class="kw">when</span> <span class="num">0</span>      =&gt; <span class="str">"Off"</span>,
+   <span class="kw">when</span> <span class="num">1</span>..<span class="num">5</span>  =&gt; <span class="str">"Low"</span>,
+   <span class="kw">when</span> <span class="kw">others</span> =&gt; <span class="str">"High"</span>);
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- LOOPS                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-loops"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LOOP / WHILE / FOR</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">LOOP INFINITO</div>
+<pre>
+<span class="kw">loop</span>
+   Do_Something;
+   <span class="kw">exit when</span> Done;  <span class="cmt">-- uscita condizionale</span>
+<span class="kw">end loop</span>;
+</pre>
+      </div>
+      <div>
+        <div class="sub-title">WHILE LOOP</div>
+<pre>
+<span class="kw">while</span> Count &lt; <span class="num">10</span> <span class="kw">loop</span>
+   Count := Count + <span class="num">1</span>;
+<span class="kw">end loop</span>;
+</pre>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div class="sub-title">FOR LOOP (CRESCENTE)</div>
+<pre>
+<span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span> .. <span class="num">10</span> <span class="kw">loop</span>
+   Put (I, Width =&gt; <span class="num">0</span>);
+<span class="kw">end loop</span>;
+<span class="cmt">-- I non è visibile fuori dal loop</span>
+</pre>
+      </div>
+      <div>
+        <div class="sub-title">FOR LOOP (DECRESCENTE)</div>
+<pre>
+<span class="kw">for</span> I <span class="kw">in reverse</span> <span class="num">1</span> .. <span class="num">10</span> <span class="kw">loop</span>
+   Put (I, Width =&gt; <span class="num">0</span>);
+<span class="kw">end loop</span>;
+</pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FOR SU TIPI DISCRETI</div>
+<pre>
+<span class="kw">type</span> <span class="hd">Color</span> <span class="kw">is</span> (Red, Green, Blue);
+
+<span class="kw">for</span> C <span class="kw">in</span> Color <span class="kw">loop</span>            <span class="cmt">-- itera su tutti i valori dell'enum</span>
+   Put_Line (Color'Image (C));   <span class="cmt">-- stampa "RED", "GREEN", "BLUE"</span>
+<span class="kw">end loop</span>;
+
+<span class="kw">for</span> C <span class="kw">in</span> Color'Range <span class="kw">loop</span>      <span class="cmt">-- equivalente</span>
+   <span class="kw">null</span>;
+<span class="kw">end loop</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LOOP CON LABEL E EXIT</div>
+<pre>
+<span class="lbl">Outer</span> :
+<span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span> .. <span class="num">10</span> <span class="kw">loop</span>
+   <span class="lbl">Inner</span> :
+   <span class="kw">for</span> J <span class="kw">in</span> <span class="num">1</span> .. <span class="num">10</span> <span class="kw">loop</span>
+      <span class="kw">exit</span> Outer <span class="kw">when</span> I * J &gt; <span class="num">50</span>;  <span class="cmt">-- esce dal loop esterno</span>
+   <span class="kw">end loop</span> Inner;
+<span class="kw">end loop</span> Outer;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PARALLEL LOOP (Ada 2022)</div>
+<pre>
+<span class="kw">parallel</span>
+<span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span> .. <span class="num">1000</span> <span class="kw">loop</span>
+   Result (I) := Compute (Data (I));  <span class="cmt">-- iterazioni indipendenti eseguite in parallelo</span>
+<span class="kw">end loop</span>;
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SUBTYPES                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-subtypes"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SUBTYPES — VINCOLI SENZA NUOVI TIPI</div>
+  <div class="section-body">
+    <p>Un <span class="acc">subtype</span> restringe il range di un tipo esistente <span class="safety">senza creare un tipo nuovo</span>.
+       Valori di un subtype e del tipo padre sono <strong>compatibili</strong> senza conversione.</p>
+<pre>
+<span class="kw">subtype</span> <span class="hd">Small_Int</span>  <span class="kw">is</span> <span class="kw">Integer</span> <span class="kw">range</span> <span class="num">-100</span> .. <span class="num">100</span>;
+<span class="kw">subtype</span> <span class="hd">Percentage</span> <span class="kw">is</span> <span class="kw">Integer</span> <span class="kw">range</span> <span class="num">0</span> .. <span class="num">100</span>;
+<span class="kw">subtype</span> <span class="hd">Upper_Char</span> <span class="kw">is</span> <span class="kw">Character</span> <span class="kw">range</span> <span class="str">'A'</span> .. <span class="str">'Z'</span>;
+
+A : Small_Int  := <span class="num">50</span>;
+B : <span class="kw">Integer</span>    := A;      <span class="cmt">-- OK: compatibili (stesso tipo base)</span>
+C : Percentage := A;      <span class="cmt">-- OK a compile-time, check a runtime (50 è nel range)</span>
+</pre>
+
+    <div class="note">
+      <strong>Perché sono fondamentali:</strong> I subtypes documentano le <span class="safety">invarianti</span> nel tipo stesso.
+      Un parametro <code>Percentage</code> non può MAI contenere 101: il runtime lo garantisce con <code>Constraint_Error</code>.
+      Questo elimina interi bug di validazione rispetto a un semplice <code>int</code>.
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">SUBTYPES PREDEFINITI</div>
+<pre>
+<span class="cmt">-- Già definiti nello standard:</span>
+<span class="kw">subtype</span> Natural  <span class="kw">is</span> Integer <span class="kw">range</span> <span class="num">0</span> .. Integer'Last;
+<span class="kw">subtype</span> Positive <span class="kw">is</span> Integer <span class="kw">range</span> <span class="num">1</span> .. Integer'Last;
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- DERIVED TYPES                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-derived"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> DERIVED TYPES — SICUREZZA PER INCOMPATIBILITÀ</div>
+  <div class="section-body">
+    <p>Un <span class="acc">derived type</span> crea un <span class="safety">tipo completamente nuovo</span>. Valori del tipo derivato e del padre
+       sono <strong>incompatibili</strong>: servono conversioni esplicite. Questo previene errori di confusione tra unità di misura.</p>
+<pre>
+<span class="kw">type</span> <span class="hd">Meters</span>  <span class="kw">is new</span> <span class="kw">Float</span>;
+<span class="kw">type</span> <span class="hd">Seconds</span> <span class="kw">is new</span> <span class="kw">Float</span>;
+<span class="kw">type</span> <span class="hd">MPS</span>     <span class="kw">is new</span> <span class="kw">Float</span>;     <span class="cmt">-- metri al secondo</span>
+
+<span class="kw">function</span> <span class="hd">Speed</span> (D : Meters; T : Seconds) <span class="kw">return</span> MPS <span class="kw">is</span>
+<span class="kw">begin</span>
+   <span class="kw">return</span> MPS (Float (D) / Float (T));  <span class="cmt">-- conversioni esplicite obbligatorie</span>
+<span class="kw">end</span> Speed;
+
+Distance : Meters  := <span class="num">100.0</span>;
+Time     : Seconds := <span class="num">9.58</span>;
+V        : MPS     := Speed (Distance, Time);  <span class="cmt">-- OK</span>
+<span class="cmt">-- V := Distance;  -- ERRORE di compilazione! Meters /= MPS</span>
+</pre>
+
+    <div class="note">
+      <strong>Il caso Mars Climate Orbiter (1999):</strong> La sonda si schiantò perché un componente software usava
+      <span class="acc">libbre-forza·secondo</span> e un altro <span class="acc">newton·secondo</span>.
+      In Ada, <code>type Pounds is new Float;</code> e <code>type Newtons is new Float;</code> avrebbero reso
+      questa confusione un <span class="safety">errore di compilazione</span>.
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DERIVED CON RANGE</div>
+<pre>
+<span class="kw">type</span> <span class="hd">Temperature_C</span> <span class="kw">is new</span> <span class="kw">Float</span> <span class="kw">range</span> <span class="num">-273.15</span> .. <span class="num">1_000_000.0</span>;
+<span class="kw">type</span> <span class="hd">Temperature_K</span> <span class="kw">is new</span> <span class="kw">Float</span> <span class="kw">range</span> <span class="num">0.0</span> .. <span class="num">1_000_000.0</span>;
+<span class="cmt">-- Non puoi assegnare Celsius a Kelvin senza convertire esplicitamente</span>
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ENUMERAZIONI                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-enum"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ENUMERAZIONI</div>
+  <div class="section-body">
+<pre>
+<span class="kw">type</span> <span class="hd">Direction</span> <span class="kw">is</span> (North, South, East, West);
+<span class="kw">type</span> <span class="hd">Weekday</span>   <span class="kw">is</span> (Mon, Tue, Wed, Thu, Fri, Sat, Sun);
+<span class="kw">subtype</span> <span class="hd">Work_Day</span> <span class="kw">is</span> Weekday <span class="kw">range</span> Mon .. Fri;
+
+Dir : Direction := North;
+Dir := Direction'Succ (Dir);        <span class="cmt">-- South (successore)</span>
+Dir := Direction'Pred (Dir);        <span class="cmt">-- North (predecessore)</span>
+Put_Line (Direction'Image (Dir));   <span class="cmt">-- "NORTH" (stringa)</span>
+Dir := Direction'Value (<span class="str">"EAST"</span>);   <span class="cmt">-- parsing da stringa</span>
+N   := Direction'Pos (East);        <span class="cmt">-- 2 (posizione ordinale)</span>
+Dir := Direction'Val (<span class="num">3</span>);           <span class="cmt">-- West (valore da posizione)</span>
+</pre>
+
+    <div class="note">
+      <strong>Attributi utili:</strong> <code>'First</code>, <code>'Last</code>, <code>'Range</code>, <code>'Succ</code>, <code>'Pred</code>,
+      <code>'Pos</code>, <code>'Val</code>, <code>'Image</code>, <code>'Value</code>. Funzionano su tutti i tipi discreti.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ARRAY                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-arrays"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ARRAY</div>
+  <div class="section-body">
+<pre>
+<span class="cmt">-- Array a indice fisso (constrained)</span>
+<span class="kw">type</span> <span class="hd">Vector</span> <span class="kw">is array</span> (<span class="num">1</span> .. <span class="num">3</span>) <span class="kw">of</span> <span class="kw">Float</span>;
+V : Vector := (<span class="num">1.0</span>, <span class="num">2.0</span>, <span class="num">3.0</span>);
+
+<span class="cmt">-- Array a indice variabile (unconstrained)</span>
+<span class="kw">type</span> <span class="hd">Int_Array</span> <span class="kw">is array</span> (<span class="kw">Integer</span> <span class="kw">range</span> &lt;&gt;) <span class="kw">of</span> <span class="kw">Integer</span>;
+Data : Int_Array (<span class="num">1</span> .. <span class="num">100</span>) := (<span class="kw">others</span> =&gt; <span class="num">0</span>);  <span class="cmt">-- inizializza tutto a 0</span>
+
+<span class="cmt">-- Array indicizzato da enumerazione</span>
+<span class="kw">type</span> <span class="hd">Score_Table</span> <span class="kw">is array</span> (Weekday) <span class="kw">of</span> <span class="kw">Natural</span>;
+Scores : Score_Table := (Mon =&gt; <span class="num">10</span>, Fri =&gt; <span class="num">20</span>, <span class="kw">others</span> =&gt; <span class="num">0</span>);
+
+<span class="cmt">-- Array multidimensionale</span>
+<span class="kw">type</span> <span class="hd">Matrix</span> <span class="kw">is array</span> (<span class="kw">Positive</span> <span class="kw">range</span> &lt;&gt;, <span class="kw">Positive</span> <span class="kw">range</span> &lt;&gt;) <span class="kw">of</span> <span class="kw">Float</span>;
+M : Matrix (<span class="num">1</span>..<span class="num">3</span>, <span class="num">1</span>..<span class="num">3</span>) := (<span class="kw">others</span> =&gt; (<span class="kw">others</span> =&gt; <span class="num">0.0</span>));
+
+<span class="cmt">-- Slicing</span>
+Sub : Int_Array := Data (<span class="num">5</span> .. <span class="num">10</span>);   <span class="cmt">-- slice: copia elementi 5..10</span>
+</pre>
+
+    <div class="note">
+      <strong>Attributi array:</strong> <code>A'First</code>, <code>A'Last</code>, <code>A'Range</code>, <code>A'Length</code>.
+      Usali sempre nei loop: <code>for I in A'Range loop</code> — previene off-by-one.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- RECORD                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-records"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> RECORD</div>
+  <div class="section-body">
+<pre>
+<span class="kw">type</span> <span class="hd">Point</span> <span class="kw">is record</span>
+   X : <span class="kw">Float</span> := <span class="num">0.0</span>;    <span class="cmt">-- valore di default</span>
+   Y : <span class="kw">Float</span> := <span class="num">0.0</span>;
+<span class="kw">end record</span>;
+
+P1 : Point;                               <span class="cmt">-- (0.0, 0.0) per default</span>
+P2 : Point := (X =&gt; <span class="num">3.0</span>, Y =&gt; <span class="num">4.0</span>);    <span class="cmt">-- aggregate con nomi</span>
+P3 : Point := (<span class="num">1.0</span>, <span class="num">2.0</span>);               <span class="cmt">-- aggregate posizionale</span>
+
+P1.X := <span class="num">5.0</span>;   <span class="cmt">-- accesso ai campi con notazione punto</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">RECORD CON DISCRIMINANTE (VARIANT RECORD)</div>
+<pre>
+<span class="kw">type</span> <span class="hd">Shape_Kind</span> <span class="kw">is</span> (Circle, Rectangle);
+
+<span class="kw">type</span> <span class="hd">Shape</span> (Kind : Shape_Kind) <span class="kw">is record</span>
+   <span class="kw">case</span> Kind <span class="kw">is</span>
+      <span class="kw">when</span> Circle    =&gt; Radius : <span class="kw">Float</span>;
+      <span class="kw">when</span> Rectangle =&gt; Width, Height : <span class="kw">Float</span>;
+   <span class="kw">end case</span>;
+<span class="kw">end record</span>;
+
+S1 : Shape := (Kind =&gt; Circle,    Radius =&gt; <span class="num">5.0</span>);
+S2 : Shape := (Kind =&gt; Rectangle, Width =&gt; <span class="num">3.0</span>, Height =&gt; <span class="num">4.0</span>);
+<span class="cmt">-- S1.Width sarebbe Constraint_Error: il discriminante è Circle</span>
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ACCESS TYPES                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-access"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ACCESS TYPES (PUNTATORI)</div>
+  <div class="section-body">
+    <p>Ada chiama i puntatori <span class="acc">access types</span>. Sono fortemente tipizzati e di default inizializzati a <code>null</code>.</p>
+<pre>
+<span class="kw">type</span> <span class="hd">Int_Ptr</span> <span class="kw">is access</span> <span class="kw">Integer</span>;
+
+P : Int_Ptr;                      <span class="cmt">-- automaticamente null</span>
+P := <span class="kw">new</span> <span class="kw">Integer</span>'(<span class="num">42</span>);           <span class="cmt">-- allocazione su heap</span>
+Put (P.<span class="kw">all</span>, Width =&gt; <span class="num">0</span>);         <span class="cmt">-- dereference con .all → stampa 42</span>
+P.<span class="kw">all</span> := <span class="num">99</span>;                     <span class="cmt">-- modifica il valore puntato</span>
+
+<span class="cmt">-- Access a subprogram (function pointer)</span>
+<span class="kw">type</span> <span class="hd">Math_Func</span> <span class="kw">is access function</span> (X : <span class="kw">Float</span>) <span class="kw">return</span> <span class="kw">Float</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">DEALLOCAZIONE ESPLICITA</div>
+<pre>
+<span class="kw">with</span> Ada.Unchecked_Deallocation;
+
+<span class="kw">procedure</span> <span class="hd">Free</span> <span class="kw">is new</span> Ada.Unchecked_Deallocation
+   (Object =&gt; <span class="kw">Integer</span>, Name =&gt; Int_Ptr);
+<span class="cmt">-- Dopo: Free (P);  →  P diventa null</span>
+</pre>
+    </div>
+
+    <div class="warn">
+      <strong>Safety:</strong> Ada non ha aritmetica dei puntatori. L'accesso a <code>null</code> solleva
+      <code>Constraint_Error</code> (o <code>Program_Error</code>). Usare <code>not null access</code> per
+      forzare la non-nullità a livello di tipo.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PACKAGES                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-packages"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PACKAGE — SPECIFICA E BODY</div>
+  <div class="section-body">
+    <p>Il <span class="acc">package</span> è l'unità fondamentale di modularità in Ada. La <strong>specifica</strong> (.ads) dichiara l'interfaccia pubblica.
+       Il <strong>body</strong> (.adb) contiene l'implementazione.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="sub-title">SPECIFICA (stack.ads)</div>
+<pre>
+<span class="kw">package</span> <span class="hd">Stack</span> <span class="kw">is</span>
+   Max : <span class="kw">constant</span> := <span class="num">100</span>;
+
+   <span class="kw">procedure</span> Push (Val : <span class="kw">in</span> <span class="kw">Integer</span>);
+   <span class="kw">function</span>  Pop <span class="kw">return</span> <span class="kw">Integer</span>;
+   <span class="kw">function</span>  Is_Empty <span class="kw">return</span> <span class="kw">Boolean</span>;
+
+   Stack_Overflow  : <span class="kw">exception</span>;
+   Stack_Underflow : <span class="kw">exception</span>;
+<span class="kw">end</span> Stack;
+</pre>
+      </div>
+      <div>
+        <div class="sub-title">BODY (stack.adb)</div>
+<pre>
+<span class="kw">package body</span> <span class="hd">Stack</span> <span class="kw">is</span>
+   Data : <span class="kw">array</span> (<span class="num">1</span>..Max) <span class="kw">of</span> <span class="kw">Integer</span>;
+   Top  : <span class="kw">Natural</span> := <span class="num">0</span>;
+
+   <span class="kw">procedure</span> Push (Val : <span class="kw">in</span> <span class="kw">Integer</span>) <span class="kw">is</span>
+   <span class="kw">begin</span>
+      <span class="kw">if</span> Top = Max <span class="kw">then</span>
+         <span class="kw">raise</span> Stack_Overflow;
+      <span class="kw">end if</span>;
+      Top := Top + <span class="num">1</span>;
+      Data (Top) := Val;
+   <span class="kw">end</span> Push;
+
+   <span class="kw">function</span> Pop <span class="kw">return</span> <span class="kw">Integer</span> <span class="kw">is</span>
+      Val : <span class="kw">Integer</span>;
+   <span class="kw">begin</span>
+      <span class="kw">if</span> Top = <span class="num">0</span> <span class="kw">then</span>
+         <span class="kw">raise</span> Stack_Underflow;
+      <span class="kw">end if</span>;
+      Val := Data (Top);
+      Top := Top - <span class="num">1</span>;
+      <span class="kw">return</span> Val;
+   <span class="kw">end</span> Pop;
+
+   <span class="kw">function</span> Is_Empty <span class="kw">return</span> <span class="kw">Boolean</span> <span class="kw">is</span>
+      (Top = <span class="num">0</span>);
+<span class="kw">end</span> Stack;
+</pre>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Convenzione file GNAT:</strong> <code>package_name.ads</code> (specifica), <code>package_name.adb</code> (body).
+      Un file per unità di compilazione. Il compilatore impone la corrispondenza nomi.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- VISIBILITÀ                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-visibility"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> VISIBILITÀ — PRIVATE / LIMITED</div>
+  <div class="section-body">
+<pre>
+<span class="kw">package</span> <span class="hd">Sensor</span> <span class="kw">is</span>
+   <span class="cmt">-- Parte PUBBLICA: visibile ai client</span>
+   <span class="kw">type</span> <span class="hd">Reading</span> <span class="kw">is private</span>;             <span class="cmt">-- tipo opaco</span>
+   <span class="kw">type</span> <span class="hd">Handle</span>  <span class="kw">is limited private</span>;     <span class="cmt">-- opaco + no copia/confronto</span>
+
+   <span class="kw">function</span> Get_Value (R : Reading) <span class="kw">return</span> <span class="kw">Float</span>;
+   <span class="kw">function</span> Create (Id : <span class="kw">Positive</span>) <span class="kw">return</span> Handle;
+
+<span class="kw">private</span>
+   <span class="cmt">-- Parte PRIVATA: completamento del tipo, non visibile ai client</span>
+   <span class="kw">type</span> <span class="hd">Reading</span> <span class="kw">is record</span>
+      Value     : <span class="kw">Float</span> := <span class="num">0.0</span>;
+      Timestamp : <span class="kw">Duration</span> := <span class="num">0.0</span>;
+   <span class="kw">end record</span>;
+
+   <span class="kw">type</span> <span class="hd">Handle</span> <span class="kw">is record</span>
+      Sensor_Id : <span class="kw">Positive</span>;
+      FD        : <span class="kw">Integer</span> := -<span class="num">1</span>;
+   <span class="kw">end record</span>;
+<span class="kw">end</span> Sensor;
+</pre>
+
+    <table>
+      <tr><th>Dichiarazione</th><th>Assegnamento</th><th>=, /=</th><th>Campi visibili</th></tr>
+      <tr><td><code>is private</code></td><td>Sì (:=)</td><td>Sì</td><td>No (solo nel body)</td></tr>
+      <tr><td><code>is limited private</code></td><td>No</td><td>No</td><td>No (solo nel body)</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>Child packages</strong> (Ada 95+) possono accedere alla parte private del genitore:
+      <code>package Sensor.Calibration is ...</code> vede i campi interni di <code>Sensor</code>.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- GENERICS                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-generics"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> GENERICS</div>
+  <div class="section-body">
+    <p>I generics Ada sono simili ai template C++ ma con <span class="safety">controllo formale</span>: il contratto
+       del parametro generico è verificato al punto di definizione, non solo all'istanziazione.</p>
+<pre>
+<span class="cmt">-- Procedura generica: scambia due valori di qualsiasi tipo</span>
+<span class="kw">generic</span>
+   <span class="kw">type</span> <span class="hd">Element</span> <span class="kw">is private</span>;   <span class="cmt">-- qualsiasi tipo con := e =</span>
+<span class="kw">procedure</span> <span class="hd">Generic_Swap</span> (A, B : <span class="kw">in out</span> Element);
+
+<span class="kw">procedure</span> Generic_Swap (A, B : <span class="kw">in out</span> Element) <span class="kw">is</span>
+   Tmp : Element := A;
+<span class="kw">begin</span>
+   A := B;
+   B := Tmp;
+<span class="kw">end</span> Generic_Swap;
+
+<span class="cmt">-- Istanziazione esplicita (nessuna deduzione implicita come in C++)</span>
+<span class="kw">procedure</span> Swap_Int   <span class="kw">is new</span> Generic_Swap (<span class="kw">Integer</span>);
+<span class="kw">procedure</span> Swap_Float <span class="kw">is new</span> Generic_Swap (<span class="kw">Float</span>);
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">PACKAGE GENERICO (STACK GENERICO)</div>
+<pre>
+<span class="kw">generic</span>
+   <span class="kw">type</span> <span class="hd">Item</span> <span class="kw">is private</span>;
+   Size : <span class="kw">Positive</span>;
+<span class="kw">package</span> <span class="hd">Generic_Stack</span> <span class="kw">is</span>
+   <span class="kw">procedure</span> Push (Val : Item);
+   <span class="kw">function</span>  Pop <span class="kw">return</span> Item;
+<span class="kw">end</span> Generic_Stack;
+
+<span class="cmt">-- Istanziazione</span>
+<span class="kw">package</span> Int_Stack  <span class="kw">is new</span> Generic_Stack (Item =&gt; <span class="kw">Integer</span>, Size =&gt; <span class="num">50</span>);
+<span class="kw">package</span> Char_Stack <span class="kw">is new</span> Generic_Stack (<span class="kw">Character</span>, <span class="num">256</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PARAMETRI FORMALI GENERICI</div>
+      <table>
+        <tr><th>Parametro Formale</th><th>Significato</th></tr>
+        <tr><td><code>type T is private</code></td><td>Qualsiasi tipo con := e =</td></tr>
+        <tr><td><code>type T is limited private</code></td><td>Qualsiasi tipo (anche senza := e =)</td></tr>
+        <tr><td><code>type T is (&lt;&gt;)</code></td><td>Tipo discreto (intero o enum)</td></tr>
+        <tr><td><code>type T is range &lt;&gt;</code></td><td>Tipo intero con segno</td></tr>
+        <tr><td><code>type T is mod &lt;&gt;</code></td><td>Tipo modular</td></tr>
+        <tr><td><code>type T is digits &lt;&gt;</code></td><td>Tipo floating-point</td></tr>
+        <tr><td><code>type T is delta &lt;&gt;</code></td><td>Tipo fixed-point</td></tr>
+        <tr><td><code>type T is tagged private</code></td><td>Tipo tagged (per OOP)</td></tr>
+        <tr><td><code>with function F (...) return T</code></td><td>Parametro funzione</td></tr>
+        <tr><td><code>with package P is new G (&lt;&gt;)</code></td><td>Parametro package istanziato</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SUBPROGRAMS                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-subprograms"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PROCEDURE E FUNCTION</div>
+  <div class="section-body">
+<pre>
+<span class="cmt">-- Procedura (nessun valore di ritorno)</span>
+<span class="kw">procedure</span> <span class="hd">Greet</span> (Name : <span class="kw">in</span> <span class="kw">String</span>) <span class="kw">is</span>
+<span class="kw">begin</span>
+   Put_Line (<span class="str">"Hello, "</span> &amp; Name &amp; <span class="str">"!"</span>);
+<span class="kw">end</span> Greet;
+
+<span class="cmt">-- Funzione (deve sempre ritornare un valore)</span>
+<span class="kw">function</span> <span class="hd">Max</span> (A, B : <span class="kw">Integer</span>) <span class="kw">return</span> <span class="kw">Integer</span> <span class="kw">is</span>
+   (<span class="kw">if</span> A &gt; B <span class="kw">then</span> A <span class="kw">else</span> B);   <span class="cmt">-- expression function (Ada 2012)</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">MODALITÀ DEI PARAMETRI</div>
+      <table>
+        <tr><th>Modo</th><th>Lettura</th><th>Scrittura</th><th>Uso tipico</th></tr>
+        <tr><td><code>in</code> (default)</td><td>Sì</td><td>No</td><td>Input sola lettura</td></tr>
+        <tr><td><code>out</code></td><td>No*</td><td>Sì</td><td>Output (valore di ritorno multiplo)</td></tr>
+        <tr><td><code>in out</code></td><td>Sì</td><td>Sì</td><td>Modifica in-place</td></tr>
+      </table>
+      <p>*In Ada 2012+ i parametri <code>out</code> possono avere valori di default e sono leggibili dopo la prima assegnazione.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PARAMETRI NAMED E DEFAULT</div>
+<pre>
+<span class="kw">procedure</span> <span class="hd">Log</span>
+   (Message : <span class="kw">String</span>;
+    Level   : <span class="kw">Natural</span> := <span class="num">0</span>;       <span class="cmt">-- valore di default</span>
+    To_File : <span class="kw">Boolean</span> := <span class="kw">False</span>) <span class="kw">is</span> ...
+
+<span class="cmt">-- Chiamate equivalenti:</span>
+Log (<span class="str">"test"</span>);
+Log (<span class="str">"test"</span>, Level =&gt; <span class="num">2</span>);
+Log (Message =&gt; <span class="str">"err"</span>, To_File =&gt; <span class="kw">True</span>, Level =&gt; <span class="num">3</span>);
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OVERLOADING                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-overload"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OVERLOADING</div>
+  <div class="section-body">
+    <p>Ada supporta overloading per <span class="acc">nome</span>, <span class="acc">tipo dei parametri</span> e <span class="acc">tipo di ritorno</span> (unico tra i linguaggi mainstream).</p>
+<pre>
+<span class="kw">function</span> <span class="hd">Convert</span> (X : <span class="kw">Integer</span>) <span class="kw">return</span> <span class="kw">Float</span>  <span class="kw">is</span> (<span class="kw">Float</span> (X));
+<span class="kw">function</span> <span class="hd">Convert</span> (X : <span class="kw">Float</span>)   <span class="kw">return</span> <span class="kw">Integer</span> <span class="kw">is</span> (<span class="kw">Integer</span> (X));
+<span class="kw">function</span> <span class="hd">Convert</span> (X : <span class="kw">Integer</span>) <span class="kw">return</span> <span class="kw">String</span>  <span class="kw">is</span> (Integer'Image (X));
+
+<span class="cmt">-- Overloading di operatori</span>
+<span class="kw">function</span> <span class="str">"+"</span> (A, B : Vector) <span class="kw">return</span> Vector <span class="kw">is</span>
+   ((A(<span class="num">1</span>)+B(<span class="num">1</span>), A(<span class="num">2</span>)+B(<span class="num">2</span>), A(<span class="num">3</span>)+B(<span class="num">3</span>)));
+</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- TAGGED TYPES (OOP)                                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-tagged"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TAGGED TYPES — OOP IN ADA</div>
+  <div class="section-body">
+    <p>Ada 95+ implementa l'OOP tramite <span class="acc">tagged types</span>: record con tag implicito che
+       identifica il tipo a runtime (simile alla vtable del C++).</p>
+<pre>
+<span class="kw">package</span> <span class="hd">Shapes</span> <span class="kw">is</span>
+   <span class="kw">type</span> <span class="hd">Shape</span> <span class="kw">is tagged record</span>
+      X, Y : <span class="kw">Float</span> := <span class="num">0.0</span>;    <span class="cmt">-- posizione</span>
+   <span class="kw">end record</span>;
+
+   <span class="kw">function</span> Area (S : Shape) <span class="kw">return</span> <span class="kw">Float</span>;          <span class="cmt">-- "metodo"</span>
+   <span class="kw">procedure</span> Move (S : <span class="kw">in out</span> Shape; DX, DY : <span class="kw">Float</span>);
+<span class="kw">end</span> Shapes;
+
+<span class="kw">package body</span> <span class="hd">Shapes</span> <span class="kw">is</span>
+   <span class="kw">function</span> Area (S : Shape) <span class="kw">return</span> <span class="kw">Float</span> <span class="kw">is</span> (<span class="num">0.0</span>);
+
+   <span class="kw">procedure</span> Move (S : <span class="kw">in out</span> Shape; DX, DY : <span class="kw">Float</span>) <span class="kw">is</span>
+   <span class="kw">begin</span>
+      S.X := S.X + DX;
+      S.Y := S.Y + DY;
+   <span class="kw">end</span> Move;
+<span class="kw">end</span> Shapes;
+</pre>
+
+    <div class="note">
+      <strong>Notazione Ada 2005+:</strong> Si può scrivere <code>S.Move (1.0, 2.0)</code> invece di <code>Move (S, 1.0, 2.0)</code>
+      — la prefixed notation rende il codice più leggibile in stile OOP.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- EREDITARIETÀ                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-inherit"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> EREDITARIETÀ</div>
+  <div class="section-body">
+<pre>
+<span class="kw">with</span> Shapes; <span class="kw">use</span> Shapes;
+
+<span class="kw">package</span> <span class="hd">Circles</span> <span class="kw">is</span>
+   <span class="kw">type</span> <span class="hd">Circle</span> <span class="kw">is new</span> Shape <span class="kw">with record</span>    <span class="cmt">-- estende Shape</span>
+      Radius : <span class="kw">Float</span> := <span class="num">1.0</span>;
+   <span class="kw">end record</span>;
+
+   <span class="cmt">-- Override del metodo Area</span>
+   <span class="kw">overriding</span>                                <span class="cmt">-- keyword opzionale ma raccomandata (Ada 2005)</span>
+   <span class="kw">function</span> Area (S : Circle) <span class="kw">return</span> <span class="kw">Float</span>;
+
+   <span class="cmt">-- Nuovo metodo (solo per Circle)</span>
+   <span class="kw">function</span> Circumference (S : Circle) <span class="kw">return</span> <span class="kw">Float</span>;
+<span class="kw">end</span> Circles;
+
+<span class="kw">package body</span> <span class="hd">Circles</span> <span class="kw">is</span>
+   Pi : <span class="kw">constant</span> := <span class="num">3.14159_26535</span>;
+
+   <span class="kw">function</span> Area (S : Circle) <span class="kw">return</span> <span class="kw">Float</span> <span class="kw">is</span>
+      (Pi * S.Radius ** <span class="num">2</span>);
+
+   <span class="kw">function</span> Circumference (S : Circle) <span class="kw">return</span> <span class="kw">Float</span> <span class="kw">is</span>
+      (<span class="num">2.0</span> * Pi * S.Radius);
+<span class="kw">end</span> Circles;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">TIPO ASTRATTO</div>
+<pre>
+<span class="kw">type</span> <span class="hd">Abstract_Shape</span> <span class="kw">is abstract tagged record</span>
+   X, Y : <span class="kw">Float</span>;
+<span class="kw">end record</span>;
+
+<span class="kw">function</span> Area (S : Abstract_Shape) <span class="kw">return</span> <span class="kw">Float</span> <span class="kw">is abstract</span>;
+<span class="cmt">-- Non si possono creare istanze di Abstract_Shape</span>
+<span class="cmt">-- Le sottoclassi DEVONO implementare Area</span>
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- POLIMORFISMO / DISPATCH                                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-dispatch"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> POLIMORFISMO — CLASS-WIDE E DISPATCHING</div>
+  <div class="section-body">
+<pre>
+<span class="kw">with</span> Shapes;  <span class="kw">use</span> Shapes;
+<span class="kw">with</span> Circles; <span class="kw">use</span> Circles;
+
+<span class="kw">procedure</span> <span class="hd">Poly_Demo</span> <span class="kw">is</span>
+
+   <span class="cmt">-- Shape'Class = tutti i tipi derivati da Shape (class-wide type)</span>
+   <span class="kw">procedure</span> Print_Area (S : Shape'Class) <span class="kw">is</span>
+   <span class="kw">begin</span>
+      <span class="cmt">-- Dispatching dinamico: chiama la versione corretta di Area</span>
+      Put_Line (<span class="str">"Area = "</span> &amp; Float'Image (S.Area));
+   <span class="kw">end</span> Print_Area;
+
+   S : Shape  := (X =&gt; <span class="num">0.0</span>, Y =&gt; <span class="num">0.0</span>);
+   C : Circle := (X =&gt; <span class="num">1.0</span>, Y =&gt; <span class="num">2.0</span>, Radius =&gt; <span class="num">5.0</span>);
+<span class="kw">begin</span>
+   Print_Area (S);   <span class="cmt">-- chiama Shape.Area   → 0.0</span>
+   Print_Area (C);   <span class="cmt">-- chiama Circle.Area  → 78.54</span>
+<span class="kw">end</span> Poly_Demo;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">ACCESSO CLASS-WIDE (PUNTATORI POLIMORFICI)</div>
+<pre>
+<span class="kw">type</span> <span class="hd">Shape_Access</span> <span class="kw">is access</span> Shape'Class;  <span class="cmt">-- punta a qualsiasi Shape o derivato</span>
+
+Ptr : Shape_Access := <span class="kw">new</span> Circle'(X =&gt; <span class="num">0.0</span>, Y =&gt; <span class="num">0.0</span>, Radius =&gt; <span class="num">3.0</span>);
+A   : <span class="kw">Float</span> := Ptr.Area;   <span class="cmt">-- dispatching dinamico tramite puntatore</span>
+</pre>
+    </div>
+
+    <div class="note">
+      <strong>Regola:</strong> In Ada il dispatch avviene solo su parametri di tipo <code>T'Class</code>.
+      Un parametro di tipo specifico <code>T</code> produce una chiamata <span class="safety">statica</span> (risolta a compile-time).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- INTERFACCE                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-interfaces"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> INTERFACCE (Ada 2005+)</div>
+  <div class="section-body">
+<pre>
+<span class="kw">package</span> <span class="hd">Drawable</span> <span class="kw">is</span>
+   <span class="kw">type</span> <span class="hd">Drawable_Interface</span> <span class="kw">is interface</span>;   <span class="cmt">-- nessun campo, solo operazioni</span>
+
+   <span class="kw">procedure</span> Draw (Self : Drawable_Interface) <span class="kw">is abstract</span>;
+<span class="kw">end</span> Drawable;
+
+<span class="kw">package</span> <span class="hd">Printable</span> <span class="kw">is</span>
+   <span class="kw">type</span> <span class="hd">Printable_Interface</span> <span class="kw">is interface</span>;
+
+   <span class="kw">function</span> To_String (Self : Printable_Interface) <span class="kw">return</span> <span class="kw">String</span> <span class="kw">is abstract</span>;
+<span class="kw">end</span> Printable;
+
+<span class="cmt">-- Ereditarietà multipla di interfacce + ereditarietà singola di tipo</span>
+<span class="kw">type</span> <span class="hd">Widget</span> <span class="kw">is new</span> Shape
+   <span class="kw">and</span> Drawable.Drawable_Interface
+   <span class="kw">and</span> Printable.Printable_Interface
+<span class="kw">with record</span>
+   Label : <span class="kw">String</span> (<span class="num">1</span>..<span class="num">20</span>);
+<span class="kw">end record</span>;
+
+<span class="cmt">-- Widget deve implementare Draw, To_String e (opzionalmente override) Area</span>
+</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- TASKING                                                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-tasks"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TASK — CONCORRENZA NATIVA</div>
+  <div class="section-body">
+    <p>Ada ha il supporto alla concorrenza <span class="acc">integrato nel linguaggio</span> (non in libreria).
+       I <span class="safety">task</span> sono thread leggeri gestiti dal runtime Ada.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="sub-title">TASK SEMPLICE (ANONIMO)</div>
+<pre>
+<span class="kw">procedure</span> <span class="hd">Task_Demo</span> <span class="kw">is</span>
+
+   <span class="kw">task</span> <span class="hd">Background</span>;
+   <span class="kw">task body</span> Background <span class="kw">is</span>
+   <span class="kw">begin</span>
+      <span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span>..<span class="num">5</span> <span class="kw">loop</span>
+         Put_Line (<span class="str">"BG: "</span> &amp;
+            Integer'Image (I));
+         <span class="kw">delay</span> <span class="num">1.0</span>;
+      <span class="kw">end loop</span>;
+   <span class="kw">end</span> Background;
+
+<span class="kw">begin</span>
+   <span class="cmt">-- Background parte automaticamente</span>
+   Put_Line (<span class="str">"Main attivo"</span>);
+   <span class="kw">delay</span> <span class="num">3.0</span>;
+   Put_Line (<span class="str">"Main finito"</span>);
+   <span class="cmt">-- attende la terminazione di</span>
+   <span class="cmt">-- Background prima di uscire</span>
+<span class="kw">end</span> Task_Demo;
+</pre>
+      </div>
+      <div>
+        <div class="sub-title">TASK TYPE (RIUTILIZZABILE)</div>
+<pre>
+<span class="kw">task type</span> <span class="hd">Worker</span> (Id : <span class="kw">Positive</span>);
+
+<span class="kw">task body</span> Worker <span class="kw">is</span>
+<span class="kw">begin</span>
+   Put_Line (<span class="str">"Worker"</span> &amp;
+      Positive'Image (Id) &amp;
+      <span class="str">" avviato"</span>);
+   <span class="kw">delay</span> <span class="num">2.0</span>;
+   Put_Line (<span class="str">"Worker"</span> &amp;
+      Positive'Image (Id) &amp;
+      <span class="str">" completato"</span>);
+<span class="kw">end</span> Worker;
+
+<span class="cmt">-- Crea 3 worker paralleli</span>
+W1 : Worker (<span class="num">1</span>);
+W2 : Worker (<span class="num">2</span>);
+W3 : Worker (<span class="num">3</span>);
+</pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DELAY E DELAY UNTIL</div>
+<pre>
+<span class="kw">delay</span> <span class="num">0.5</span>;                        <span class="cmt">-- pausa di almeno 0.5 secondi</span>
+
+<span class="kw">with</span> Ada.Real_Time; <span class="kw">use</span> Ada.Real_Time;
+Next : Time := Clock;
+<span class="kw">loop</span>
+   Do_Periodic_Work;
+   Next := Next + Milliseconds (<span class="num">100</span>);
+   <span class="kw">delay until</span> Next;                <span class="cmt">-- timing deterministico (no drift)</span>
+<span class="kw">end loop</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PARALLEL BLOCK (Ada 2022)</div>
+<pre>
+<span class="kw">parallel do</span>
+   Part_A := Compute_A (Data);
+<span class="kw">and</span>
+   Part_B := Compute_B (Data);
+<span class="kw">and</span>
+   Part_C := Compute_C (Data);
+<span class="kw">end do</span>;
+<span class="cmt">-- Tutte le sezioni eseguite in parallelo, si sincronizzano alla fine</span>
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PROTECTED OBJECTS                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-protected"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PROTECTED OBJECTS — ACCESSO CONCORRENTE SICURO</div>
+  <div class="section-body">
+    <p>I <span class="acc">protected objects</span> forniscono mutua esclusione e sincronizzazione
+       <span class="safety">senza lock espliciti</span> — il runtime garantisce le invarianti.</p>
+<pre>
+<span class="kw">protected type</span> <span class="hd">Shared_Counter</span> <span class="kw">is</span>
+   <span class="kw">procedure</span> Increment;          <span class="cmt">-- accesso esclusivo (read-write)</span>
+   <span class="kw">procedure</span> Decrement;
+   <span class="kw">function</span>  Value <span class="kw">return</span> <span class="kw">Integer</span>;  <span class="cmt">-- accesso concorrente (read-only)</span>
+
+   <span class="kw">entry</span> Wait_Until_Zero;        <span class="cmt">-- entry: blocca il chiamante finché la guardia è False</span>
+<span class="kw">private</span>
+   Count : <span class="kw">Integer</span> := <span class="num">0</span>;
+<span class="kw">end</span> Shared_Counter;
+
+<span class="kw">protected body</span> <span class="hd">Shared_Counter</span> <span class="kw">is</span>
+   <span class="kw">procedure</span> Increment <span class="kw">is</span>
+   <span class="kw">begin</span>
+      Count := Count + <span class="num">1</span>;
+   <span class="kw">end</span> Increment;
+
+   <span class="kw">procedure</span> Decrement <span class="kw">is</span>
+   <span class="kw">begin</span>
+      Count := Count - <span class="num">1</span>;
+   <span class="kw">end</span> Decrement;
+
+   <span class="kw">function</span> Value <span class="kw">return</span> <span class="kw">Integer</span> <span class="kw">is</span> (Count);
+
+   <span class="kw">entry</span> Wait_Until_Zero <span class="kw">when</span> Count = <span class="num">0</span> <span class="kw">is</span>  <span class="cmt">-- barrier/guardia</span>
+   <span class="kw">begin</span>
+      <span class="kw">null</span>;  <span class="cmt">-- si sblocca quando Count = 0</span>
+   <span class="kw">end</span> Wait_Until_Zero;
+<span class="kw">end</span> Shared_Counter;
+</pre>
+
+    <table>
+      <tr><th>Componente</th><th>Accesso</th><th>Semantica</th></tr>
+      <tr><td><code>function</code></td><td>Multipli lettori concorrenti</td><td>Read-only, nessuna modifica allo stato</td></tr>
+      <tr><td><code>procedure</code></td><td>Un solo writer alla volta</td><td>Read-write, mutua esclusione</td></tr>
+      <tr><td><code>entry</code></td><td>Come procedure + guardia booleana</td><td>Il chiamante si blocca se la guardia è False</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- RENDEZVOUS / SELECT                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-rendezvous"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> RENDEZVOUS E SELECT</div>
+  <div class="section-body">
+    <p>Il <span class="acc">rendezvous</span> è il meccanismo di comunicazione sincrona tra task:
+       il chiamante si blocca finché il task accettante non esegue l'<code>accept</code>.</p>
+<pre>
+<span class="kw">task</span> <span class="hd">Server</span> <span class="kw">is</span>
+   <span class="kw">entry</span> Request (Data : <span class="kw">in</span> <span class="kw">Integer</span>; Result : <span class="kw">out</span> <span class="kw">Integer</span>);
+   <span class="kw">entry</span> Shutdown;
+<span class="kw">end</span> Server;
+
+<span class="kw">task body</span> Server <span class="kw">is</span>
+   Running : <span class="kw">Boolean</span> := <span class="kw">True</span>;
+<span class="kw">begin</span>
+   <span class="kw">while</span> Running <span class="kw">loop</span>
+      <span class="kw">select</span>
+         <span class="kw">accept</span> Request (Data : <span class="kw">in</span> <span class="kw">Integer</span>; Result : <span class="kw">out</span> <span class="kw">Integer</span>) <span class="kw">do</span>
+            Result := Data * <span class="num">2</span>;     <span class="cmt">-- elaborazione sincrona</span>
+         <span class="kw">end</span> Request;
+      <span class="kw">or</span>
+         <span class="kw">accept</span> Shutdown;
+         Running := <span class="kw">False</span>;
+      <span class="kw">or</span>
+         <span class="kw">delay</span> <span class="num">5.0</span>;                <span class="cmt">-- timeout: nessuna richiesta in 5s</span>
+         Put_Line (<span class="str">"Timeout"</span>);
+      <span class="kw">end select</span>;
+   <span class="kw">end loop</span>;
+<span class="kw">end</span> Server;
+
+<span class="cmt">-- Uso dal chiamante:</span>
+R : <span class="kw">Integer</span>;
+Server.Request (<span class="num">21</span>, R);   <span class="cmt">-- R = 42 dopo il rendezvous</span>
+Server.Shutdown;
+</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CONTRACTS                                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-contracts"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> DESIGN BY CONTRACT (Ada 2012+)</div>
+  <div class="section-body">
+    <p>Ada 2012 introduce <span class="acc">aspect specifications</span> per precondizioni, postcondizioni
+       e invarianti di tipo — verificabili a runtime e/o staticamente con SPARK.</p>
+<pre>
+<span class="kw">function</span> <span class="hd">Divide</span> (A, B : <span class="kw">Float</span>) <span class="kw">return</span> <span class="kw">Float</span>
+   <span class="kw">with</span> Pre  =&gt; B /= <span class="num">0.0</span>,                <span class="cmt">-- precondizione: B non zero</span>
+        Post =&gt; Divide'Result * B = A;  <span class="cmt">-- postcondizione</span>
+
+<span class="kw">function</span> <span class="hd">Sqrt</span> (X : <span class="kw">Float</span>) <span class="kw">return</span> <span class="kw">Float</span>
+   <span class="kw">with</span> Pre  =&gt; X &gt;= <span class="num">0.0</span>,
+        Post =&gt; Sqrt'Result &gt;= <span class="num">0.0</span>
+                 <span class="kw">and then</span> <span class="kw">abs</span> (Sqrt'Result ** <span class="num">2</span> - X) &lt; <span class="num">1.0E-6</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">TYPE INVARIANT</div>
+<pre>
+<span class="kw">package</span> <span class="hd">Dates</span> <span class="kw">is</span>
+   <span class="kw">type</span> <span class="hd">Date</span> <span class="kw">is private</span>
+      <span class="kw">with</span> Type_Invariant =&gt; Is_Valid (Date);   <span class="cmt">-- verificato dopo ogni modifica pubblica</span>
+
+   <span class="kw">function</span> Is_Valid (D : Date) <span class="kw">return</span> <span class="kw">Boolean</span>;
+   <span class="kw">function</span> Create (Y, M, D : <span class="kw">Positive</span>) <span class="kw">return</span> Date;
+<span class="kw">private</span>
+   <span class="kw">type</span> Date <span class="kw">is record</span>
+      Year  : <span class="kw">Positive</span>;
+      Month : <span class="kw">Positive</span> <span class="kw">range</span> <span class="num">1</span> .. <span class="num">12</span>;
+      Day   : <span class="kw">Positive</span> <span class="kw">range</span> <span class="num">1</span> .. <span class="num">31</span>;
+   <span class="kw">end record</span>;
+<span class="kw">end</span> Dates;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">SUBTYPE PREDICATE (Ada 2012)</div>
+<pre>
+<span class="kw">subtype</span> <span class="hd">Even</span> <span class="kw">is</span> <span class="kw">Integer</span>
+   <span class="kw">with</span> Dynamic_Predicate =&gt; Even <span class="kw">mod</span> <span class="num">2</span> = <span class="num">0</span>;
+
+<span class="kw">subtype</span> <span class="hd">Prime</span> <span class="kw">is</span> <span class="kw">Positive</span>
+   <span class="kw">with</span> Dynamic_Predicate =&gt; Is_Prime (Prime);
+
+<span class="kw">subtype</span> <span class="hd">Weekday_Only</span> <span class="kw">is</span> Weekday
+   <span class="kw">with</span> Static_Predicate =&gt; Weekday_Only <span class="kw">in</span> Mon .. Fri;
+
+X : Even := <span class="num">4</span>;   <span class="cmt">-- OK</span>
+<span class="cmt">-- X := 3;        -- Assertion_Error a runtime!</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">QUANTIFIED EXPRESSIONS</div>
+<pre>
+<span class="cmt">-- "per tutti gli elementi..." / "esiste un elemento..."</span>
+All_Positive : <span class="kw">Boolean</span> := (<span class="kw">for all</span> I <span class="kw">in</span> Data'Range =&gt; Data (I) &gt; <span class="num">0</span>);
+Has_Zero     : <span class="kw">Boolean</span> := (<span class="kw">for some</span> I <span class="kw">in</span> Data'Range =&gt; Data (I) = <span class="num">0</span>);
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- EXCEPTION HANDLING                                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-exceptions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> EXCEPTION HANDLING</div>
+  <div class="section-body">
+<pre>
+<span class="kw">with</span> Ada.Text_IO;            <span class="kw">use</span> Ada.Text_IO;
+<span class="kw">with</span> Ada.Exceptions;         <span class="kw">use</span> Ada.Exceptions;
+<span class="kw">with</span> Ada.Integer_Text_IO;    <span class="kw">use</span> Ada.Integer_Text_IO;
+
+<span class="kw">procedure</span> <span class="hd">Exception_Demo</span> <span class="kw">is</span>
+   My_Error : <span class="kw">exception</span>;               <span class="cmt">-- dichiarazione eccezione custom</span>
+   N : <span class="kw">Integer</span>;
+<span class="kw">begin</span>
+   Put (<span class="str">"Inserisci un numero: "</span>);
+   Get (N);
+
+   <span class="kw">if</span> N &lt; <span class="num">0</span> <span class="kw">then</span>
+      <span class="kw">raise</span> My_Error <span class="kw">with</span> <span class="str">"Numero negativo non ammesso"</span>;
+   <span class="kw">end if</span>;
+
+   Put (N / (N - <span class="num">5</span>), Width =&gt; <span class="num">0</span>);     <span class="cmt">-- possibile divisione per zero</span>
+
+<span class="kw">exception</span>
+   <span class="kw">when</span> E : My_Error =&gt;
+      Put_Line (<span class="str">"Errore custom: "</span> &amp; Exception_Message (E));
+
+   <span class="kw">when</span> Constraint_Error =&gt;
+      Put_Line (<span class="str">"Errore: overflow, divisione per zero o range violato"</span>);
+
+   <span class="kw">when</span> Data_Error =&gt;
+      Put_Line (<span class="str">"Input non valido"</span>);
+
+   <span class="kw">when</span> E : <span class="kw">others</span> =&gt;
+      Put_Line (<span class="str">"Eccezione imprevista: "</span> &amp; Exception_Name (E));
+      Put_Line (Exception_Information (E));
+      <span class="kw">raise</span>;  <span class="cmt">-- ri-solleva l'eccezione</span>
+<span class="kw">end</span> Exception_Demo;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">ECCEZIONI PREDEFINITE</div>
+      <table>
+        <tr><th>Eccezione</th><th>Quando viene sollevata</th></tr>
+        <tr><td><code>Constraint_Error</code></td><td>Range violato, overflow, divisione per zero, accesso null, indice fuori bounds</td></tr>
+        <tr><td><code>Program_Error</code></td><td>Errori strutturali: funzione senza return, elaborazione errata, access before elab.</td></tr>
+        <tr><td><code>Storage_Error</code></td><td>Memoria esaurita (heap o stack overflow)</td></tr>
+        <tr><td><code>Tasking_Error</code></td><td>Errori di comunicazione tra task (task abortito durante rendezvous)</td></tr>
+        <tr><td><code>Data_Error</code></td><td>Input malformato durante I/O</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PRAGMA E ASPECT                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-pragmas"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PRAGMA E ASPECT</div>
+  <div class="section-body">
+    <p>I <span class="acc">pragma</span> sono direttive al compilatore (stile Ada 83–2005).
+       Gli <span class="acc">aspect</span> (Ada 2012+) sono la sintassi moderna e unificata per le stesse informazioni.</p>
+
+    <table>
+      <tr><th>Pragma (vecchio stile)</th><th>Aspect (Ada 2012+)</th><th>Significato</th></tr>
+      <tr><td><code>pragma Inline (F);</code></td><td><code>with Inline</code></td><td>Suggerisce inlining</td></tr>
+      <tr><td><code>pragma Pure (Pkg);</code></td><td><code>with Pure</code></td><td>Package senza stato (idempotente)</td></tr>
+      <tr><td><code>pragma Preelaborate;</code></td><td><code>with Preelaborate</code></td><td>Elaborazione prima dell'esecuzione</td></tr>
+      <tr><td><code>pragma Suppress (Range_Check);</code></td><td><code>with Suppress =&gt; ...</code></td><td>Disabilita check runtime (unsafe!)</td></tr>
+      <tr><td><code>pragma Convention (C, T);</code></td><td><code>with Convention =&gt; C</code></td><td>Calling convention C</td></tr>
+      <tr><td><code>pragma Import (C, F, "f");</code></td><td><code>with Import, Convention =&gt; C</code></td><td>Importa simbolo esterno</td></tr>
+      <tr><td><code>pragma Volatile (V);</code></td><td><code>with Volatile</code></td><td>Accesso memory-mapped</td></tr>
+      <tr><td><code>pragma Atomic (V);</code></td><td><code>with Atomic</code></td><td>Accesso atomico</td></tr>
+      <tr><td><code>pragma Pack (T);</code></td><td><code>with Pack</code></td><td>Compatta la rappresentazione</td></tr>
+      <tr><td>—</td><td><code>with Pre =&gt; ...</code></td><td>Precondizione (solo aspect)</td></tr>
+      <tr><td>—</td><td><code>with Post =&gt; ...</code></td><td>Postcondizione (solo aspect)</td></tr>
+      <tr><td>—</td><td><code>with Type_Invariant =&gt; ...</code></td><td>Invariante di tipo (solo aspect)</td></tr>
+      <tr><td><code>pragma Unreferenced (X);</code></td><td>—</td><td>Sopprime warning variabile non usata</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>SPARK:</strong> Con <code>pragma SPARK_Mode (On)</code> si abilita l'analisi formale SPARK,
+      che può dimostrare l'assenza di runtime errors <span class="safety">senza eseguire il codice</span>.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- REPRESENTATION CLAUSES                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-representation"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> REPRESENTATION CLAUSES</div>
+  <div class="section-body">
+    <p>Ada permette di controllare la <span class="acc">rappresentazione in memoria</span> a livello di bit,
+       essenziale per protocolli hardware e registri embedded.</p>
+<pre>
+<span class="cmt">-- Dimensione esplicita di un tipo</span>
+<span class="kw">type</span> <span class="hd">Status_Byte</span> <span class="kw">is mod</span> <span class="num">256</span>;
+<span class="kw">for</span> Status_Byte'Size <span class="kw">use</span> <span class="num">8</span>;     <span class="cmt">-- esattamente 8 bit</span>
+
+<span class="cmt">-- Enumerazione con valori di rappresentazione espliciti</span>
+<span class="kw">type</span> <span class="hd">Command</span> <span class="kw">is</span> (Reset, Start, Stop, Read_Data);
+<span class="kw">for</span> Command <span class="kw">use</span> (Reset =&gt; <span class="num">0</span>, Start =&gt; <span class="num">1</span>, Stop =&gt; <span class="num">2</span>, Read_Data =&gt; <span class="num">16#FF#</span>);
+
+<span class="cmt">-- Record layout a livello di bit (per registri hardware)</span>
+<span class="kw">type</span> <span class="hd">Control_Register</span> <span class="kw">is record</span>
+   Enable     : <span class="kw">Boolean</span>;
+   Mode       : <span class="kw">Integer</span> <span class="kw">range</span> <span class="num">0</span>..<span class="num">3</span>;
+   Reserved   : <span class="kw">Integer</span> <span class="kw">range</span> <span class="num">0</span>..<span class="num">0</span>;
+   Interrupt  : <span class="kw">Boolean</span>;
+   Data_Ready : <span class="kw">Boolean</span>;
+<span class="kw">end record</span>;
+
+<span class="kw">for</span> Control_Register <span class="kw">use record</span>
+   Enable     <span class="kw">at</span> <span class="num">0</span> <span class="kw">range</span> <span class="num">0</span> .. <span class="num">0</span>;   <span class="cmt">-- bit 0</span>
+   Mode       <span class="kw">at</span> <span class="num">0</span> <span class="kw">range</span> <span class="num">1</span> .. <span class="num">2</span>;   <span class="cmt">-- bit 1-2</span>
+   Reserved   <span class="kw">at</span> <span class="num">0</span> <span class="kw">range</span> <span class="num">3</span> .. <span class="num">4</span>;   <span class="cmt">-- bit 3-4</span>
+   Interrupt  <span class="kw">at</span> <span class="num">0</span> <span class="kw">range</span> <span class="num">5</span> .. <span class="num">5</span>;   <span class="cmt">-- bit 5</span>
+   Data_Ready <span class="kw">at</span> <span class="num">0</span> <span class="kw">range</span> <span class="num">6</span> .. <span class="num">6</span>;   <span class="cmt">-- bit 6</span>
+<span class="kw">end record</span>;
+<span class="kw">for</span> Control_Register'Size <span class="kw">use</span> <span class="num">8</span>;
+
+<span class="cmt">-- Indirizzo specifico (memory-mapped I/O)</span>
+Ctrl : Control_Register;
+<span class="kw">for</span> Ctrl'Address <span class="kw">use</span> System.Storage_Elements.To_Address (<span class="num">16#4000_0000#</span>);
+<span class="kw">pragma</span> Volatile (Ctrl);
+</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- LOW-LEVEL / INTERFACING                                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-lowlevel"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LOW-LEVEL &amp; INTERFACCIA CON C</div>
+  <div class="section-body">
+<pre>
+<span class="kw">with</span> Interfaces.C;       <span class="kw">use</span> Interfaces.C;
+<span class="kw">with</span> Interfaces.C.Strings;
+
+<span class="cmt">-- Importa funzione C</span>
+<span class="kw">function</span> <span class="hd">C_Strlen</span> (S : Interfaces.C.Strings.chars_ptr) <span class="kw">return</span> size_t
+   <span class="kw">with</span> Import =&gt; <span class="kw">True</span>,
+        Convention =&gt; C,
+        External_Name =&gt; <span class="str">"strlen"</span>;
+
+<span class="cmt">-- Esporta procedura Ada per chiamata da C</span>
+<span class="kw">procedure</span> <span class="hd">Ada_Callback</span> (Value : <span class="kw">in</span> int)
+   <span class="kw">with</span> Export =&gt; <span class="kw">True</span>,
+        Convention =&gt; C,
+        External_Name =&gt; <span class="str">"ada_callback"</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">TIPI C EQUIVALENTI (Interfaces.C)</div>
+      <table>
+        <tr><th>Ada (Interfaces.C)</th><th>C equivalente</th></tr>
+        <tr><td><code>int</code></td><td><code>int</code></td></tr>
+        <tr><td><code>unsigned</code></td><td><code>unsigned int</code></td></tr>
+        <tr><td><code>char</code></td><td><code>char</code></td></tr>
+        <tr><td><code>C_float</code></td><td><code>float</code></td></tr>
+        <tr><td><code>double</code></td><td><code>double</code></td></tr>
+        <tr><td><code>size_t</code></td><td><code>size_t</code></td></tr>
+        <tr><td><code>Strings.chars_ptr</code></td><td><code>char*</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">UNCHECKED OPERATIONS</div>
+<pre>
+<span class="cmt">-- Conversione di tipo unsafe (come reinterpret_cast in C++)</span>
+<span class="kw">with</span> Ada.Unchecked_Conversion;
+<span class="kw">function</span> <span class="hd">To_Byte</span> <span class="kw">is new</span> Ada.Unchecked_Conversion
+   (Source =&gt; <span class="kw">Character</span>, Target =&gt; Byte);
+
+<span class="cmt">-- Deallocazione manuale (free)</span>
+<span class="kw">with</span> Ada.Unchecked_Deallocation;
+<span class="kw">procedure</span> <span class="hd">Free</span> <span class="kw">is new</span> Ada.Unchecked_Deallocation (Node, Node_Ptr);
+</pre>
+    </div>
+
+    <div class="warn">
+      <strong>Attenzione:</strong> Le operazioni <code>Unchecked_*</code> bypassano il sistema dei tipi.
+      Usarle solo quando strettamente necessario e documentare il motivo.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- COMPILAZIONE                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-compile"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMPILAZIONE (GNAT / GCC)</div>
+  <div class="section-body">
+    <p><span class="acc">GNAT</span> (GNU Ada Translator) è il compilatore Ada open-source, parte di GCC.
+       <span class="acc">Alire</span> è il package manager moderno per l'ecosistema Ada/SPARK.</p>
+
+<pre>
+<span class="cmt"># ─── Compilazione diretta ──────────────────────────</span>
+<span class="lbl">$</span> gnatmake main.adb                 <span class="cmt"># compila + linka in un passo</span>
+<span class="lbl">$</span> gnatmake -O2 -gnatn main.adb      <span class="cmt"># ottimizzato + inlining</span>
+<span class="lbl">$</span> gnatmake -gnata main.adb          <span class="cmt"># abilita assertions (Pre/Post)</span>
+<span class="lbl">$</span> gnatmake -gnatwa main.adb         <span class="cmt"># tutti i warning attivi</span>
+<span class="lbl">$</span> gnatmake -gnatVa main.adb         <span class="cmt"># tutti i validity checks</span>
+
+<span class="cmt"># ─── Compilazione separata ────────────────────────</span>
+<span class="lbl">$</span> gcc -c stack.adb                   <span class="cmt"># compila solo il body (.o)</span>
+<span class="lbl">$</span> gcc -c main.adb
+<span class="lbl">$</span> gnatbind main.ali                  <span class="cmt"># risolve dipendenze</span>
+<span class="lbl">$</span> gnatlink main.ali                  <span class="cmt"># linka</span>
+
+<span class="cmt"># ─── Con GPRbuild (progetto complesso) ────────────</span>
+<span class="lbl">$</span> gprbuild -P myproject.gpr          <span class="cmt"># usa file di progetto GNAT</span>
+<span class="lbl">$</span> gprbuild -P myproject.gpr -Xmode=release
+
+<span class="cmt"># ─── Con Alire (package manager) ──────────────────</span>
+<span class="lbl">$</span> alr init my_project --bin          <span class="cmt"># crea progetto eseguibile</span>
+<span class="lbl">$</span> alr init my_lib --lib              <span class="cmt"># crea progetto libreria</span>
+<span class="lbl">$</span> alr build                          <span class="cmt"># compila</span>
+<span class="lbl">$</span> alr run                            <span class="cmt"># compila e esegui</span>
+<span class="lbl">$</span> alr with gnatcoll                  <span class="cmt"># aggiungi dipendenza</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">FLAG GNAT IMPORTANTI</div>
+      <table>
+        <tr><th>Flag</th><th>Significato</th></tr>
+        <tr><td><code>-gnata</code></td><td>Abilita assertions, Pre/Post, Type_Invariant</td></tr>
+        <tr><td><code>-gnatwa</code></td><td>Tutti i warning</td></tr>
+        <tr><td><code>-gnatwe</code></td><td>Warning come errori</td></tr>
+        <tr><td><code>-gnato</code></td><td>Overflow check (default in GNAT)</td></tr>
+        <tr><td><code>-gnatp</code></td><td>Sopprime TUTTI i check (pericoloso, solo produzione ottimizzata)</td></tr>
+        <tr><td><code>-gnatVa</code></td><td>Tutti i validity check</td></tr>
+        <tr><td><code>-gnatn</code></td><td>Abilita inlining inter-unità</td></tr>
+        <tr><td><code>-gnatl</code></td><td>Listing con codice sorgente</td></tr>
+        <tr><td><code>-gnatR</code></td><td>Mostra representation info (layout memoria)</td></tr>
+        <tr><td><code>-gnat2022</code></td><td>Attiva features Ada 2022</td></tr>
+        <tr><td><code>-gnat2012</code></td><td>Attiva features Ada 2012 (default in GNAT recenti)</td></tr>
+        <tr><td><code>-gnateDX=Y</code></td><td>Definisce simbolo preprocessore</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FILE DI PROGETTO (.gpr)</div>
+<pre>
+<span class="kw">project</span> <span class="hd">My_Project</span> <span class="kw">is</span>
+   <span class="kw">for</span> Source_Dirs <span class="kw">use</span> (<span class="str">"src"</span>);
+   <span class="kw">for</span> Object_Dir  <span class="kw">use</span> <span class="str">"obj"</span>;
+   <span class="kw">for</span> Main        <span class="kw">use</span> (<span class="str">"main.adb"</span>);
+
+   <span class="kw">package</span> <span class="hd">Compiler</span> <span class="kw">is</span>
+      <span class="kw">for</span> Default_Switches (<span class="str">"Ada"</span>) <span class="kw">use</span>
+         (<span class="str">"-gnatwa"</span>, <span class="str">"-gnata"</span>, <span class="str">"-O2"</span>, <span class="str">"-gnat2022"</span>);
+   <span class="kw">end</span> Compiler;
+<span class="kw">end</span> My_Project;
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ATTRIBUTI COMUNI                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-attributes"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ATTRIBUTI COMUNI</div>
+  <div class="section-body">
+    <p>Gli <span class="acc">attributi</span> (<code>'Attribute</code>) sono proprietà/operazioni predefinite su tipi e oggetti.</p>
+
+    <table>
+      <tr><th>Attributo</th><th>Si applica a</th><th>Risultato</th></tr>
+      <tr><td><code>T'First</code></td><td>Tipo scalare / Array</td><td>Primo valore / primo indice</td></tr>
+      <tr><td><code>T'Last</code></td><td>Tipo scalare / Array</td><td>Ultimo valore / ultimo indice</td></tr>
+      <tr><td><code>T'Range</code></td><td>Tipo scalare / Array</td><td>T'First .. T'Last</td></tr>
+      <tr><td><code>T'Length</code></td><td>Array</td><td>Numero di elementi</td></tr>
+      <tr><td><code>T'Image (V)</code></td><td>Tipo scalare</td><td>Conversione valore → String</td></tr>
+      <tr><td><code>T'Value (S)</code></td><td>Tipo scalare</td><td>Conversione String → valore</td></tr>
+      <tr><td><code>T'Succ (V)</code></td><td>Tipo discreto</td><td>Successore</td></tr>
+      <tr><td><code>T'Pred (V)</code></td><td>Tipo discreto</td><td>Predecessore</td></tr>
+      <tr><td><code>T'Pos (V)</code></td><td>Tipo discreto</td><td>Posizione ordinale</td></tr>
+      <tr><td><code>T'Val (N)</code></td><td>Tipo discreto</td><td>Valore dalla posizione</td></tr>
+      <tr><td><code>T'Size</code></td><td>Tipo / Oggetto</td><td>Dimensione in bit</td></tr>
+      <tr><td><code>T'Address</code></td><td>Oggetto</td><td>Indirizzo in memoria</td></tr>
+      <tr><td><code>T'Access</code></td><td>Oggetto (aliased)</td><td>Access value (puntatore)</td></tr>
+      <tr><td><code>T'Min (A,B)</code></td><td>Tipo scalare</td><td>Minimo tra A e B</td></tr>
+      <tr><td><code>T'Max (A,B)</code></td><td>Tipo scalare</td><td>Massimo tra A e B</td></tr>
+      <tr><td><code>T'Digits</code></td><td>Floating-point</td><td>Cifre di precisione</td></tr>
+      <tr><td><code>T'Modulus</code></td><td>Tipo modular</td><td>Valore del modulo</td></tr>
+      <tr><td><code>T'Reduce</code></td><td>Array/Iterabile (2022)</td><td>Riduzione (fold)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- STANDARD PACKAGES                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stdlib"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STANDARD LIBRARY — PACKAGE PRINCIPALI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Package</th><th>Contenuto</th><th>Da</th></tr>
+      <tr><td><code>Ada.Text_IO</code></td><td>I/O testuale (Put, Get, file)</td><td>83</td></tr>
+      <tr><td><code>Ada.Strings.Unbounded</code></td><td>Stringhe a lunghezza variabile</td><td>95</td></tr>
+      <tr><td><code>Ada.Strings.Fixed</code></td><td>Operazioni su String a lunghezza fissa</td><td>95</td></tr>
+      <tr><td><code>Ada.Strings.Maps</code></td><td>Character mapping e set</td><td>95</td></tr>
+      <tr><td><code>Ada.Numerics.Elementary_Functions</code></td><td>Sin, Cos, Sqrt, Log, Exp...</td><td>95</td></tr>
+      <tr><td><code>Ada.Numerics.Float_Random</code></td><td>Generatore numeri casuali Float</td><td>95</td></tr>
+      <tr><td><code>Ada.Numerics.Discrete_Random</code></td><td>Generatore numeri casuali discreti</td><td>95</td></tr>
+      <tr><td><code>Ada.Calendar</code></td><td>Data e ora</td><td>83</td></tr>
+      <tr><td><code>Ada.Real_Time</code></td><td>Orologio monotono ad alta risoluzione</td><td>95</td></tr>
+      <tr><td><code>Ada.Containers.Vectors</code></td><td>Array dinamico (come std::vector)</td><td>2005</td></tr>
+      <tr><td><code>Ada.Containers.Doubly_Linked_Lists</code></td><td>Lista bidirezionale</td><td>2005</td></tr>
+      <tr><td><code>Ada.Containers.Hashed_Maps</code></td><td>HashMap (come unordered_map)</td><td>2005</td></tr>
+      <tr><td><code>Ada.Containers.Ordered_Maps</code></td><td>Map ordinata (come std::map)</td><td>2005</td></tr>
+      <tr><td><code>Ada.Containers.Hashed_Sets</code></td><td>HashSet</td><td>2005</td></tr>
+      <tr><td><code>Ada.Containers.Ordered_Sets</code></td><td>Set ordinato</td><td>2005</td></tr>
+      <tr><td><code>Ada.Directories</code></td><td>Navigazione filesystem</td><td>2005</td></tr>
+      <tr><td><code>Ada.Environment_Variables</code></td><td>Variabili d'ambiente</td><td>2005</td></tr>
+      <tr><td><code>Ada.Command_Line</code></td><td>Argomenti da riga di comando</td><td>95</td></tr>
+      <tr><td><code>Ada.Exceptions</code></td><td>Info su eccezioni (nome, messaggio)</td><td>95</td></tr>
+      <tr><td><code>Ada.Streams</code></td><td>Streaming di dati</td><td>95</td></tr>
+      <tr><td><code>Interfaces</code></td><td>Tipi C, COBOL, Fortran</td><td>95</td></tr>
+      <tr><td><code>System</code></td><td>Info sistema, Address, Storage_Elements</td><td>83</td></tr>
+      <tr><td><code>GNAT.Sockets</code></td><td>Networking TCP/UDP (GNAT-specifico)</td><td>—</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SPARK                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-spark"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SPARK — VERIFICA FORMALE</div>
+  <div class="section-body">
+    <p><span class="acc">SPARK</span> è un sottoinsieme verificabile di Ada. Con gli strumenti GNATprove,
+       si può <span class="safety">provare matematicamente</span> l'assenza di runtime errors (overflow, divisione per zero, bounds check).</p>
+<pre>
+<span class="kw">package</span> <span class="hd">Safe_Math</span>
+   <span class="kw">with</span> SPARK_Mode =&gt; On
+<span class="kw">is</span>
+   <span class="kw">function</span> Safe_Add (A, B : <span class="kw">Integer</span>) <span class="kw">return</span> <span class="kw">Integer</span>
+      <span class="kw">with</span> Pre  =&gt; (A &gt;= <span class="num">0</span> <span class="kw">and then</span> B &gt;= <span class="num">0</span>
+                    <span class="kw">and then</span> A &lt;= Integer'Last - B),
+           Post =&gt; Safe_Add'Result = A + B;
+
+   <span class="kw">function</span> Abs_Value (X : <span class="kw">Integer</span>) <span class="kw">return</span> <span class="kw">Natural</span>
+      <span class="kw">with</span> Pre  =&gt; X &gt; Integer'First,   <span class="cmt">-- evita overflow di abs(Integer'First)</span>
+           Post =&gt; (<span class="kw">if</span> X &gt;= <span class="num">0</span> <span class="kw">then</span> Abs_Value'Result = X
+                     <span class="kw">else</span> Abs_Value'Result = -X);
+<span class="kw">end</span> Safe_Math;
+</pre>
+<pre>
+<span class="cmt"># Verifica formale</span>
+<span class="lbl">$</span> gnatprove -P myproject.gpr --level=2
+<span class="cmt"># Se tutte le prove passano → assenza GARANTITA di runtime errors nel codice SPARK</span>
+</pre>
+
+    <div class="note">
+      <strong>SPARK è usato in:</strong> avionics (DO-178C Level A), ferroviario (EN 50128 SIL4),
+      nucleare, automotive, difesa. Quando il software <span class="safety">non può fallire</span>.
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ─── SCROLL HIGHLIGHT ──────────────────────────────────────────── -->
+<script>
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
