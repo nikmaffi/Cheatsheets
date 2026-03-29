@@ -1,0 +1,2805 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pascal CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #080a04;
+    --bg2:       #0a0e06;
+    --panel:     #0e1408;
+    --panel2:    #12180c;
+    --border:    #1c2a14;
+    --border2:   #305020;
+    --glow:      #44cc44;
+    --glow2:     #66ff66;
+    --glow-dim:  #0a2b0a;
+    --dim:       #305030;
+    --text:      #a0c8a0;
+    --text2:     #c0e8c0;
+    --bright:    #c0ffc0;
+    --accent:    #33aa33;
+    --accent2:   #55cc55;
+    --key:       #55aa55;
+    --kw:        #44cc44;
+    --fn:        #66ccaa;
+    --str:       #cccc66;
+    --num:       #dd8844;
+    --cmt:       #447744;
+    --type:      #cc77dd;
+    --dir:       #ddaa44;
+    --lbl:       #88ddaa;
+    --head:      #c0ffc0;
+    --hr:        #1c2a14;
+    --scan:      rgba(68,204,68,0.02);
+    --vignette:          rgba(0,10,0,0.7);
+    --header-top:        #0a1408;
+    --header-shadow:     rgba(68,204,68,0.15);
+    --sidebar-hover-bg:  rgba(68,204,68,0.08);
+    --section-shadow:    rgba(20,60,20,0.5);
+    --th-bg:             rgba(68,204,68,0.12);
+    --tr-even-bg:        rgba(10,30,10,0.3);
+    --tr-hover-bg:       rgba(68,204,68,0.06);
+    --note-bg:           rgba(68,204,68,0.08);
+  }
+
+  .fn   { color: var(--fn);  }
+  .type { color: var(--type); }
+  .dir  { color: var(--dir); }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; PASCAL REFERENCE MANUAL <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>Free Pascal Compiler 3.2+ &mdash; Lazarus IDE</span> &mdash; v2.1</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Introduzione</div>
+    <a href="#s-history">Versioni &amp; Dialetti</a>
+    <a href="#s-compile">Compilazione</a>
+    <a href="#s-structure">Struttura Programma</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-types">Tipi di Dato</a>
+    <a href="#s-constants">Costanti &amp; Variabili</a>
+    <a href="#s-operators">Operatori</a>
+    <a href="#s-cast">Conversioni di Tipo</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Controllo di Flusso</div>
+    <a href="#s-branch">Selezione (If / Case)</a>
+    <a href="#s-loops">Iterazione</a>
+    <a href="#s-jump">Salti &amp; Controllo</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Strutture Dati</div>
+    <a href="#s-arrays">Array</a>
+    <a href="#s-records">Record</a>
+    <a href="#s-strings">Stringhe</a>
+    <a href="#s-enum">Enum &amp; Set</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Procedure &amp; Funzioni</div>
+    <a href="#s-functions">Dichiarazione</a>
+    <a href="#s-params">Passaggio Parametri</a>
+    <a href="#s-overload">Overloading &amp; Default</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Puntatori &amp; Memoria</div>
+    <a href="#s-pointers">Puntatori</a>
+    <a href="#s-dynmem">Allocazione Dinamica</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">OOP</div>
+    <a href="#s-object-vs-class">Object vs Class</a>
+    <a href="#s-classes">Classi</a>
+    <a href="#s-inherit">Ereditariet&agrave;</a>
+    <a href="#s-interfaces">Interfacce</a>
+    <a href="#s-generics">Generics</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">I/O &amp; File</div>
+    <a href="#s-stdio">I/O Standard</a>
+    <a href="#s-fileio">I/O su File</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-units">Unit</a>
+    <a href="#s-exceptions">Eccezioni</a>
+    <a href="#s-preprocessor">Direttive Compilatore</a>
+    <a href="#s-idioms">Idiomi &amp; Tips</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════════
+     VERSIONI & DIALETTI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-history"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> VERSIONI &amp; DIALETTI</div>
+  <div class="section-body">
+
+    <p>Pascal fu creato nel 1970 da <strong>Niklaus Wirth</strong> come linguaggio didattico per insegnare la programmazione strutturata. Da allora si &egrave; evoluto in molteplici dialetti, alcuni dei quali sono diventati strumenti professionali per lo sviluppo di applicazioni reali.</p>
+
+    <div class="sub">
+      <div class="sub-title">Standard Pascal (Wirth, 1970)</div>
+      <p>Versione originale definita dallo standard ISO 7185. Linguaggio minimale, fortemente tipizzato, senza unit, senza OOP, senza stringhe dinamiche. Le stringhe sono array di char a lunghezza fissa. Oggi usato solo a scopo didattico/storico.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Turbo Pascal (Borland, 1983-1998)</div>
+      <p>Estensione commerciale di Borland che introdusse: compilazione rapidissima, unit (moduli), tipo <code>string</code> con lunghezza fino a 255 char, accesso diretto alla memoria e porte I/O, inline assembly, e un IDE integrato. Le versioni 5.5+ aggiunsero un sistema OOP basato su <code>object</code>. Turbo Pascal domin&ograve; la programmazione DOS negli anni '80-'90.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Object Pascal / Delphi (Borland/Embarcadero, 1995-oggi)</div>
+      <p>Evoluzione radicale di Turbo Pascal. Introduce classi basate su <code>TObject</code>, ereditariet&agrave; singola, interfacce, eccezioni try/except, gestione automatica della memoria con reference counting per interfacce e stringhe, RTTI, Generics (Delphi 2009+), e il framework VCL/FMX per GUI. Oggi mantenuto da Embarcadero come prodotto commerciale. Compila per Windows, macOS, Linux, iOS, Android.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Free Pascal (FPC) &amp; Lazarus</div>
+      <div class="note">
+        <strong>NOTA:</strong> Questa cheatsheet si basa principalmente su <strong>Free Pascal (FPC 3.2+)</strong> con l'IDE <strong>Lazarus</strong>. Gli esempi usano la modalit&agrave; <code>{$mode objfpc}</code> o <code>{$mode delphi}</code> salvo dove specificato.
+      </div>
+      <p><strong>Free Pascal (FPC)</strong> &egrave; un compilatore open-source, multipiattaforma (Windows, Linux, macOS, ARM, ecc.) altamente compatibile con Turbo Pascal e Delphi. Supporta:</p>
+      <table>
+        <tr><th>Feature</th><th>Supporto FPC</th></tr>
+        <tr><td>Modalit&agrave; compatibilit&agrave;</td><td><code>{$mode tp}</code>, <code>{$mode delphi}</code>, <code>{$mode objfpc}</code>, <code>{$mode fpc}</code></td></tr>
+        <tr><td>Stringhe moderne</td><td><code>AnsiString</code> (lunghezza illimitata, reference counted), <code>UnicodeString</code></td></tr>
+        <tr><td>OOP completo</td><td>Classi, ereditariet&agrave;, interfacce, generics</td></tr>
+        <tr><td>Eccezioni</td><td><code>try..except..finally</code></td></tr>
+        <tr><td>Array dinamici</td><td>Supporto nativo con <code>SetLength</code></td></tr>
+        <tr><td>Overloading</td><td>Procedure, funzioni e operatori</td></tr>
+        <tr><td>Target</td><td>x86, x86_64, ARM, AArch64, MIPS, PowerPC, RISC-V, WebAssembly</td></tr>
+      </table>
+      <p><strong>Lazarus</strong> &egrave; l'IDE visuale (simile a Delphi) basato su FPC. Fornisce il framework <strong>LCL</strong> (Lazarus Component Library) per creare applicazioni GUI cross-platform.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Altri Dialetti</div>
+      <table>
+        <tr><th>Dialetto</th><th>Note</th></tr>
+        <tr><td>Extended Pascal (ISO 10206)</td><td>Estensione dello standard con moduli, stringhe variabili, schemi. Poco usato.</td></tr>
+        <tr><td>GNU Pascal (GPC)</td><td>Frontend Pascal per GCC. Supporta ISO 7185/10206. Progetto inattivo.</td></tr>
+        <tr><td>PascalABC.NET</td><td>Pascal moderno per .NET. Pensato per la didattica, supporto lambda, LINQ-like, generics.</td></tr>
+        <tr><td>Oxygene (RemObjects)</td><td>Object Pascal per .NET/JVM/Cocoa/WebAssembly. Commerciale.</td></tr>
+        <tr><td>Virtual Pascal</td><td>Clone di Borland Pascal per OS/2 e Win32. Abbandonato.</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     COMPILAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-compile"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMPILAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Free Pascal &mdash; Compilazione da Riga di Comando</div>
+<pre>
+<span class="cmt">{ Compilazione base }</span>
+<span class="fn">fpc</span> programma.pas                    <span class="cmt">{ produce eseguibile 'programma' }</span>
+
+<span class="cmt">{ Con modalit&agrave; Delphi e ottimizzazioni }</span>
+<span class="fn">fpc</span> <span class="str">-Mdelphi</span> <span class="str">-O2</span> programma.pas
+
+<span class="cmt">{ Con modalit&agrave; ObjFPC (raccomandato per FPC) }</span>
+<span class="fn">fpc</span> <span class="str">-Mobjfpc</span> <span class="str">-Sh</span> programma.pas       <span class="cmt">{ -Sh abilita AnsiString di default }</span>
+
+<span class="cmt">{ Debug: include simboli per GDB }</span>
+<span class="fn">fpc</span> <span class="str">-g</span> <span class="str">-gl</span> programma.pas
+
+<span class="cmt">{ Specifica output e directory unit }</span>
+<span class="fn">fpc</span> <span class="str">-o</span>output <span class="str">-FU</span>lib/ programma.pas
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flag Comuni FPC</div>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>-Mdelphi</code></td><td>Modalit&agrave; Delphi (compatibilit&agrave; massima con Delphi)</td></tr>
+        <tr><td><code>-Mobjfpc</code></td><td>Modalit&agrave; ObjFPC (default FPC, richiede @ per puntatori a metodo)</td></tr>
+        <tr><td><code>-Sh</code></td><td>Usa AnsiString come tipo <code>string</code> di default</td></tr>
+        <tr><td><code>-O2</code> / <code>-O3</code></td><td>Livello di ottimizzazione</td></tr>
+        <tr><td><code>-g</code></td><td>Genera informazioni di debug</td></tr>
+        <tr><td><code>-gl</code></td><td>Genera info debug con numeri di riga</td></tr>
+        <tr><td><code>-vh</code> / <code>-vw</code></td><td>Mostra hint / warning</td></tr>
+        <tr><td><code>-FUdir</code></td><td>Directory output per file .ppu (unit compilate)</td></tr>
+        <tr><td><code>-Fudir</code></td><td>Aggiunge directory di ricerca unit</td></tr>
+        <tr><td><code>-dNOME</code></td><td>Definisce un simbolo per compilazione condizionale</td></tr>
+        <tr><td><code>-Criot</code></td><td>Abilita controlli runtime (range, I/O, overflow)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">In Lazarus</div>
+      <p>In Lazarus la compilazione avviene tramite il menu <strong>Run &gt; Build</strong> (Ctrl+F9) o <strong>Run &gt; Run</strong> (F9). Le opzioni del compilatore si configurano in <strong>Project &gt; Project Options &gt; Compiler Options</strong>.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRUTTURA PROGRAMMA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-structure"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRUTTURA DI UN PROGRAMMA PASCAL</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">program</span> <span class="fn">MioProgramma</span>;     <span class="cmt">{ nome del programma }</span>
+
+<span class="dir">{$mode objfpc}{$H+}</span>        <span class="cmt">{ modalit&agrave; ObjFPC, AnsiString abilitate }</span>
+
+<span class="kw">uses</span>
+  SysUtils, Classes;       <span class="cmt">{ unit importate (simile a #include / import) }</span>
+
+<span class="kw">const</span>
+  MAX = <span class="num">100</span>;               <span class="cmt">{ costante }</span>
+
+<span class="kw">type</span>
+  TMyRecord = <span class="kw">record</span>       <span class="cmt">{ dichiarazione di tipo }</span>
+    Nome: <span class="type">String</span>;
+    Eta:  <span class="type">Integer</span>;
+  <span class="kw">end</span>;
+
+<span class="kw">var</span>
+  x: <span class="type">Integer</span>;              <span class="cmt">{ variabili globali }</span>
+  s: <span class="type">String</span>;
+
+<span class="cmt">{ dichiarazione procedure/funzioni }</span>
+<span class="kw">procedure</span> <span class="fn">Saluta</span>(Nome: <span class="type">String</span>);
+<span class="kw">begin</span>
+  WriteLn(<span class="str">'Ciao, '</span> + Nome + <span class="str">'!'</span>);
+<span class="kw">end</span>;
+
+<span class="cmt">{ blocco principale del programma }</span>
+<span class="kw">begin</span>
+  x := <span class="num">42</span>;
+  s := <span class="str">'Mondo'</span>;
+  <span class="fn">Saluta</span>(s);
+  WriteLn(<span class="str">'x = '</span>, x);
+<span class="kw">end.</span>                       <span class="cmt">{ NOTA: end con il PUNTO termina il programma }</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Ordine delle Sezioni</div>
+      <table>
+        <tr><th>Sezione</th><th>Descrizione</th></tr>
+        <tr><td><code>program</code></td><td>Nome del programma (opzionale in FPC, obbligatorio nello standard)</td></tr>
+        <tr><td><code>uses</code></td><td>Lista delle unit da importare</td></tr>
+        <tr><td><code>const</code></td><td>Dichiarazione di costanti</td></tr>
+        <tr><td><code>type</code></td><td>Dichiarazione di tipi personalizzati</td></tr>
+        <tr><td><code>var</code></td><td>Dichiarazione di variabili</td></tr>
+        <tr><td>Procedure/Funzioni</td><td>Implementazione di sottoprogrammi</td></tr>
+        <tr><td><code>begin..end.</code></td><td>Corpo principale del programma</td></tr>
+      </table>
+      <p>In Free Pascal le sezioni <code>const</code>, <code>type</code>, <code>var</code> possono essere ripetute e mescolate liberamente.</p>
+    </div>
+
+    <div class="note">
+      <strong>ATTENZIONE:</strong> Il programma termina con <code>end.</code> (con il punto). I blocchi interni terminano con <code>end;</code> (con il punto e virgola).
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Commenti</div>
+<pre>
+<span class="cmt">{ Commento tra parentesi graffe }</span>
+<span class="cmt">(* Commento tra parentesi-asterisco — equivalente a { } *)</span>
+<span class="cmt">// Commento di riga singola (Turbo Pascal / FPC / Delphi)</span>
+
+<span class="cmt">{ I commenti { } e (* *) NON si possono annidare tra loro.
+  Ma { (* questo *) } &egrave; valido perch&eacute; sono tipi diversi. }</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Letterali Numerici</div>
+<pre>
+<span class="num">42</span>             <span class="cmt">{ decimale }</span>
+<span class="num">$2A</span>            <span class="cmt">{ esadecimale (= 42) — prefisso $ }</span>
+<span class="num">$FF</span>            <span class="cmt">{ esadecimale (= 255) }</span>
+<span class="num">%101010</span>        <span class="cmt">{ binario (= 42) — prefisso % (FPC) }</span>
+<span class="num">&amp;52</span>            <span class="cmt">{ ottale (= 42) — prefisso &amp; (FPC) }</span>
+<span class="num">3.14</span>           <span class="cmt">{ virgola mobile }</span>
+<span class="num">1.5E3</span>          <span class="cmt">{ notazione scientifica (= 1500.0) }</span>
+<span class="str">#65</span>            <span class="cmt">{ carattere per codice ASCII (= 'A') }</span>
+<span class="str">#$41</span>           <span class="cmt">{ carattere per codice hex (= 'A') }</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TIPI DI DATO
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-types"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TIPI DI DATO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tipi Interi</div>
+      <table>
+        <tr><th>Tipo</th><th>Dimensione</th><th>Range</th></tr>
+        <tr><td><code>Byte</code></td><td>1 byte</td><td>0 .. 255</td></tr>
+        <tr><td><code>ShortInt</code></td><td>1 byte</td><td>-128 .. 127</td></tr>
+        <tr><td><code>Word</code></td><td>2 byte</td><td>0 .. 65535</td></tr>
+        <tr><td><code>SmallInt</code></td><td>2 byte</td><td>-32768 .. 32767</td></tr>
+        <tr><td><code>LongWord</code> / <code>Cardinal</code></td><td>4 byte</td><td>0 .. 4294967295</td></tr>
+        <tr><td><code>LongInt</code> / <code>Integer</code></td><td>4 byte</td><td>-2&#xB3;&#xB9; .. 2&#xB3;&#xB9;-1</td></tr>
+        <tr><td><code>QWord</code></td><td>8 byte</td><td>0 .. 2&#x2076;&#x2074;-1</td></tr>
+        <tr><td><code>Int64</code></td><td>8 byte</td><td>-2&#x2076;&#xB3; .. 2&#x2076;&#xB3;-1</td></tr>
+      </table>
+      <p><code>Integer</code> in FPC &egrave; un alias per <code>LongInt</code> (32 bit). Usare <code>NativeInt</code> / <code>NativeUInt</code> per dimensione dipendente dalla piattaforma (32/64 bit).</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tipi Virgola Mobile</div>
+      <table>
+        <tr><th>Tipo</th><th>Dimensione</th><th>Cifre significative</th></tr>
+        <tr><td><code>Single</code></td><td>4 byte</td><td>~7</td></tr>
+        <tr><td><code>Double</code> / <code>Real</code></td><td>8 byte</td><td>~15</td></tr>
+        <tr><td><code>Extended</code></td><td>10 byte</td><td>~19 (piattaforma x86)</td></tr>
+        <tr><td><code>Currency</code></td><td>8 byte</td><td>Punto fisso, 4 decimali</td></tr>
+      </table>
+      <p>In FPC, <code>Real</code> &egrave; un alias per <code>Double</code> (8 byte). In Turbo Pascal era 6 byte.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Char &amp; Boolean</div>
+      <table>
+        <tr><th>Tipo</th><th>Dimensione</th><th>Descrizione</th></tr>
+        <tr><td><code>Char</code> / <code>AnsiChar</code></td><td>1 byte</td><td>Singolo carattere ASCII/ANSI</td></tr>
+        <tr><td><code>WideChar</code></td><td>2 byte</td><td>Carattere Unicode UTF-16</td></tr>
+        <tr><td><code>Boolean</code></td><td>1 byte</td><td><code>True</code> o <code>False</code></td></tr>
+        <tr><td><code>ByteBool</code> / <code>WordBool</code> / <code>LongBool</code></td><td>1/2/4 byte</td><td>Boolean compatibili con C (0 = False, qualsiasi altro = True)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tipi Subrange &amp; Type Alias</div>
+<pre>
+<span class="kw">type</span>
+  <span class="cmt">{ Subrange: restringono un tipo ordinale a un intervallo }</span>
+  TEta      = <span class="num">0</span>..<span class="num">150</span>;                  <span class="cmt">{ sottointervallo di Integer }</span>
+  TVoto     = <span class="num">1</span>..<span class="num">10</span>;
+  TLettera  = <span class="str">'A'</span>..<span class="str">'Z'</span>;               <span class="cmt">{ sottointervallo di Char }</span>
+  TGiornoLav = Lun..Ven;               <span class="cmt">{ sottointervallo di enum }</span>
+
+  <span class="cmt">{ Type alias: nomi alternativi per tipi esistenti }</span>
+  TContatore = <span class="type">Integer</span>;
+  TNome      = <span class="type">String</span>;
+
+<span class="kw">var</span>
+  eta: TEta;
+<span class="kw">begin</span>
+  eta := <span class="num">25</span>;     <span class="cmt">{ ok }</span>
+  <span class="cmt">{ eta := 200;   — con {$R+} genera ERangeError a runtime }</span>
+<span class="kw">end</span>;
+</pre>
+      <p>Con il controllo range attivo (<code>{$R+}</code>), l'assegnamento fuori range genera un'eccezione <code>ERangeError</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tipi Stringa</div>
+      <table>
+        <tr><th>Tipo</th><th>Descrizione</th></tr>
+        <tr><td><code>ShortString</code></td><td>Stringa a lunghezza fissa (max 255 char). Compatibilit&agrave; Turbo Pascal.</td></tr>
+        <tr><td><code>AnsiString</code></td><td>Stringa dinamica, lunghezza illimitata, reference counted. <strong>Default con <code>{$H+}</code></strong>.</td></tr>
+        <tr><td><code>UnicodeString</code></td><td>Stringa Unicode UTF-16, reference counted.</td></tr>
+        <tr><td><code>UTF8String</code></td><td>AnsiString con codepage UTF-8.</td></tr>
+        <tr><td><code>PChar</code></td><td>Puntatore a char null-terminated (compatibilit&agrave; C).</td></tr>
+        <tr><td><code>String</code></td><td>Alias per <code>ShortString</code> (default) o <code>AnsiString</code> (con <code>{$H+}</code>).</td></tr>
+      </table>
+      <div class="note"><strong>TIP:</strong> Usa sempre <code>{$H+}</code> (o <code>-Sh</code>) per avere <code>AnsiString</code> come default. Con Lazarus questo &egrave; gi&agrave; attivo nei progetti generati dall'IDE.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     COSTANTI & VARIABILI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-constants"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COSTANTI &amp; VARIABILI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Costanti</div>
+<pre>
+<span class="kw">const</span>
+  PI        = <span class="num">3.14159265358979</span>;   <span class="cmt">{ tipo inferito: Double }</span>
+  MAX_ITEMS = <span class="num">100</span>;                <span class="cmt">{ tipo inferito: Integer }</span>
+  GREETING  = <span class="str">'Ciao Mondo'</span>;       <span class="cmt">{ tipo inferito: String }</span>
+  NEWLINE   = <span class="str">#10</span>;                <span class="cmt">{ carattere LF (codice ASCII) }</span>
+
+<span class="cmt">{ Costanti tipizzate (in realt&agrave; sono variabili inizializzate!) }</span>
+<span class="kw">const</span>
+  Contatore: <span class="type">Integer</span> = <span class="num">0</span>;        <span class="cmt">{ ATTENZIONE: modificabile se {$J+} (default) }</span>
+</pre>
+      <div class="warn"><strong>ATTENZIONE:</strong> Le costanti tipizzate sono modificabili per default in FPC (<code>{$J+}</code>). Per renderle veramente costanti, usa <code>{$J-}</code> o <code>{$WRITEABLECONST OFF}</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Variabili</div>
+<pre>
+<span class="kw">var</span>
+  x, y:    <span class="type">Integer</span>;               <span class="cmt">{ pi&ugrave; variabili dello stesso tipo }</span>
+  Nome:    <span class="type">String</span>;
+  Attivo:  <span class="type">Boolean</span>;
+  Prezzo:  <span class="type">Double</span>;
+  Lettera: <span class="type">Char</span>;
+  Dati:    <span class="kw">array</span>[<span class="num">0</span>..<span class="num">9</span>] <span class="kw">of</span> <span class="type">Integer</span>;
+
+<span class="cmt">{ Variabili locali con inizializzazione (FPC estensione) }</span>
+<span class="kw">var</span>
+  Conteggio: <span class="type">Integer</span> = <span class="num">0</span>;
+  Messaggio: <span class="type">String</span>  = <span class="str">'default'</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Dichiarazione Inline (FPC 3.2+)</div>
+<pre>
+<span class="cmt">{ Richiede {$mode delphi} oppure: }</span>
+<span class="dir">{$mode objfpc}{$modeswitch inlinevariables}</span>
+
+<span class="kw">begin</span>
+  <span class="kw">var</span> x: <span class="type">Integer</span> := <span class="num">42</span>;          <span class="cmt">{ dichiarazione inline con tipo esplicito }</span>
+  <span class="kw">var</span> s := <span class="str">'testo'</span>;               <span class="cmt">{ con type inference }</span>
+  <span class="kw">var</span> d := <span class="num">3.14</span>;                  <span class="cmt">{ inferisce Double }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     OPERATORI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-operators"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OPERATORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Operatori Aritmetici</div>
+      <table>
+        <tr><th>Operatore</th><th>Operazione</th><th>Esempio</th></tr>
+        <tr><td><code>+</code></td><td>Addizione</td><td><code>5 + 3</code> &rarr; <code>8</code></td></tr>
+        <tr><td><code>-</code></td><td>Sottrazione</td><td><code>5 - 3</code> &rarr; <code>2</code></td></tr>
+        <tr><td><code>*</code></td><td>Moltiplicazione</td><td><code>5 * 3</code> &rarr; <code>15</code></td></tr>
+        <tr><td><code>/</code></td><td>Divisione reale</td><td><code>7 / 2</code> &rarr; <code>3.5</code></td></tr>
+        <tr><td><code>div</code></td><td>Divisione intera</td><td><code>7 div 2</code> &rarr; <code>3</code></td></tr>
+        <tr><td><code>mod</code></td><td>Modulo (resto)</td><td><code>7 mod 2</code> &rarr; <code>1</code></td></tr>
+      </table>
+      <p><code>+</code> funziona anche come operatore di concatenazione per stringhe: <code>'Ciao' + ' ' + 'Mondo'</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatori Relazionali</div>
+      <table>
+        <tr><th>Operatore</th><th>Significato</th></tr>
+        <tr><td><code>=</code></td><td>Uguale a</td></tr>
+        <tr><td><code>&lt;&gt;</code></td><td>Diverso da</td></tr>
+        <tr><td><code>&lt;</code></td><td>Minore di</td></tr>
+        <tr><td><code>&gt;</code></td><td>Maggiore di</td></tr>
+        <tr><td><code>&lt;=</code></td><td>Minore o uguale a</td></tr>
+        <tr><td><code>&gt;=</code></td><td>Maggiore o uguale a</td></tr>
+        <tr><td><code>in</code></td><td>Appartenenza a un set: <code>3 in [1..5]</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatori Logici</div>
+      <table>
+        <tr><th>Operatore</th><th>Significato</th><th>Esempio</th></tr>
+        <tr><td><code>not</code></td><td>Negazione logica</td><td><code>not True</code> &rarr; <code>False</code></td></tr>
+        <tr><td><code>and</code></td><td>AND logico</td><td><code>True and False</code> &rarr; <code>False</code></td></tr>
+        <tr><td><code>or</code></td><td>OR logico</td><td><code>True or False</code> &rarr; <code>True</code></td></tr>
+        <tr><td><code>xor</code></td><td>XOR logico</td><td><code>True xor True</code> &rarr; <code>False</code></td></tr>
+      </table>
+      <div class="note"><strong>NOTA:</strong> Con <code>{$B-}</code> (default) la valutazione &egrave; short-circuit: <code>and</code>/<code>or</code> non valutano il secondo operando se il risultato &egrave; gi&agrave; determinato. Con <code>{$B+}</code> la valutazione &egrave; completa.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatori Bitwise</div>
+      <table>
+        <tr><th>Operatore</th><th>Significato</th><th>Esempio</th></tr>
+        <tr><td><code>not</code></td><td>NOT bitwise</td><td><code>not $FF</code> &rarr; <code>$FFFFFF00</code></td></tr>
+        <tr><td><code>and</code></td><td>AND bitwise</td><td><code>$0F and $F0</code> &rarr; <code>$00</code></td></tr>
+        <tr><td><code>or</code></td><td>OR bitwise</td><td><code>$0F or $F0</code> &rarr; <code>$FF</code></td></tr>
+        <tr><td><code>xor</code></td><td>XOR bitwise</td><td><code>$FF xor $0F</code> &rarr; <code>$F0</code></td></tr>
+        <tr><td><code>shl</code></td><td>Shift a sinistra</td><td><code>1 shl 4</code> &rarr; <code>16</code></td></tr>
+        <tr><td><code>shr</code></td><td>Shift a destra</td><td><code>16 shr 2</code> &rarr; <code>4</code></td></tr>
+      </table>
+      <p><code>and</code>, <code>or</code>, <code>not</code>, <code>xor</code> funzionano sia come operatori logici (su Boolean) che bitwise (su Integer). Il compilatore distingue in base al tipo degli operandi.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operatore di Assegnamento</div>
+<pre>
+x <span class="kw">:=</span> <span class="num">42</span>;       <span class="cmt">{ assegnamento: := (non = come in C) }</span>
+x <span class="kw">+=</span> <span class="num">10</span>;       <span class="cmt">{ incremento (FPC estensione, richiede {$mode objfpc} o {$mode delphi}) }</span>
+x <span class="kw">-=</span> <span class="num">5</span>;        <span class="cmt">{ decremento }</span>
+x <span class="kw">*=</span> <span class="num">2</span>;        <span class="cmt">{ moltiplicazione e assegnamento }</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     CONVERSIONI DI TIPO
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-cast"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CONVERSIONI DI TIPO</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">var</span>
+  i: <span class="type">Integer</span>;
+  d: <span class="type">Double</span>;
+  s: <span class="type">String</span>;
+  b: <span class="type">Boolean</span>;
+
+<span class="cmt">{ Conversione implicita: Integer -&gt; Double }</span>
+i := <span class="num">42</span>;
+d := i;                         <span class="cmt">{ d = 42.0 }</span>
+
+<span class="cmt">{ Cast esplicito (hard cast) }</span>
+i := <span class="type">Integer</span>(d);               <span class="cmt">{ tronca la parte decimale }</span>
+
+<span class="cmt">{ Funzioni di conversione (unit SysUtils) }</span>
+s := <span class="fn">IntToStr</span>(i);              <span class="cmt">{ Integer -&gt; String }</span>
+i := <span class="fn">StrToInt</span>(s);              <span class="cmt">{ String -&gt; Integer (eccezione se invalido) }</span>
+i := <span class="fn">StrToIntDef</span>(s, <span class="num">0</span>);        <span class="cmt">{ String -&gt; Integer con valore default }</span>
+s := <span class="fn">FloatToStr</span>(d);             <span class="cmt">{ Double -&gt; String }</span>
+d := <span class="fn">StrToFloat</span>(s);             <span class="cmt">{ String -&gt; Double }</span>
+s := <span class="fn">BoolToStr</span>(b, <span class="kw">True</span>);       <span class="cmt">{ Boolean -&gt; 'True'/'False' }</span>
+
+<span class="cmt">{ Funzioni built-in }</span>
+i := <span class="fn">Ord</span>(<span class="str">'A'</span>);                 <span class="cmt">{ Char -&gt; codice ASCII: 65 }</span>
+s := <span class="fn">Chr</span>(<span class="num">65</span>);                  <span class="cmt">{ Codice ASCII -&gt; Char: 'A' }</span>
+i := <span class="fn">Round</span>(d);                 <span class="cmt">{ arrotondamento banker's rounding }</span>
+i := <span class="fn">Trunc</span>(d);                 <span class="cmt">{ troncamento verso zero }</span>
+
+<span class="cmt">{ Format (simile a sprintf) }</span>
+s := <span class="fn">Format</span>(<span class="str">'Nome: %s, Et&agrave;: %d, Media: %.2f'</span>, [<span class="str">'Mario'</span>, <span class="num">30</span>, <span class="num">8.567</span>]);
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Val &amp; Str (unit System &mdash; senza SysUtils)</div>
+<pre>
+<span class="kw">var</span>
+  s: <span class="type">String</span>;
+  i: <span class="type">Integer</span>;
+  d: <span class="type">Double</span>;
+  Codice: <span class="type">Integer</span>;   <span class="cmt">{ codice di errore }</span>
+
+<span class="cmt">{ Str: converte numero in stringa (built-in, non richiede SysUtils) }</span>
+<span class="fn">Str</span>(<span class="num">42</span>, s);                  <span class="cmt">{ s = '42' }</span>
+<span class="fn">Str</span>(<span class="num">3.14</span>:<span class="num">0</span>:<span class="num">2</span>, s);            <span class="cmt">{ s = '3.14' (formattato: 0 larghezza, 2 decimali) }</span>
+<span class="fn">Str</span>(i:<span class="num">6</span>, s);                  <span class="cmt">{ s = '    42' (larghezza 6, padding spazi) }</span>
+
+<span class="cmt">{ Val: converte stringa in numero (built-in, non lancia eccezioni!) }</span>
+<span class="fn">Val</span>(<span class="str">'42'</span>, i, Codice);         <span class="cmt">{ i = 42, Codice = 0 (successo) }</span>
+<span class="fn">Val</span>(<span class="str">'abc'</span>, i, Codice);        <span class="cmt">{ i = 0,  Codice = 1 (posizione dell'errore) }</span>
+<span class="fn">Val</span>(<span class="str">'3.14'</span>, d, Codice);       <span class="cmt">{ d = 3.14, Codice = 0 }</span>
+<span class="fn">Val</span>(<span class="str">'$FF'</span>, i, Codice);        <span class="cmt">{ i = 255 (accetta anche hex!) }</span>
+
+<span class="kw">if</span> Codice &lt;&gt; <span class="num">0</span> <span class="kw">then</span>
+  WriteLn(<span class="str">'Errore alla posizione '</span>, Codice)
+<span class="kw">else</span>
+  WriteLn(<span class="str">'Valore: '</span>, i);
+</pre>
+      <div class="note"><strong>TIP:</strong> <code>Val</code> &egrave; pi&ugrave; sicuro di <code>StrToInt</code> perch&eacute; non lancia eccezioni: restituisce la posizione dell'errore nel parametro <code>Codice</code> (0 = successo). Ideale per parsing di input utente senza <code>try..except</code>. &Egrave; anche pi&ugrave; veloce perch&eacute; non ha overhead di eccezioni.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SELEZIONE (IF / CASE)
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-branch"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SELEZIONE (IF / CASE)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">If / Then / Else</div>
+<pre>
+<span class="cmt">{ If semplice }</span>
+<span class="kw">if</span> x &gt; <span class="num">0</span> <span class="kw">then</span>
+  WriteLn(<span class="str">'Positivo'</span>);
+
+<span class="cmt">{ If/Else }</span>
+<span class="kw">if</span> x &gt; <span class="num">0</span> <span class="kw">then</span>
+  WriteLn(<span class="str">'Positivo'</span>)
+<span class="kw">else</span>
+  WriteLn(<span class="str">'Non positivo'</span>);
+<span class="cmt">{ NOTA: NON mettere ; prima di else! }</span>
+
+<span class="cmt">{ If con blocco begin..end }</span>
+<span class="kw">if</span> (x &gt; <span class="num">0</span>) <span class="kw">and</span> (x &lt; <span class="num">100</span>) <span class="kw">then</span>
+<span class="kw">begin</span>
+  WriteLn(<span class="str">'Tra 1 e 99'</span>);
+  Inc(x);
+<span class="kw">end</span>
+<span class="kw">else if</span> x = <span class="num">0</span> <span class="kw">then</span>
+  WriteLn(<span class="str">'Zero'</span>)
+<span class="kw">else</span>
+<span class="kw">begin</span>
+  WriteLn(<span class="str">'Fuori range'</span>);
+  x := <span class="num">0</span>;
+<span class="kw">end</span>;
+</pre>
+      <div class="warn"><strong>REGOLA CRITICA:</strong> Le condizioni composte devono avere le parentesi intorno a ogni sotto-espressione: <code>(x &gt; 0) and (x &lt; 100)</code>. Senza parentesi, <code>and</code> ha precedenza pi&ugrave; alta di <code>&gt;</code> e il compilatore generer&agrave; un errore.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Case / Of</div>
+<pre>
+<span class="kw">case</span> Voto <span class="kw">of</span>
+  <span class="num">10</span>:        WriteLn(<span class="str">'Eccellente'</span>);
+  <span class="num">8</span>, <span class="num">9</span>:     WriteLn(<span class="str">'Ottimo'</span>);
+  <span class="num">6</span>..<span class="num">7</span>:     WriteLn(<span class="str">'Sufficiente'</span>);      <span class="cmt">{ range con .. }</span>
+  <span class="num">1</span>..<span class="num">5</span>:     WriteLn(<span class="str">'Insufficiente'</span>);
+<span class="kw">else</span>                                         <span class="cmt">{ oppure: otherwise (FPC) }</span>
+  WriteLn(<span class="str">'Voto non valido'</span>);
+<span class="kw">end</span>;
+
+<span class="cmt">{ Case con blocchi begin..end }</span>
+<span class="kw">case</span> Comando <span class="kw">of</span>
+  <span class="str">'a'</span>, <span class="str">'A'</span>:
+    <span class="kw">begin</span>
+      WriteLn(<span class="str">'Aggiungi'</span>);
+      Aggiungi();
+    <span class="kw">end</span>;
+  <span class="str">'q'</span>, <span class="str">'Q'</span>:
+    WriteLn(<span class="str">'Esci'</span>);
+<span class="kw">end</span>;
+</pre>
+      <p><code>case</code> funziona solo con tipi ordinali (Integer, Char, Boolean, Enum). Non funziona direttamente con stringhe (usare <code>if..else if</code> oppure una funzione helper).</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ITERAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-loops"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ITERAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">For / To / Do</div>
+<pre>
+<span class="cmt">{ For crescente }</span>
+<span class="kw">for</span> i := <span class="num">1</span> <span class="kw">to</span> <span class="num">10</span> <span class="kw">do</span>
+  WriteLn(i);
+
+<span class="cmt">{ For decrescente }</span>
+<span class="kw">for</span> i := <span class="num">10</span> <span class="kw">downto</span> <span class="num">1</span> <span class="kw">do</span>
+  WriteLn(i);
+
+<span class="cmt">{ For con blocco }</span>
+<span class="kw">for</span> i := <span class="num">0</span> <span class="kw">to</span> <span class="fn">Length</span>(Arr) - <span class="num">1</span> <span class="kw">do</span>
+<span class="kw">begin</span>
+  WriteLn(<span class="str">'Elemento '</span>, i, <span class="str">': '</span>, Arr[i]);
+<span class="kw">end</span>;
+
+<span class="cmt">{ For-in (FPC 2.4.2+) }</span>
+<span class="kw">for</span> Elemento <span class="kw">in</span> Arr <span class="kw">do</span>
+  WriteLn(Elemento);
+
+<span class="cmt">{ For-in su stringa }</span>
+<span class="kw">for</span> c <span class="kw">in</span> <span class="str">'Hello'</span> <span class="kw">do</span>
+  Write(c, <span class="str">' '</span>);
+</pre>
+      <div class="note"><strong>NOTA:</strong> La variabile contatore del <code>for</code> non pu&ograve; essere modificata all'interno del ciclo. Il passo &egrave; sempre 1 (o -1 con <code>downto</code>).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">While / Do</div>
+<pre>
+<span class="cmt">{ Condizione verificata PRIMA di ogni iterazione }</span>
+<span class="kw">while</span> x &gt; <span class="num">0</span> <span class="kw">do</span>
+<span class="kw">begin</span>
+  WriteLn(x);
+  Dec(x);       <span class="cmt">{ equivalente a x := x - 1 }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Repeat / Until</div>
+<pre>
+<span class="cmt">{ Condizione verificata DOPO ogni iterazione (esegue almeno 1 volta) }</span>
+<span class="cmt">{ NOTA: repeat..until NON richiede begin..end }</span>
+<span class="kw">repeat</span>
+  WriteLn(<span class="str">'Inserisci un numero positivo:'</span>);
+  ReadLn(x);
+<span class="kw">until</span> x &gt; <span class="num">0</span>;    <span class="cmt">{ esce quando la condizione diventa True }</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SALTI & CONTROLLO
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-jump"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SALTI &amp; CONTROLLO</div>
+  <div class="section-body">
+
+<pre>
+<span class="fn">Break</span>;          <span class="cmt">{ esce dal ciclo corrente }</span>
+<span class="fn">Continue</span>;       <span class="cmt">{ salta alla prossima iterazione }</span>
+<span class="fn">Exit</span>;           <span class="cmt">{ esce dalla procedura/funzione corrente }</span>
+<span class="fn">Exit</span>(valore);   <span class="cmt">{ esce dalla funzione restituendo un valore (FPC) }</span>
+<span class="fn">Halt</span>;           <span class="cmt">{ termina il programma immediatamente }</span>
+<span class="fn">Halt</span>(<span class="num">1</span>);        <span class="cmt">{ termina con exit code }</span>
+
+<span class="cmt">{ Inc e Dec (incremento/decremento) }</span>
+<span class="fn">Inc</span>(x);         <span class="cmt">{ x := x + 1 }</span>
+<span class="fn">Inc</span>(x, <span class="num">5</span>);      <span class="cmt">{ x := x + 5 }</span>
+<span class="fn">Dec</span>(x);         <span class="cmt">{ x := x - 1 }</span>
+<span class="fn">Dec</span>(x, <span class="num">3</span>);      <span class="cmt">{ x := x - 3 }</span>
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ARRAY
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-arrays"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ARRAY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Array Statici</div>
+<pre>
+<span class="kw">var</span>
+  Numeri: <span class="kw">array</span>[<span class="num">1</span>..<span class="num">10</span>] <span class="kw">of</span> <span class="type">Integer</span>;       <span class="cmt">{ indice da 1 a 10 }</span>
+  Griglia: <span class="kw">array</span>[<span class="num">0</span>..<span class="num">2</span>, <span class="num">0</span>..<span class="num">3</span>] <span class="kw">of</span> <span class="type">Double</span>; <span class="cmt">{ matrice 3x4 }</span>
+  Lettere: <span class="kw">array</span>[<span class="str">'a'</span>..<span class="str">'z'</span>] <span class="kw">of</span> <span class="type">Boolean</span>;  <span class="cmt">{ indice di tipo Char! }</span>
+
+<span class="cmt">{ Inizializzazione }</span>
+<span class="kw">const</span>
+  Valori: <span class="kw">array</span>[<span class="num">0</span>..<span class="num">4</span>] <span class="kw">of</span> <span class="type">Integer</span> = (<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>);
+
+<span class="cmt">{ Tipo array con nome }</span>
+<span class="kw">type</span>
+  TVettore = <span class="kw">array</span>[<span class="num">0</span>..<span class="num">99</span>] <span class="kw">of</span> <span class="type">Integer</span>;
+<span class="kw">var</span>
+  v: TVettore;
+
+<span class="cmt">{ Accesso }</span>
+Numeri[<span class="num">1</span>] := <span class="num">42</span>;
+Griglia[<span class="num">1</span>, <span class="num">2</span>] := <span class="num">3.14</span>;
+WriteLn(<span class="fn">Low</span>(Numeri), <span class="str">' '</span>, <span class="fn">High</span>(Numeri));  <span class="cmt">{ 1  10 }</span>
+WriteLn(<span class="fn">Length</span>(Numeri));                   <span class="cmt">{ 10 }</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Array Dinamici</div>
+<pre>
+<span class="kw">var</span>
+  Dati: <span class="kw">array of</span> <span class="type">Integer</span>;       <span class="cmt">{ array dinamico (indice parte da 0) }</span>
+  Matrice: <span class="kw">array of array of</span> <span class="type">Double</span>;
+
+<span class="kw">begin</span>
+  <span class="fn">SetLength</span>(Dati, <span class="num">5</span>);              <span class="cmt">{ alloca 5 elementi: indici 0..4 }</span>
+  Dati[<span class="num">0</span>] := <span class="num">10</span>;
+  Dati[<span class="num">4</span>] := <span class="num">50</span>;
+
+  <span class="fn">SetLength</span>(Dati, <span class="num">10</span>);             <span class="cmt">{ ridimensiona: i vecchi dati sono preservati }</span>
+
+  WriteLn(<span class="fn">Length</span>(Dati));            <span class="cmt">{ 10 }</span>
+  WriteLn(<span class="fn">Low</span>(Dati));               <span class="cmt">{ sempre 0 per array dinamici }</span>
+  WriteLn(<span class="fn">High</span>(Dati));              <span class="cmt">{ Length - 1 = 9 }</span>
+
+  <span class="cmt">{ Inizializzazione diretta (FPC 3.2+) }</span>
+  Dati := [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>];
+
+  <span class="cmt">{ Concatenazione (FPC) }</span>
+  Dati := <span class="fn">Concat</span>(Dati, [<span class="num">6</span>, <span class="num">7</span>, <span class="num">8</span>]);
+
+  <span class="cmt">{ Matrice dinamica }</span>
+  <span class="fn">SetLength</span>(Matrice, <span class="num">3</span>, <span class="num">4</span>);       <span class="cmt">{ 3 righe x 4 colonne }</span>
+  Matrice[<span class="num">0</span>][<span class="num">0</span>] := <span class="num">1.0</span>;
+
+  <span class="cmt">{ Liberare la memoria }</span>
+  <span class="fn">SetLength</span>(Dati, <span class="num">0</span>);              <span class="cmt">{ oppure: Dati := nil; }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Open Array (Parametri)</div>
+<pre>
+<span class="cmt">{ Open array: accetta array di qualsiasi dimensione }</span>
+<span class="kw">function</span> <span class="fn">Somma</span>(<span class="kw">const</span> Arr: <span class="kw">array of</span> <span class="type">Integer</span>): <span class="type">Integer</span>;
+<span class="kw">var</span>
+  i: <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  Result := <span class="num">0</span>;
+  <span class="kw">for</span> i := <span class="fn">Low</span>(Arr) <span class="kw">to</span> <span class="fn">High</span>(Arr) <span class="kw">do</span>
+    Result := Result + Arr[i];
+<span class="kw">end</span>;
+
+<span class="cmt">{ Chiamata con array costante }</span>
+WriteLn(<span class="fn">Somma</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]));   <span class="cmt">{ 15 }</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     RECORD
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-records"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> RECORD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Record Semplice</div>
+<pre>
+<span class="kw">type</span>
+  TPersona = <span class="kw">record</span>
+    Nome:     <span class="type">String</span>;
+    Cognome:  <span class="type">String</span>;
+    Eta:      <span class="type">Integer</span>;
+    Attivo:   <span class="type">Boolean</span>;
+  <span class="kw">end</span>;
+
+<span class="kw">var</span>
+  p: TPersona;
+
+<span class="kw">begin</span>
+  p.Nome    := <span class="str">'Mario'</span>;
+  p.Cognome := <span class="str">'Rossi'</span>;
+  p.Eta     := <span class="num">30</span>;
+  p.Attivo  := <span class="kw">True</span>;
+
+  <span class="cmt">{ Blocco with (comodo, ma da usare con cautela) }</span>
+  <span class="kw">with</span> p <span class="kw">do</span>
+    WriteLn(Nome, <span class="str">' '</span>, Cognome, <span class="str">', et&agrave; '</span>, Eta);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Record Avanzato (FPC {$modeswitch advancedrecords})</div>
+<pre>
+<span class="dir">{$modeswitch advancedrecords}</span>
+
+<span class="kw">type</span>
+  TVec2 = <span class="kw">record</span>
+    X, Y: <span class="type">Double</span>;
+    <span class="kw">class function</span> <span class="fn">Create</span>(aX, aY: <span class="type">Double</span>): TVec2; <span class="kw">static</span>;
+    <span class="kw">function</span> <span class="fn">Lunghezza</span>: <span class="type">Double</span>;
+    <span class="kw">function</span> <span class="fn">ToString</span>: <span class="type">String</span>;
+    <span class="kw">class operator</span> <span class="fn">+</span>(A, B: TVec2): TVec2;
+  <span class="kw">end</span>;
+
+<span class="kw">class function</span> TVec2.<span class="fn">Create</span>(aX, aY: <span class="type">Double</span>): TVec2;
+<span class="kw">begin</span>
+  Result.X := aX;
+  Result.Y := aY;
+<span class="kw">end</span>;
+
+<span class="kw">function</span> TVec2.<span class="fn">Lunghezza</span>: <span class="type">Double</span>;
+<span class="kw">begin</span>
+  Result := <span class="fn">Sqrt</span>(X * X + Y * Y);
+<span class="kw">end</span>;
+
+<span class="kw">function</span> TVec2.<span class="fn">ToString</span>: <span class="type">String</span>;
+<span class="kw">begin</span>
+  Result := <span class="fn">Format</span>(<span class="str">'(%.2f, %.2f)'</span>, [X, Y]);
+<span class="kw">end</span>;
+
+<span class="kw">class operator</span> TVec2.<span class="fn">+</span>(A, B: TVec2): TVec2;
+<span class="kw">begin</span>
+  Result.X := A.X + B.X;
+  Result.Y := A.Y + B.Y;
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Record Variant</div>
+<pre>
+<span class="kw">type</span>
+  TForma = <span class="kw">record</span>
+    Colore: <span class="type">String</span>;
+    <span class="kw">case</span> Tipo: <span class="type">Integer</span> <span class="kw">of</span>
+      <span class="num">0</span>: (Raggio: <span class="type">Double</span>);                         <span class="cmt">{ cerchio }</span>
+      <span class="num">1</span>: (Larghezza, Altezza: <span class="type">Double</span>);             <span class="cmt">{ rettangolo }</span>
+      <span class="num">2</span>: (Base, AltezzaTriangolo: <span class="type">Double</span>);        <span class="cmt">{ triangolo }</span>
+  <span class="kw">end</span>;
+</pre>
+      <p>I record variant condividono la stessa area di memoria per i campi variabili (simile a <code>union</code> in C). Utili per strutture con layout alternativo.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRINGHE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-strings"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRINGHE</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">var</span>
+  s, s2: <span class="type">String</span>;
+  c:     <span class="type">Char</span>;
+
+<span class="kw">begin</span>
+  s := <span class="str">'Ciao Mondo'</span>;
+  c := s[<span class="num">1</span>];                       <span class="cmt">{ 'C' — indice parte da 1! }</span>
+
+  <span class="cmt">{ Lunghezza }</span>
+  WriteLn(<span class="fn">Length</span>(s));               <span class="cmt">{ 10 }</span>
+
+  <span class="cmt">{ Concatenazione }</span>
+  s2 := s + <span class="str">' - Pascal'</span>;
+  s2 := <span class="fn">Concat</span>(s, <span class="str">' - Pascal'</span>);   <span class="cmt">{ equivalente }</span>
+
+  <span class="cmt">{ Caratteri speciali }</span>
+  s := <span class="str">'Prima riga'</span> + <span class="str">#13#10</span> + <span class="str">'Seconda riga'</span>;   <span class="cmt">{ CR+LF }</span>
+  s := <span class="str">'L''apostrofo'</span>;                               <span class="cmt">{ '' per apostrofo }</span>
+  s := <span class="str">'Tab'</span> + <span class="str">#9</span> + <span class="str">'qui'</span>;                          <span class="cmt">{ tab }</span>
+
+  <span class="cmt">{ Funzioni comuni (unit SysUtils) }</span>
+  s := <span class="fn">UpperCase</span>(<span class="str">'ciao'</span>);          <span class="cmt">{ 'CIAO' }</span>
+  s := <span class="fn">LowerCase</span>(<span class="str">'CIAO'</span>);          <span class="cmt">{ 'ciao' }</span>
+  s := <span class="fn">Trim</span>(<span class="str">'  ciao  '</span>);           <span class="cmt">{ 'ciao' }</span>
+  s := <span class="fn">TrimLeft</span>(<span class="str">'  ciao'</span>);         <span class="cmt">{ 'ciao' }</span>
+  s := <span class="fn">TrimRight</span>(<span class="str">'ciao  '</span>);        <span class="cmt">{ 'ciao' }</span>
+
+  <span class="cmt">{ Ricerca }</span>
+  WriteLn(<span class="fn">Pos</span>(<span class="str">'Mondo'</span>, s));         <span class="cmt">{ posizione (1-based), 0 se non trovata }</span>
+
+  <span class="cmt">{ Sottostringhe }</span>
+  s := <span class="fn">Copy</span>(<span class="str">'Ciao Mondo'</span>, <span class="num">6</span>, <span class="num">5</span>);  <span class="cmt">{ 'Mondo' (da pos 6, 5 char) }</span>
+
+  <span class="cmt">{ Modifica }</span>
+  <span class="fn">Delete</span>(s, <span class="num">1</span>, <span class="num">5</span>);                 <span class="cmt">{ rimuove 5 char dalla posizione 1 }</span>
+  <span class="fn">Insert</span>(<span class="str">'Salve '</span>, s, <span class="num">1</span>);          <span class="cmt">{ inserisce alla posizione 1 }</span>
+
+  <span class="cmt">{ Sostituzione (SysUtils) }</span>
+  s := <span class="fn">StringReplace</span>(<span class="str">'aabaa'</span>, <span class="str">'a'</span>, <span class="str">'x'</span>, [rfReplaceAll]);
+  <span class="cmt">{ 'xxbxx' — flag: rfReplaceAll, rfIgnoreCase }</span>
+<span class="kw">end</span>;
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ENUM & SET
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-enum"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ENUM &amp; SET</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tipi Enumerati</div>
+<pre>
+<span class="kw">type</span>
+  TColore = (clRosso, clVerde, clBlu, clGiallo);
+  TGiorno = (Lun, Mar, Mer, Gio, Ven, Sab, Dom);
+
+<span class="kw">var</span>
+  c: TColore;
+  g: TGiorno;
+
+<span class="kw">begin</span>
+  c := clVerde;
+  g := Mer;
+
+  WriteLn(<span class="fn">Ord</span>(c));       <span class="cmt">{ 1 (indice da 0) }</span>
+  WriteLn(<span class="fn">Ord</span>(g));       <span class="cmt">{ 2 }</span>
+
+  <span class="cmt">{ Iterare sugli enum }</span>
+  <span class="kw">for</span> c := <span class="fn">Low</span>(TColore) <span class="kw">to</span> <span class="fn">High</span>(TColore) <span class="kw">do</span>
+    WriteLn(<span class="fn">Ord</span>(c));
+
+  <span class="cmt">{ Successore e predecessore }</span>
+  g := <span class="fn">Succ</span>(Lun);       <span class="cmt">{ Mar }</span>
+  g := <span class="fn">Pred</span>(Dom);       <span class="cmt">{ Sab }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Set (Insiemi)</div>
+<pre>
+<span class="kw">type</span>
+  TColoreSet = <span class="kw">set of</span> TColore;
+  TCharSet   = <span class="kw">set of</span> <span class="type">Char</span>;
+
+<span class="kw">var</span>
+  Colori:  TColoreSet;
+  Vocali:  TCharSet;
+
+<span class="kw">begin</span>
+  Colori := [clRosso, clBlu];
+  Vocali := [<span class="str">'a'</span>, <span class="str">'e'</span>, <span class="str">'i'</span>, <span class="str">'o'</span>, <span class="str">'u'</span>, <span class="str">'A'</span>, <span class="str">'E'</span>, <span class="str">'I'</span>, <span class="str">'O'</span>, <span class="str">'U'</span>];
+
+  <span class="cmt">{ Test di appartenenza }</span>
+  <span class="kw">if</span> clRosso <span class="kw">in</span> Colori <span class="kw">then</span>
+    WriteLn(<span class="str">'Rosso presente'</span>);
+
+  <span class="cmt">{ Operazioni su set }</span>
+  Colori := Colori + [clVerde];           <span class="cmt">{ unione (aggiungi) }</span>
+  Colori := Colori - [clRosso];           <span class="cmt">{ differenza (rimuovi) }</span>
+  Colori := [clRosso, clBlu] * [clBlu];   <span class="cmt">{ intersezione: [clBlu] }</span>
+
+  <span class="cmt">{ Include / Exclude (pi&ugrave; efficienti) }</span>
+  <span class="fn">Include</span>(Colori, clGiallo);
+  <span class="fn">Exclude</span>(Colori, clBlu);
+
+  <span class="cmt">{ Uso pratico: validazione input }</span>
+  <span class="kw">if</span> c <span class="kw">in</span> [<span class="str">'0'</span>..<span class="str">'9'</span>] <span class="kw">then</span>
+    WriteLn(<span class="str">'&Egrave; una cifra'</span>);
+<span class="kw">end</span>;
+</pre>
+      <p>I <code>set</code> possono contenere al massimo 256 elementi (tipo base ordinale con <code>Ord</code> in 0..255).</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PROCEDURE & FUNZIONI — DICHIARAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-functions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PROCEDURE &amp; FUNZIONI</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">{ PROCEDURA: non restituisce un valore }</span>
+<span class="kw">procedure</span> <span class="fn">StampaLinea</span>(Lunghezza: <span class="type">Integer</span>);
+<span class="kw">var</span>
+  i: <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  <span class="kw">for</span> i := <span class="num">1</span> <span class="kw">to</span> Lunghezza <span class="kw">do</span>
+    Write(<span class="str">'-'</span>);
+  WriteLn;
+<span class="kw">end</span>;
+
+<span class="cmt">{ FUNZIONE: restituisce un valore }</span>
+<span class="kw">function</span> <span class="fn">Massimo</span>(A, B: <span class="type">Integer</span>): <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  <span class="kw">if</span> A &gt; B <span class="kw">then</span>
+    Result := A      <span class="cmt">{ 'Result' &egrave; la variabile di ritorno implicita (FPC/Delphi) }</span>
+  <span class="kw">else</span>
+    Result := B;
+<span class="kw">end</span>;
+
+<span class="cmt">{ Alternativa: si pu&ograve; usare il nome della funzione }</span>
+<span class="kw">function</span> <span class="fn">Minimo</span>(A, B: <span class="type">Integer</span>): <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  <span class="kw">if</span> A &lt; B <span class="kw">then</span>
+    Minimo := A      <span class="cmt">{ stile tradizionale (compatibile Standard Pascal) }</span>
+  <span class="kw">else</span>
+    Minimo := B;
+<span class="kw">end</span>;
+
+<span class="cmt">{ Exit con valore (FPC) — comodo per return anticipato }</span>
+<span class="kw">function</span> <span class="fn">Fattoriale</span>(N: <span class="type">Integer</span>): <span class="type">Int64</span>;
+<span class="kw">begin</span>
+  <span class="kw">if</span> N &lt;= <span class="num">1</span> <span class="kw">then</span>
+    <span class="fn">Exit</span>(<span class="num">1</span>);
+  Result := N * <span class="fn">Fattoriale</span>(N - <span class="num">1</span>);    <span class="cmt">{ ricorsione }</span>
+<span class="kw">end</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Procedure Annidate (Nested)</div>
+<pre>
+<span class="cmt">{ Pascal supporta procedure/funzioni dichiarate dentro altre procedure.
+  La procedura interna ha accesso alle variabili della procedura esterna. }</span>
+
+<span class="kw">procedure</span> <span class="fn">Ordinamento</span>(<span class="kw">var</span> Arr: <span class="kw">array of</span> <span class="type">Integer</span>);
+
+  <span class="kw">procedure</span> <span class="fn">Scambia</span>(i, j: <span class="type">Integer</span>);  <span class="cmt">{ annidata: accede a Arr }</span>
+  <span class="kw">var</span> tmp: <span class="type">Integer</span>;
+  <span class="kw">begin</span>
+    tmp := Arr[i];
+    Arr[i] := Arr[j];
+    Arr[j] := tmp;
+  <span class="kw">end</span>;
+
+<span class="kw">var</span> i, j: <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  <span class="kw">for</span> i := <span class="fn">Low</span>(Arr) <span class="kw">to</span> <span class="fn">High</span>(Arr) - <span class="num">1</span> <span class="kw">do</span>
+    <span class="kw">for</span> j := i + <span class="num">1</span> <span class="kw">to</span> <span class="fn">High</span>(Arr) <span class="kw">do</span>
+      <span class="kw">if</span> Arr[j] &lt; Arr[i] <span class="kw">then</span>
+        <span class="fn">Scambia</span>(i, j);       <span class="cmt">{ chiama la procedura annidata }</span>
+<span class="kw">end</span>;
+</pre>
+      <p>Le procedure annidate sono utili per suddividere la logica senza esporre funzioni helper all'esterno. Possono accedere ai parametri e alle variabili locali del livello superiore (closure sullo stack).</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Dichiarazione Forward</div>
+<pre>
+<span class="cmt">{ Forward declaration: dichiara il prototipo prima dell'implementazione }</span>
+<span class="kw">procedure</span> <span class="fn">FunzA</span>; <span class="kw">forward</span>;
+
+<span class="kw">procedure</span> <span class="fn">FunzB</span>;
+<span class="kw">begin</span>
+  <span class="fn">FunzA</span>;    <span class="cmt">{ pu&ograve; chiamare FunzA perch&eacute; &egrave; dichiarata forward }</span>
+<span class="kw">end</span>;
+
+<span class="kw">procedure</span> <span class="fn">FunzA</span>;
+<span class="kw">begin</span>
+  WriteLn(<span class="str">'A'</span>);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PASSAGGIO PARAMETRI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-params"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PASSAGGIO PARAMETRI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Per Valore, per Riferimento, Costante, Out</div>
+<pre>
+<span class="cmt">{ Per VALORE (default): la procedura riceve una copia }</span>
+<span class="kw">procedure</span> <span class="fn">PerValore</span>(x: <span class="type">Integer</span>);
+<span class="kw">begin</span>
+  x := x * <span class="num">2</span>;    <span class="cmt">{ modifica la copia locale, non l'originale }</span>
+<span class="kw">end</span>;
+
+<span class="cmt">{ Per RIFERIMENTO (var): la procedura modifica l'originale }</span>
+<span class="kw">procedure</span> <span class="fn">PerRiferimento</span>(<span class="kw">var</span> x: <span class="type">Integer</span>);
+<span class="kw">begin</span>
+  x := x * <span class="num">2</span>;    <span class="cmt">{ modifica direttamente la variabile del chiamante }</span>
+<span class="kw">end</span>;
+
+<span class="cmt">{ CONST: passaggio per riferimento (per efficienza) ma non modificabile }</span>
+<span class="kw">procedure</span> <span class="fn">PerCostante</span>(<span class="kw">const</span> s: <span class="type">String</span>);
+<span class="kw">begin</span>
+  WriteLn(s);     <span class="cmt">{ ok: lettura }</span>
+  <span class="cmt">{ s := 'altro'; — ERRORE: non si pu&ograve; modificare un parametro const }</span>
+<span class="kw">end</span>;
+
+<span class="cmt">{ OUT: come var, ma il valore iniziale &egrave; indefinito }</span>
+<span class="kw">procedure</span> <span class="fn">Inizializza</span>(<span class="kw">out</span> x: <span class="type">Integer</span>; <span class="kw">out</span> s: <span class="type">String</span>);
+<span class="kw">begin</span>
+  x := <span class="num">0</span>;
+  s := <span class="str">'inizializzato'</span>;
+<span class="kw">end</span>;
+
+<span class="cmt">{ CONSTREF: forza il passaggio per riferimento (mai copia) }</span>
+<span class="kw">procedure</span> <span class="fn">Elabora</span>(<span class="kw">constref</span> Rec: TPersona);
+<span class="kw">begin</span>
+  WriteLn(Rec.Nome);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Riepilogo Passaggio Parametri</div>
+      <table>
+        <tr><th>Modificatore</th><th>Copia?</th><th>Modificabile?</th><th>Uso tipico</th></tr>
+        <tr><td>(nessuno)</td><td>S&igrave;</td><td>Solo copia locale</td><td>Tipi piccoli (Integer, Char, Boolean)</td></tr>
+        <tr><td><code>var</code></td><td>No (riferimento)</td><td>S&igrave;, modifica l'originale</td><td>Parametro di input/output</td></tr>
+        <tr><td><code>const</code></td><td>Dipende dal tipo</td><td>No</td><td>Tipi grandi (String, Record) in sola lettura</td></tr>
+        <tr><td><code>out</code></td><td>No (riferimento)</td><td>S&igrave;</td><td>Solo output (valore iniziale ignorato)</td></tr>
+        <tr><td><code>constref</code></td><td>No (sempre rif.)</td><td>No</td><td>Forzare riferimento senza copia</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     OVERLOADING & DEFAULT
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-overload"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OVERLOADING &amp; PARAMETRI DEFAULT</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">{ Overloading: stessa funzione, parametri diversi }</span>
+<span class="kw">function</span> <span class="fn">Somma</span>(A, B: <span class="type">Integer</span>): <span class="type">Integer</span>; <span class="kw">overload</span>;
+<span class="kw">begin</span>
+  Result := A + B;
+<span class="kw">end</span>;
+
+<span class="kw">function</span> <span class="fn">Somma</span>(A, B: <span class="type">Double</span>): <span class="type">Double</span>; <span class="kw">overload</span>;
+<span class="kw">begin</span>
+  Result := A + B;
+<span class="kw">end</span>;
+
+<span class="kw">function</span> <span class="fn">Somma</span>(A, B, C: <span class="type">Integer</span>): <span class="type">Integer</span>; <span class="kw">overload</span>;
+<span class="kw">begin</span>
+  Result := A + B + C;
+<span class="kw">end</span>;
+
+<span class="cmt">{ Parametri con valore default }</span>
+<span class="kw">procedure</span> <span class="fn">Log</span>(Msg: <span class="type">String</span>; Livello: <span class="type">Integer</span> = <span class="num">0</span>);
+<span class="kw">begin</span>
+  WriteLn(<span class="str">'['</span>, Livello, <span class="str">'] '</span>, Msg);
+<span class="kw">end</span>;
+
+<span class="cmt">{ Chiamate valide }</span>
+<span class="fn">Log</span>(<span class="str">'Avvio'</span>);        <span class="cmt">{ Livello = 0 (default) }</span>
+<span class="fn">Log</span>(<span class="str">'Errore'</span>, <span class="num">3</span>);    <span class="cmt">{ Livello = 3 }</span>
+</pre>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PUNTATORI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-pointers"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> PUNTATORI</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">type</span>
+  PInteger = ^<span class="type">Integer</span>;      <span class="cmt">{ tipo puntatore a Integer }</span>
+
+<span class="kw">var</span>
+  p:   PInteger;
+  x:   <span class="type">Integer</span>;
+  ptr: <span class="type">Pointer</span>;              <span class="cmt">{ puntatore generico (come void* in C) }</span>
+
+<span class="kw">begin</span>
+  x := <span class="num">42</span>;
+
+  <span class="cmt">{ Ottenere l'indirizzo }</span>
+  p := @x;                   <span class="cmt">{ @ = operatore "indirizzo di" }</span>
+
+  <span class="cmt">{ Dereferenziare }</span>
+  WriteLn(p^);               <span class="cmt">{ 42 — ^ dereferenzia il puntatore }</span>
+  p^ := <span class="num">100</span>;                 <span class="cmt">{ modifica x attraverso il puntatore }</span>
+  WriteLn(x);                <span class="cmt">{ 100 }</span>
+
+  <span class="cmt">{ Puntatore nil }</span>
+  p := <span class="kw">nil</span>;                  <span class="cmt">{ puntatore nullo }</span>
+  <span class="kw">if</span> p &lt;&gt; <span class="kw">nil</span> <span class="kw">then</span>
+    WriteLn(p^);
+  <span class="kw">if</span> <span class="fn">Assigned</span>(p) <span class="kw">then</span>       <span class="cmt">{ equivalente: Assigned(p) = (p &lt;&gt; nil) }</span>
+    WriteLn(p^);
+
+  <span class="cmt">{ Puntatore generico }</span>
+  ptr := @x;
+  WriteLn(<span class="type">PInteger</span>(ptr)^);   <span class="cmt">{ cast a PInteger prima di dereferenziare }</span>
+<span class="kw">end</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Puntatori a Record</div>
+<pre>
+<span class="kw">type</span>
+  PNodo = ^TNodo;
+  TNodo = <span class="kw">record</span>
+    Valore: <span class="type">Integer</span>;
+    Prossimo: PNodo;          <span class="cmt">{ puntatore al prossimo nodo (lista collegata) }</span>
+  <span class="kw">end</span>;
+
+<span class="kw">var</span>
+  Nodo: PNodo;
+
+<span class="kw">begin</span>
+  <span class="fn">New</span>(Nodo);                   <span class="cmt">{ alloca memoria per un TNodo }</span>
+  Nodo^.Valore := <span class="num">42</span>;
+  Nodo^.Prossimo := <span class="kw">nil</span>;
+  WriteLn(Nodo^.Valore);
+  <span class="fn">Dispose</span>(Nodo);               <span class="cmt">{ libera la memoria }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ALLOCAZIONE DINAMICA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-dynmem"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ALLOCAZIONE DINAMICA</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">New / Dispose &mdash; Allocazione Tipizzata</div>
+<pre>
+<span class="kw">var</span>
+  p: ^<span class="type">Integer</span>;
+  pRec: ^TPersona;
+
+<span class="kw">begin</span>
+  <span class="cmt">{ Alloca e libera un singolo valore }</span>
+  <span class="fn">New</span>(p);             <span class="cmt">{ alloca SizeOf(Integer) byte sull'heap }</span>
+  p^ := <span class="num">42</span>;
+  WriteLn(p^);
+  <span class="fn">Dispose</span>(p);         <span class="cmt">{ libera la memoria }</span>
+  p := <span class="kw">nil</span>;           <span class="cmt">{ buona pratica: annulla il puntatore }</span>
+
+  <span class="cmt">{ Alloca un record complesso }</span>
+  <span class="fn">New</span>(pRec);
+  pRec^.Nome := <span class="str">'Mario'</span>;
+  pRec^.Eta  := <span class="num">30</span>;
+  <span class="fn">Dispose</span>(pRec);      <span class="cmt">{ Dispose libera anche le stringhe AnsiString nel record }</span>
+<span class="kw">end</span>;
+</pre>
+      <div class="note"><strong>NOTA:</strong> <code>Dispose</code> sa gestire correttamente i tipi managed (AnsiString, array dinamici, interfacce) contenuti nel record. <code>FreeMem</code> non lo fa &mdash; usare <code>Dispose</code> per i tipi tipizzati e <code>FreeMem</code> solo per buffer raw.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">GetMem / FreeMem &mdash; Allocazione Raw</div>
+<pre>
+<span class="kw">var</span>
+  buf: <span class="type">Pointer</span>;
+  pArr: ^<span class="type">Byte</span>;
+  size: <span class="type">Integer</span>;
+
+<span class="kw">begin</span>
+  size := <span class="num">1024</span>;
+
+  <span class="cmt">{ Allocazione e deallocazione base }</span>
+  <span class="fn">GetMem</span>(buf, size);           <span class="cmt">{ alloca 'size' byte (come malloc) }</span>
+  <span class="fn">FillChar</span>(buf^, size, <span class="num">0</span>);     <span class="cmt">{ azzera la memoria (come memset) }</span>
+  <span class="fn">FreeMem</span>(buf, size);          <span class="cmt">{ libera (size opzionale in FPC) }</span>
+
+  <span class="cmt">{ ReallocMem — ridimensionamento (come realloc) }</span>
+  <span class="fn">GetMem</span>(buf, <span class="num">100</span>);
+  <span class="fn">ReallocMem</span>(buf, <span class="num">200</span>);        <span class="cmt">{ ridimensiona, preserva i dati }</span>
+  <span class="fn">ReallocMem</span>(buf, <span class="num">0</span>);          <span class="cmt">{ equivale a FreeMem }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operazioni sulla Memoria</div>
+<pre>
+<span class="kw">var</span>
+  src, dst: <span class="kw">array</span>[<span class="num">0</span>..<span class="num">99</span>] <span class="kw">of</span> <span class="type">Byte</span>;
+
+<span class="cmt">{ FillChar: riempie N byte con un valore }</span>
+<span class="fn">FillChar</span>(src, <span class="fn">SizeOf</span>(src), <span class="num">0</span>);           <span class="cmt">{ azzera tutto }</span>
+<span class="fn">FillChar</span>(src, <span class="num">50</span>, <span class="fn">Ord</span>(<span class="str">'A'</span>));             <span class="cmt">{ riempie i primi 50 byte con 'A' }</span>
+
+<span class="cmt">{ FillByte: come FillChar ma il valore &egrave; Byte (semanticamente pi&ugrave; chiaro) }</span>
+<span class="fn">FillByte</span>(src, <span class="fn">SizeOf</span>(src), <span class="num">$FF</span>);
+
+<span class="cmt">{ Move: copia N byte da sorgente a destinazione (come memcpy) }</span>
+<span class="fn">Move</span>(src, dst, <span class="fn">SizeOf</span>(src));              <span class="cmt">{ NOTA: src e dst, NON src^ e dst^ }</span>
+
+<span class="cmt">{ CompareMem: confronta N byte (come memcmp) }</span>
+<span class="kw">if</span> <span class="fn">CompareMem</span>(@src, @dst, <span class="fn">SizeOf</span>(src)) <span class="kw">then</span>
+  WriteLn(<span class="str">'Identici'</span>);
+
+<span class="cmt">{ SizeOf: dimensione in byte di un tipo o variabile }</span>
+WriteLn(<span class="fn">SizeOf</span>(<span class="type">Integer</span>));      <span class="cmt">{ 4 }</span>
+WriteLn(<span class="fn">SizeOf</span>(<span class="type">Pointer</span>));      <span class="cmt">{ 4 o 8 (dipende da 32/64 bit) }</span>
+WriteLn(<span class="fn">SizeOf</span>(src));           <span class="cmt">{ 100 }</span>
+</pre>
+      <div class="warn"><strong>ATTENZIONE:</strong> <code>Move</code> in Pascal ha i parametri invertiti rispetto a <code>memcpy</code> in C: <code>Move(sorgente, destinazione, dimensione)</code>. Inoltre riceve variabili, non puntatori &mdash; non usare <code>^</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Riepilogo Gestione Memoria</div>
+      <table>
+        <tr><th>Tipo di dato</th><th>Allocazione</th><th>Deallocazione</th><th>Note</th></tr>
+        <tr><td>Puntatore tipizzato (<code>^T</code>)</td><td><code>New(p)</code></td><td><code>Dispose(p)</code></td><td>Gestisce tipi managed nel record</td></tr>
+        <tr><td>Buffer raw</td><td><code>GetMem(p, n)</code></td><td><code>FreeMem(p)</code></td><td>Nessuna gestione tipi managed</td></tr>
+        <tr><td>Array dinamici</td><td><code>SetLength(a, n)</code></td><td><code>SetLength(a, 0)</code></td><td>Automatica (reference counted)</td></tr>
+        <tr><td>Stringhe (<code>AnsiString</code>)</td><td>Automatica</td><td>Automatica</td><td>Reference counted, nessun Free</td></tr>
+        <tr><td>Oggetti (<code>class</code>)</td><td><code>T.Create</code></td><td><code>obj.Free</code></td><td>Sempre manuale!</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     OBJECT vs CLASS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-object-vs-class"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OBJECT vs CLASS</div>
+  <div class="section-body">
+
+    <p>Pascal ha <strong>due sistemi OOP</strong> distinti. &Egrave; importante conoscere entrambi, anche se oggi si usa quasi esclusivamente <code>class</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">object (Turbo Pascal / stile antico)</div>
+<pre>
+<span class="kw">type</span>
+  TForma = <span class="kw">object</span>                <span class="cmt">{ tipo value-type, allocato sullo stack }</span>
+    X, Y: <span class="type">Integer</span>;
+    <span class="kw">constructor</span> <span class="fn">Init</span>(aX, aY: <span class="type">Integer</span>);
+    <span class="kw">destructor</span>  <span class="fn">Done</span>; <span class="kw">virtual</span>;
+    <span class="kw">procedure</span> <span class="fn">Disegna</span>; <span class="kw">virtual</span>;
+  <span class="kw">end</span>;
+
+  TCerchio = <span class="kw">object</span>(TForma)      <span class="cmt">{ ereditariet&agrave; }</span>
+    Raggio: <span class="type">Integer</span>;
+    <span class="kw">constructor</span> <span class="fn">Init</span>(aX, aY, aR: <span class="type">Integer</span>);
+    <span class="kw">procedure</span> <span class="fn">Disegna</span>; <span class="kw">virtual</span>;
+  <span class="kw">end</span>;
+
+<span class="kw">var</span>
+  f: TForma;       <span class="cmt">{ allocato sullo stack, nessun New necessario }</span>
+  p: ^TForma;      <span class="cmt">{ oppure sull'heap con New/Dispose }</span>
+<span class="kw">begin</span>
+  f.<span class="fn">Init</span>(<span class="num">10</span>, <span class="num">20</span>);
+  f.<span class="fn">Disegna</span>;
+  f.<span class="fn">Done</span>;
+
+  <span class="fn">New</span>(p, <span class="fn">Init</span>(<span class="num">10</span>, <span class="num">20</span>));  <span class="cmt">{ allocazione heap + costruttore }</span>
+  p^.<span class="fn">Disegna</span>;
+  <span class="fn">Dispose</span>(p, <span class="fn">Done</span>);      <span class="cmt">{ distruttore + deallocazione }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Confronto object vs class</div>
+      <table>
+        <tr><th>Caratteristica</th><th><code>object</code> (TP)</th><th><code>class</code> (Delphi/FPC)</th></tr>
+        <tr><td>Allocazione</td><td>Stack (default) o heap con <code>New</code></td><td>Sempre heap (<code>TClasse.Create</code>)</td></tr>
+        <tr><td>Tipo semantico</td><td>Value type (copia su assegnamento)</td><td>Reference type (copia il puntatore)</td></tr>
+        <tr><td>Classe base</td><td>Nessuna (standalone)</td><td>Sempre <code>TObject</code> (implicito)</td></tr>
+        <tr><td>Costruttore/Distruttore</td><td><code>Init</code> / <code>Done</code> (per convenzione)</td><td><code>Create</code> / <code>Destroy</code></td></tr>
+        <tr><td>Liberazione</td><td>Automatica (stack) o <code>Dispose</code></td><td>Manuale: <code>.Free</code> o <code>FreeAndNil</code></td></tr>
+        <tr><td>Property</td><td>No</td><td>S&igrave;</td></tr>
+        <tr><td>Interfacce</td><td>No</td><td>S&igrave;</td></tr>
+        <tr><td>RTTI</td><td>No</td><td>S&igrave; (sezione <code>published</code>)</td></tr>
+        <tr><td>Visibilit&agrave;</td><td><code>private</code>, <code>public</code></td><td><code>private</code>, <code>protected</code>, <code>public</code>, <code>published</code>, <code>strict *</code></td></tr>
+        <tr><td>Uso oggi</td><td>Legacy, raro</td><td><strong>Raccomandato per tutto il codice nuovo</strong></td></tr>
+      </table>
+      <div class="warn"><strong>ATTENZIONE:</strong> Non confondere <code>object</code> con <code>class</code>. Nonostante la sintassi simile, sono incompatibili: non si pu&ograve; ereditare un <code>object</code> da una <code>class</code> o viceversa. Per codice nuovo, usare sempre <code>class</code>.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     CLASSI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-classes"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CLASSI (OOP)</div>
+  <div class="section-body">
+
+    <div class="note"><strong>NOTA:</strong> In Free Pascal, le classi richiedono <code>{$mode objfpc}</code> o <code>{$mode delphi}</code>. Tutte le classi ereditano implicitamente da <code>TObject</code>.</div>
+
+    <div class="sub">
+      <div class="sub-title">Dichiarazione di una Classe</div>
+<pre>
+<span class="kw">type</span>
+  TAnimale = <span class="kw">class</span>              <span class="cmt">{ eredita implicitamente da TObject }</span>
+  <span class="kw">private</span>
+    FNome:   <span class="type">String</span>;             <span class="cmt">{ campo privato (convenzione: prefisso F) }</span>
+    FEta:    <span class="type">Integer</span>;
+  <span class="kw">protected</span>
+    FSpecie: <span class="type">String</span>;             <span class="cmt">{ accessibile alle sottoclassi }</span>
+  <span class="kw">public</span>
+    <span class="kw">constructor</span> <span class="fn">Create</span>(aNome: <span class="type">String</span>; aEta: <span class="type">Integer</span>);
+    <span class="kw">destructor</span>  <span class="fn">Destroy</span>; <span class="kw">override</span>;
+
+    <span class="kw">procedure</span> <span class="fn">Parla</span>; <span class="kw">virtual</span>;    <span class="cmt">{ metodo virtuale: pu&ograve; essere sovrascritto }</span>
+    <span class="kw">function</span>  <span class="fn">Descrizione</span>: <span class="type">String</span>;
+
+    <span class="kw">property</span> Nome: <span class="type">String</span> <span class="kw">read</span> FNome <span class="kw">write</span> FNome;
+    <span class="kw">property</span> Eta: <span class="type">Integer</span> <span class="kw">read</span> FEta;   <span class="cmt">{ sola lettura }</span>
+  <span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Implementazione</div>
+<pre>
+<span class="kw">constructor</span> TAnimale.<span class="fn">Create</span>(aNome: <span class="type">String</span>; aEta: <span class="type">Integer</span>);
+<span class="kw">begin</span>
+  <span class="kw">inherited</span> Create;             <span class="cmt">{ chiama il costruttore di TObject }</span>
+  FNome   := aNome;
+  FEta    := aEta;
+  FSpecie := <span class="str">'Sconosciuto'</span>;
+<span class="kw">end</span>;
+
+<span class="kw">destructor</span> TAnimale.<span class="fn">Destroy</span>;
+<span class="kw">begin</span>
+  <span class="cmt">{ pulizia risorse se necessario }</span>
+  <span class="kw">inherited</span> Destroy;            <span class="cmt">{ SEMPRE chiamare inherited nel destructor }</span>
+<span class="kw">end</span>;
+
+<span class="kw">procedure</span> TAnimale.<span class="fn">Parla</span>;
+<span class="kw">begin</span>
+  WriteLn(FNome, <span class="str">' fa un suono generico.'</span>);
+<span class="kw">end</span>;
+
+<span class="kw">function</span> TAnimale.<span class="fn">Descrizione</span>: <span class="type">String</span>;
+<span class="kw">begin</span>
+  Result := <span class="fn">Format</span>(<span class="str">'%s (%s), %d anni'</span>, [FNome, FSpecie, FEta]);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Utilizzo</div>
+<pre>
+<span class="kw">var</span>
+  a: TAnimale;
+
+<span class="kw">begin</span>
+  a := TAnimale.<span class="fn">Create</span>(<span class="str">'Fido'</span>, <span class="num">5</span>);
+  <span class="kw">try</span>
+    a.<span class="fn">Parla</span>;
+    WriteLn(a.Nome);              <span class="cmt">{ accesso tramite property }</span>
+    WriteLn(a.<span class="fn">Descrizione</span>);
+  <span class="kw">finally</span>
+    a.<span class="fn">Free</span>;                      <span class="cmt">{ Free = se non nil, chiama Destroy }</span>
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Property con Getter/Setter</div>
+<pre>
+<span class="kw">type</span>
+  TPersona = <span class="kw">class</span>
+  <span class="kw">private</span>
+    FNome: <span class="type">String</span>;
+    FEta:  <span class="type">Integer</span>;
+    <span class="kw">procedure</span> <span class="fn">SetEta</span>(AValue: <span class="type">Integer</span>);    <span class="cmt">{ setter con validazione }</span>
+    <span class="kw">function</span>  <span class="fn">GetInfo</span>: <span class="type">String</span>;              <span class="cmt">{ getter calcolato }</span>
+  <span class="kw">public</span>
+    <span class="cmt">{ Accesso diretto al campo }</span>
+    <span class="kw">property</span> Nome: <span class="type">String</span> <span class="kw">read</span> FNome <span class="kw">write</span> FNome;
+
+    <span class="cmt">{ Con metodo setter (validazione) }</span>
+    <span class="kw">property</span> Eta: <span class="type">Integer</span> <span class="kw">read</span> FEta <span class="kw">write</span> SetEta;
+
+    <span class="cmt">{ Sola lettura, calcolata }</span>
+    <span class="kw">property</span> Info: <span class="type">String</span> <span class="kw">read</span> GetInfo;
+
+    <span class="cmt">{ Property con valore default (per componenti LCL) }</span>
+    <span class="kw">property</span> Attivo: <span class="type">Boolean</span> <span class="kw">read</span> FAttivo <span class="kw">write</span> FAttivo <span class="kw">default</span> <span class="kw">True</span>;
+
+    <span class="cmt">{ Property indicizzata (array-like) }</span>
+    <span class="kw">property</span> Items[Index: <span class="type">Integer</span>]: <span class="type">String</span> <span class="kw">read</span> GetItem <span class="kw">write</span> SetItem; <span class="kw">default</span>;
+    <span class="cmt">{ 'default' senza valore rende la property accessibile con p[i] }</span>
+  <span class="kw">end</span>;
+
+<span class="kw">procedure</span> TPersona.<span class="fn">SetEta</span>(AValue: <span class="type">Integer</span>);
+<span class="kw">begin</span>
+  <span class="kw">if</span> (AValue &gt;= <span class="num">0</span>) <span class="kw">and</span> (AValue &lt;= <span class="num">150</span>) <span class="kw">then</span>
+    FEta := AValue
+  <span class="kw">else</span>
+    <span class="kw">raise</span> ERangeError.<span class="fn">Create</span>(<span class="str">'Et&agrave; non valida'</span>);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Visibilit&agrave; dei Membri</div>
+      <table>
+        <tr><th>Modificatore</th><th>Accessibile da</th></tr>
+        <tr><td><code>private</code></td><td>Solo la stessa unit (in FPC: stessa unit, non stessa classe!)</td></tr>
+        <tr><td><code>strict private</code></td><td>Solo la stessa classe</td></tr>
+        <tr><td><code>protected</code></td><td>Stessa unit + sottoclassi</td></tr>
+        <tr><td><code>strict protected</code></td><td>Solo sottoclassi</td></tr>
+        <tr><td><code>public</code></td><td>Ovunque</td></tr>
+        <tr><td><code>published</code></td><td>Come public + informazioni RTTI (usato nel RAD/LCL)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     EREDITARIETÀ
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-inherit"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> EREDITARIET&Agrave; &amp; POLIMORFISMO</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">type</span>
+  TCane = <span class="kw">class</span>(TAnimale)        <span class="cmt">{ eredita da TAnimale }</span>
+  <span class="kw">public</span>
+    <span class="kw">constructor</span> <span class="fn">Create</span>(aNome: <span class="type">String</span>; aEta: <span class="type">Integer</span>);
+    <span class="kw">procedure</span> <span class="fn">Parla</span>; <span class="kw">override</span>;   <span class="cmt">{ sovrascrive il metodo virtuale }</span>
+    <span class="kw">procedure</span> <span class="fn">Riporta</span>;
+  <span class="kw">end</span>;
+
+  TGatto = <span class="kw">class</span>(TAnimale)
+  <span class="kw">public</span>
+    <span class="kw">constructor</span> <span class="fn">Create</span>(aNome: <span class="type">String</span>; aEta: <span class="type">Integer</span>);
+    <span class="kw">procedure</span> <span class="fn">Parla</span>; <span class="kw">override</span>;
+  <span class="kw">end</span>;
+
+<span class="kw">constructor</span> TCane.<span class="fn">Create</span>(aNome: <span class="type">String</span>; aEta: <span class="type">Integer</span>);
+<span class="kw">begin</span>
+  <span class="kw">inherited</span> Create(aNome, aEta);
+  FSpecie := <span class="str">'Canis familiaris'</span>;
+<span class="kw">end</span>;
+
+<span class="kw">procedure</span> TCane.<span class="fn">Parla</span>;
+<span class="kw">begin</span>
+  WriteLn(FNome, <span class="str">' dice: Bau bau!'</span>);
+<span class="kw">end</span>;
+
+<span class="kw">procedure</span> TCane.<span class="fn">Riporta</span>;
+<span class="kw">begin</span>
+  WriteLn(FNome, <span class="str">' riporta la palla.'</span>);
+<span class="kw">end</span>;
+
+<span class="kw">constructor</span> TGatto.<span class="fn">Create</span>(aNome: <span class="type">String</span>; aEta: <span class="type">Integer</span>);
+<span class="kw">begin</span>
+  <span class="kw">inherited</span> Create(aNome, aEta);
+  FSpecie := <span class="str">'Felis catus'</span>;
+<span class="kw">end</span>;
+
+<span class="kw">procedure</span> TGatto.<span class="fn">Parla</span>;
+<span class="kw">begin</span>
+  WriteLn(FNome, <span class="str">' dice: Miao!'</span>);
+<span class="kw">end</span>;
+
+<span class="cmt">{ Polimorfismo in azione }</span>
+<span class="kw">var</span>
+  Animali: <span class="kw">array</span>[<span class="num">0</span>..<span class="num">1</span>] <span class="kw">of</span> TAnimale;
+  a: TAnimale;
+
+<span class="kw">begin</span>
+  Animali[<span class="num">0</span>] := TCane.<span class="fn">Create</span>(<span class="str">'Rex'</span>, <span class="num">4</span>);
+  Animali[<span class="num">1</span>] := TGatto.<span class="fn">Create</span>(<span class="str">'Whiskers'</span>, <span class="num">2</span>);
+
+  <span class="kw">for</span> a <span class="kw">in</span> Animali <span class="kw">do</span>
+  <span class="kw">begin</span>
+    a.<span class="fn">Parla</span>;                  <span class="cmt">{ chiama il metodo corretto (late binding) }</span>
+    WriteLn(a.<span class="fn">Descrizione</span>);
+
+    <span class="cmt">{ Type check }</span>
+    <span class="kw">if</span> a <span class="kw">is</span> TCane <span class="kw">then</span>
+      (a <span class="kw">as</span> TCane).<span class="fn">Riporta</span>;   <span class="cmt">{ 'is' verifica, 'as' fa il cast sicuro }</span>
+  <span class="kw">end</span>;
+
+  <span class="kw">for</span> a <span class="kw">in</span> Animali <span class="kw">do</span>
+    a.<span class="fn">Free</span>;
+<span class="kw">end</span>;
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Metodi Virtuali vs Statici</div>
+      <table>
+        <tr><th>Dichiarazione</th><th>Comportamento</th></tr>
+        <tr><td><code>procedure Foo;</code></td><td>Statico: il metodo chiamato dipende dal tipo della variabile</td></tr>
+        <tr><td><code>procedure Foo; virtual;</code></td><td>Virtuale: introduce un nuovo slot nella VMT</td></tr>
+        <tr><td><code>procedure Foo; override;</code></td><td>Sovrascrive il metodo virtuale del genitore</td></tr>
+        <tr><td><code>procedure Foo; virtual; abstract;</code></td><td>Astratto: nessuna implementazione, le sottoclassi DEVONO sovrascriverlo</td></tr>
+        <tr><td><code>procedure Foo; reintroduce;</code></td><td>Nasconde il metodo virtuale del genitore (nuovo slot, nessun polimorfismo)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     INTERFACCE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-interfaces"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> INTERFACCE</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">type</span>
+  IStampabile = <span class="kw">interface</span>
+    [<span class="str">'{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}'</span>]   <span class="cmt">{ GUID opzionale }</span>
+    <span class="kw">function</span> <span class="fn">ToText</span>: <span class="type">String</span>;
+    <span class="kw">procedure</span> <span class="fn">Stampa</span>;
+  <span class="kw">end</span>;
+
+  ISalvabile = <span class="kw">interface</span>
+    <span class="kw">procedure</span> <span class="fn">Salva</span>(NomeFile: <span class="type">String</span>);
+    <span class="kw">procedure</span> <span class="fn">Carica</span>(NomeFile: <span class="type">String</span>);
+  <span class="kw">end</span>;
+
+  <span class="cmt">{ Classe che implementa pi&ugrave; interfacce }</span>
+  TDocumento = <span class="kw">class</span>(TInterfacedObject, IStampabile, ISalvabile)
+  <span class="kw">private</span>
+    FTesto: <span class="type">String</span>;
+  <span class="kw">public</span>
+    <span class="kw">constructor</span> <span class="fn">Create</span>(aTesto: <span class="type">String</span>);
+    <span class="cmt">{ implementazione IStampabile }</span>
+    <span class="kw">function</span>  <span class="fn">ToText</span>: <span class="type">String</span>;
+    <span class="kw">procedure</span> <span class="fn">Stampa</span>;
+    <span class="cmt">{ implementazione ISalvabile }</span>
+    <span class="kw">procedure</span> <span class="fn">Salva</span>(NomeFile: <span class="type">String</span>);
+    <span class="kw">procedure</span> <span class="fn">Carica</span>(NomeFile: <span class="type">String</span>);
+  <span class="kw">end</span>;
+</pre>
+    <p><code>TInterfacedObject</code> fornisce il reference counting automatico. Quando l'ultima variabile interfaccia esce dallo scope, l'oggetto viene liberato automaticamente.</p>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     GENERICS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-generics"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> GENERICS</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Classe Generica (mode objfpc)</div>
+<pre>
+<span class="dir">{$mode objfpc}{$H+}</span>
+
+<span class="kw">type</span>
+  <span class="kw">generic</span> TStack&lt;T&gt; = <span class="kw">class</span>
+  <span class="kw">private</span>
+    FItems: <span class="kw">array of</span> T;
+    FCount: <span class="type">Integer</span>;
+  <span class="kw">public</span>
+    <span class="kw">constructor</span> <span class="fn">Create</span>;
+    <span class="kw">procedure</span> <span class="fn">Push</span>(Item: T);
+    <span class="kw">function</span>  <span class="fn">Pop</span>: T;
+    <span class="kw">function</span>  <span class="fn">Peek</span>: T;
+    <span class="kw">property</span> Count: <span class="type">Integer</span> <span class="kw">read</span> FCount;
+  <span class="kw">end</span>;
+
+<span class="kw">constructor</span> TStack.<span class="fn">Create</span>;
+<span class="kw">begin</span>
+  FCount := <span class="num">0</span>;
+  <span class="fn">SetLength</span>(FItems, <span class="num">4</span>);
+<span class="kw">end</span>;
+
+<span class="kw">procedure</span> TStack.<span class="fn">Push</span>(Item: T);
+<span class="kw">begin</span>
+  <span class="kw">if</span> FCount = <span class="fn">Length</span>(FItems) <span class="kw">then</span>
+    <span class="fn">SetLength</span>(FItems, FCount * <span class="num">2</span>);
+  FItems[FCount] := Item;
+  Inc(FCount);
+<span class="kw">end</span>;
+
+<span class="kw">function</span> TStack.<span class="fn">Pop</span>: T;
+<span class="kw">begin</span>
+  Dec(FCount);
+  Result := FItems[FCount];
+<span class="kw">end</span>;
+
+<span class="kw">function</span> TStack.<span class="fn">Peek</span>: T;
+<span class="kw">begin</span>
+  Result := FItems[FCount - <span class="num">1</span>];
+<span class="kw">end</span>;
+
+<span class="cmt">{ Specializzazione (mode objfpc) }</span>
+<span class="kw">type</span>
+  TIntStack    = <span class="kw">specialize</span> TStack&lt;<span class="type">Integer</span>&gt;;
+  TStringStack = <span class="kw">specialize</span> TStack&lt;<span class="type">String</span>&gt;;
+
+<span class="cmt">{ Utilizzo }</span>
+<span class="kw">var</span>
+  Stack: TIntStack;
+<span class="kw">begin</span>
+  Stack := TIntStack.<span class="fn">Create</span>;
+  <span class="kw">try</span>
+    Stack.<span class="fn">Push</span>(<span class="num">10</span>);
+    Stack.<span class="fn">Push</span>(<span class="num">20</span>);
+    WriteLn(Stack.<span class="fn">Pop</span>);    <span class="cmt">{ 20 }</span>
+  <span class="kw">finally</span>
+    Stack.<span class="fn">Free</span>;
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Sintassi Delphi-style (mode delphi)</div>
+<pre>
+<span class="dir">{$mode delphi}</span>
+
+<span class="cmt">{ In mode delphi, la sintassi &egrave; pi&ugrave; compatta }</span>
+<span class="kw">type</span>
+  TStack&lt;T&gt; = <span class="kw">class</span>    <span class="cmt">{ niente 'generic' keyword }</span>
+    ...
+  <span class="kw">end</span>;
+
+<span class="kw">var</span>
+  Stack: TStack&lt;<span class="type">Integer</span>&gt;;  <span class="cmt">{ niente 'specialize' keyword }</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Collezioni Generiche (unit fgl)</div>
+<pre>
+<span class="kw">uses</span> fgl;
+
+<span class="kw">type</span>
+  TIntList    = <span class="kw">specialize</span> TFPGList&lt;<span class="type">Integer</span>&gt;;
+  TStringList2 = <span class="kw">specialize</span> TFPGList&lt;<span class="type">String</span>&gt;;
+  TIntMap     = <span class="kw">specialize</span> TFPGMap&lt;<span class="type">String</span>, <span class="type">Integer</span>&gt;;
+
+<span class="kw">var</span>
+  Lista: TIntList;
+<span class="kw">begin</span>
+  Lista := TIntList.<span class="fn">Create</span>;
+  <span class="kw">try</span>
+    Lista.<span class="fn">Add</span>(<span class="num">10</span>);
+    Lista.<span class="fn">Add</span>(<span class="num">20</span>);
+    Lista.<span class="fn">Add</span>(<span class="num">30</span>);
+    WriteLn(Lista[<span class="num">1</span>]);       <span class="cmt">{ 20 }</span>
+    WriteLn(Lista.Count);    <span class="cmt">{ 3 }</span>
+    Lista.<span class="fn">Sort</span>(@CompareFunc); <span class="cmt">{ ordinamento con funzione comparatore }</span>
+  <span class="kw">finally</span>
+    Lista.<span class="fn">Free</span>;
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     I/O STANDARD
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-stdio"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> I/O STANDARD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Output &mdash; Write / WriteLn</div>
+<pre>
+<span class="fn">Write</span>(<span class="str">'Testo senza a capo'</span>);
+<span class="fn">WriteLn</span>(<span class="str">'Testo con a capo'</span>);
+<span class="fn">WriteLn</span>;                                      <span class="cmt">{ riga vuota }</span>
+
+<span class="cmt">{ Parametri multipli di tipi diversi (NON serve Format!) }</span>
+<span class="fn">WriteLn</span>(<span class="str">'Nome: '</span>, Nome, <span class="str">' Et&agrave;: '</span>, Eta, <span class="str">' Attivo: '</span>, Attivo);
+<span class="cmt">{ Output: Nome: Mario Et&agrave;: 30 Attivo: TRUE }</span>
+
+<span class="cmt">{ Formattazione con : (specificatori di larghezza) }</span>
+<span class="fn">WriteLn</span>(x:<span class="num">10</span>);             <span class="cmt">{ intero, larghezza campo 10 (allineato a dx) }</span>
+<span class="fn">WriteLn</span>(d:<span class="num">10</span>:<span class="num">2</span>);           <span class="cmt">{ float, larghezza 10, 2 decimali }</span>
+<span class="fn">WriteLn</span>(b:<span class="num">8</span>);              <span class="cmt">{ boolean, larghezza 8: '    TRUE' }</span>
+<span class="fn">WriteLn</span>(s:<span class="num">20</span>);             <span class="cmt">{ stringa, larghezza 20 (padding a sinistra) }</span>
+
+<span class="cmt">{ Esempio: tabella allineata }</span>
+<span class="fn">WriteLn</span>(<span class="str">'Prodotto'</span>:<span class="num">15</span>, <span class="str">'Prezzo'</span>:<span class="num">10</span>, <span class="str">'Qtà'</span>:<span class="num">6</span>);
+<span class="fn">WriteLn</span>(<span class="str">'Mela'</span>:<span class="num">15</span>, <span class="num">1.50</span>:<span class="num">10</span>:<span class="num">2</span>, <span class="num">12</span>:<span class="num">6</span>);
+<span class="fn">WriteLn</span>(<span class="str">'Banana'</span>:<span class="num">15</span>, <span class="num">0.80</span>:<span class="num">10</span>:<span class="num">2</span>, <span class="num">5</span>:<span class="num">6</span>);
+<span class="cmt">{        Prodotto    Prezzo   Qtà
+              Mela      1.50    12
+            Banana      0.80     5  }</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Input &mdash; Read / ReadLn</div>
+<pre>
+<span class="kw">var</span>
+  Nome: <span class="type">String</span>;
+  x: <span class="type">Integer</span>;
+  d: <span class="type">Double</span>;
+  c: <span class="type">Char</span>;
+
+<span class="cmt">{ ReadLn: legge e consuma il newline }</span>
+<span class="fn">Write</span>(<span class="str">'Inserisci un numero: '</span>);
+<span class="fn">ReadLn</span>(x);                  <span class="cmt">{ legge Integer, poi scarta fino a fine riga }</span>
+
+<span class="fn">Write</span>(<span class="str">'Inserisci il nome: '</span>);
+<span class="fn">ReadLn</span>(Nome);               <span class="cmt">{ legge l'intera riga come stringa }</span>
+
+<span class="cmt">{ Read: legge ma NON consuma il newline (resta nel buffer) }</span>
+<span class="fn">Read</span>(x);                    <span class="cmt">{ il newline rimane &rarr; il prossimo ReadLn lo legge vuoto! }</span>
+
+<span class="cmt">{ Lettura multipla sulla stessa riga }</span>
+<span class="fn">Write</span>(<span class="str">'Due numeri separati da spazio: '</span>);
+<span class="fn">ReadLn</span>(x, d);               <span class="cmt">{ legge Integer poi Double, poi scarta il resto }</span>
+
+<span class="cmt">{ Leggere un singolo carattere }</span>
+<span class="fn">Read</span>(c);                    <span class="cmt">{ legge 1 char (attende Enter) }</span>
+
+<span class="cmt">{ ReadLn senza parametri: attende che l'utente prema Enter }</span>
+<span class="fn">WriteLn</span>(<span class="str">'Premi Invio per continuare...'</span>);
+<span class="fn">ReadLn</span>;
+</pre>
+      <div class="warn"><strong>TRAPPOLA COMUNE:</strong> Dopo <code>Read(x)</code> (senza Ln), il newline resta nel buffer. Se subito dopo si fa <code>ReadLn(Nome)</code>, la stringa sar&agrave; vuota! Soluzione: usare sempre <code>ReadLn</code> oppure inserire un <code>ReadLn</code> di pulizia tra le due letture.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Formattazione con Format (SysUtils)</div>
+<pre>
+<span class="kw">uses</span> SysUtils;
+
+WriteLn(<span class="fn">Format</span>(<span class="str">'%-20s %5d %8.2f'</span>, [<span class="str">'Prodotto'</span>, <span class="num">42</span>, <span class="num">3.14</span>]));
+</pre>
+      <table>
+        <tr><th>Specificatore</th><th>Descrizione</th><th>Esempio</th></tr>
+        <tr><td><code>%d</code></td><td>Intero decimale</td><td><code>Format('%d', [42])</code> &rarr; <code>'42'</code></td></tr>
+        <tr><td><code>%5d</code></td><td>Intero, larghezza minima 5</td><td><code>Format('%5d', [42])</code> &rarr; <code>'   42'</code></td></tr>
+        <tr><td><code>%x</code></td><td>Intero esadecimale</td><td><code>Format('%x', [255])</code> &rarr; <code>'FF'</code></td></tr>
+        <tr><td><code>%f</code></td><td>Float a punto fisso</td><td><code>Format('%f', [3.14])</code> &rarr; <code>'3.14'</code></td></tr>
+        <tr><td><code>%.2f</code></td><td>Float con 2 decimali</td><td><code>Format('%.2f', [3.1])</code> &rarr; <code>'3.10'</code></td></tr>
+        <tr><td><code>%e</code></td><td>Notazione scientifica</td><td><code>Format('%e', [1500.0])</code> &rarr; <code>'1.5E+003'</code></td></tr>
+        <tr><td><code>%g</code></td><td>Generale (sceglie f o e)</td><td><code>Format('%g', [0.001])</code> &rarr; <code>'0.001'</code></td></tr>
+        <tr><td><code>%s</code></td><td>Stringa</td><td><code>Format('%s', ['abc'])</code> &rarr; <code>'abc'</code></td></tr>
+        <tr><td><code>%-20s</code></td><td>Stringa, allineata a sinistra, larg. 20</td><td><code>Format('%-20s|', ['abc'])</code> &rarr; <code>'abc                 |'</code></td></tr>
+        <tr><td><code>%p</code></td><td>Puntatore (indirizzo hex)</td><td><code>Format('%p', [ptr])</code></td></tr>
+        <tr><td><code>%%</code></td><td>Carattere % letterale</td><td><code>Format('100%%')</code> &rarr; <code>'100%'</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">I/O con Gestione Errori ({$I})</div>
+<pre>
+<span class="cmt">{ Approccio tradizionale senza eccezioni: usare {$I-} / {$I+} e IOResult }</span>
+<span class="kw">var</span>
+  f: TextFile;
+
+<span class="dir">{$I-}</span>                           <span class="cmt">{ disabilita eccezioni I/O }</span>
+<span class="fn">AssignFile</span>(f, <span class="str">'inesistente.txt'</span>);
+<span class="fn">Reset</span>(f);
+<span class="kw">if</span> <span class="fn">IOResult</span> &lt;&gt; <span class="num">0</span> <span class="kw">then</span>         <span class="cmt">{ IOResult = 0 se ok, altrimenti codice errore }</span>
+  WriteLn(<span class="str">'File non trovato!'</span>)
+<span class="kw">else</span>
+<span class="kw">begin</span>
+  <span class="cmt">{ ... leggi il file ... }</span>
+  <span class="fn">CloseFile</span>(f);
+<span class="kw">end</span>;
+<span class="dir">{$I+}</span>                           <span class="cmt">{ riabilita eccezioni I/O }</span>
+
+<span class="cmt">{ NOTA: IOResult resetta a 0 dopo la lettura!
+  Deve essere letto UNA SOLA volta subito dopo l'operazione. }</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     I/O SU FILE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-fileio"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> I/O SU FILE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">File di Testo &mdash; Scrittura</div>
+<pre>
+<span class="kw">var</span>
+  f: TextFile;
+
+<span class="kw">begin</span>
+  <span class="fn">AssignFile</span>(f, <span class="str">'output.txt'</span>);     <span class="cmt">{ associa la variabile file al percorso }</span>
+  <span class="fn">Rewrite</span>(f);                      <span class="cmt">{ crea il file (sovrascrive se esiste!) }</span>
+  <span class="fn">WriteLn</span>(f, <span class="str">'Riga 1'</span>);
+  <span class="fn">WriteLn</span>(f, <span class="str">'Riga 2'</span>);
+  <span class="fn">Write</span>(f, <span class="str">'Senza a capo'</span>);        <span class="cmt">{ Write funziona anche su file }</span>
+  <span class="fn">WriteLn</span>(f, <span class="num">42</span>:<span class="num">6</span>, <span class="num">3.14</span>:<span class="num">8</span>:<span class="num">2</span>);    <span class="cmt">{ formattazione con : funziona anche su file }</span>
+  <span class="fn">CloseFile</span>(f);                    <span class="cmt">{ SEMPRE chiudere! Flushes i buffer. }</span>
+
+  <span class="cmt">{ Append: aggiunta in coda (NON sovrascrive) }</span>
+  <span class="fn">AssignFile</span>(f, <span class="str">'output.txt'</span>);
+  <span class="fn">Append</span>(f);                       <span class="cmt">{ apre per aggiunta — errore se il file non esiste }</span>
+  <span class="fn">WriteLn</span>(f, <span class="str">'Riga aggiunta'</span>);
+  <span class="fn">CloseFile</span>(f);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">File di Testo &mdash; Lettura</div>
+<pre>
+<span class="kw">var</span>
+  f: TextFile;
+  Linea: <span class="type">String</span>;
+  x: <span class="type">Integer</span>;
+  d: <span class="type">Double</span>;
+
+<span class="kw">begin</span>
+  <span class="fn">AssignFile</span>(f, <span class="str">'dati.txt'</span>);
+  <span class="fn">Reset</span>(f);                        <span class="cmt">{ apre in lettura }</span>
+
+  <span class="cmt">{ Lettura riga per riga }</span>
+  <span class="kw">while not</span> <span class="fn">Eof</span>(f) <span class="kw">do</span>
+  <span class="kw">begin</span>
+    <span class="fn">ReadLn</span>(f, Linea);
+    WriteLn(Linea);
+  <span class="kw">end</span>;
+
+  <span class="cmt">{ Lettura di valori tipizzati da file testo }</span>
+  <span class="fn">Reset</span>(f);                        <span class="cmt">{ riporta all'inizio }</span>
+  <span class="kw">while not</span> <span class="fn">Eof</span>(f) <span class="kw">do</span>
+  <span class="kw">begin</span>
+    <span class="fn">ReadLn</span>(f, x, d);               <span class="cmt">{ legge Integer e Double dalla stessa riga }</span>
+    WriteLn(<span class="str">'Int: '</span>, x, <span class="str">' Float: '</span>, d:<span class="num">0</span>:<span class="num">2</span>);
+  <span class="kw">end</span>;
+
+  <span class="cmt">{ Lettura carattere per carattere }</span>
+  <span class="fn">Reset</span>(f);
+  <span class="kw">while not</span> <span class="fn">Eof</span>(f) <span class="kw">do</span>
+  <span class="kw">begin</span>
+    <span class="kw">while not</span> <span class="fn">Eoln</span>(f) <span class="kw">do</span>          <span class="cmt">{ Eoln = End of Line }</span>
+    <span class="kw">begin</span>
+      <span class="fn">Read</span>(f, c);
+      Write(c);
+    <span class="kw">end</span>;
+    <span class="fn">ReadLn</span>(f);                     <span class="cmt">{ consuma il newline }</span>
+    WriteLn;
+  <span class="kw">end</span>;
+
+  <span class="fn">CloseFile</span>(f);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Riepilogo Apertura File di Testo</div>
+      <table>
+        <tr><th>Procedura</th><th>Modalit&agrave;</th><th>File deve esistere?</th><th>Posizione</th></tr>
+        <tr><td><code>Rewrite(f)</code></td><td>Scrittura (crea/sovrascrive)</td><td>No (lo crea)</td><td>Inizio</td></tr>
+        <tr><td><code>Reset(f)</code></td><td>Sola lettura</td><td>S&igrave;</td><td>Inizio</td></tr>
+        <tr><td><code>Append(f)</code></td><td>Scrittura in coda</td><td>S&igrave;</td><td>Fine</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Lettura Sicura con try..finally</div>
+<pre>
+<span class="kw">var</span>
+  f: TextFile;
+  Linea: <span class="type">String</span>;
+<span class="kw">begin</span>
+  <span class="fn">AssignFile</span>(f, <span class="str">'dati.txt'</span>);
+  <span class="fn">Reset</span>(f);
+  <span class="kw">try</span>
+    <span class="kw">while not</span> <span class="fn">Eof</span>(f) <span class="kw">do</span>
+    <span class="kw">begin</span>
+      <span class="fn">ReadLn</span>(f, Linea);
+      <span class="cmt">{ ... elabora ... }</span>
+    <span class="kw">end</span>;
+  <span class="kw">finally</span>
+    <span class="fn">CloseFile</span>(f);     <span class="cmt">{ chiude il file anche se c'&egrave; un'eccezione }</span>
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">File Tipizzati (Binari)</div>
+<pre>
+<span class="kw">type</span>
+  TRecord = <span class="kw">record</span>
+    ID:   <span class="type">Integer</span>;
+    Nome: <span class="type">String</span>[<span class="num">50</span>];    <span class="cmt">{ ShortString a lunghezza fissa per file binari! }</span>
+  <span class="kw">end</span>;
+
+<span class="kw">var</span>
+  f: <span class="kw">file of</span> TRecord;
+  Rec: TRecord;
+
+<span class="kw">begin</span>
+  <span class="cmt">{ Scrittura }</span>
+  <span class="fn">AssignFile</span>(f, <span class="str">'dati.bin'</span>);
+  <span class="fn">Rewrite</span>(f);
+  Rec.ID := <span class="num">1</span>;  Rec.Nome := <span class="str">'Mario'</span>;   <span class="fn">Write</span>(f, Rec);
+  Rec.ID := <span class="num">2</span>;  Rec.Nome := <span class="str">'Luigi'</span>;   <span class="fn">Write</span>(f, Rec);
+  Rec.ID := <span class="num">3</span>;  Rec.Nome := <span class="str">'Peach'</span>;   <span class="fn">Write</span>(f, Rec);
+  <span class="fn">CloseFile</span>(f);
+
+  <span class="cmt">{ Lettura sequenziale }</span>
+  <span class="fn">AssignFile</span>(f, <span class="str">'dati.bin'</span>);
+  <span class="fn">Reset</span>(f);                          <span class="cmt">{ per file tipizzati: Reset apre in lettura/scrittura }</span>
+  <span class="kw">while not</span> <span class="fn">Eof</span>(f) <span class="kw">do</span>
+  <span class="kw">begin</span>
+    <span class="fn">Read</span>(f, Rec);
+    WriteLn(Rec.ID, <span class="str">': '</span>, Rec.Nome);
+  <span class="kw">end</span>;
+
+  <span class="cmt">{ Accesso diretto (random access) }</span>
+  <span class="fn">Seek</span>(f, <span class="num">1</span>);                        <span class="cmt">{ posiziona al record #1 (0-based) }</span>
+  <span class="fn">Read</span>(f, Rec);                       <span class="cmt">{ legge 'Luigi' }</span>
+
+  <span class="cmt">{ Modifica di un record in-place }</span>
+  <span class="fn">Seek</span>(f, <span class="num">1</span>);
+  Rec.Nome := <span class="str">'LUIGI (aggiornato)'</span>;
+  <span class="fn">Write</span>(f, Rec);                      <span class="cmt">{ sovrascrive il record #1 }</span>
+
+  <span class="cmt">{ Informazioni sul file }</span>
+  WriteLn(<span class="fn">FileSize</span>(f));               <span class="cmt">{ numero totale di record (3) }</span>
+  WriteLn(<span class="fn">FilePos</span>(f));                <span class="cmt">{ posizione corrente del cursore }</span>
+
+  <span class="cmt">{ Tronca il file dalla posizione corrente }</span>
+  <span class="fn">Seek</span>(f, <span class="num">2</span>);
+  <span class="fn">Truncate</span>(f);                        <span class="cmt">{ il file ora contiene solo i record 0 e 1 }</span>
+
+  <span class="fn">CloseFile</span>(f);
+<span class="kw">end</span>;
+</pre>
+      <div class="warn"><strong>ATTENZIONE:</strong> Non usare <code>AnsiString</code> nei record per file tipizzati! Le AnsiString sono puntatori &mdash; verrebbe scritto l'indirizzo, non il contenuto. Usare sempre <code>String[N]</code> (ShortString a lunghezza fissa).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">File Non Tipizzati (Blocchi Raw)</div>
+<pre>
+<span class="kw">var</span>
+  fIn, fOut: <span class="kw">file</span>;         <span class="cmt">{ 'file' senza 'of tipo' = file non tipizzato }</span>
+  buf: <span class="kw">array</span>[<span class="num">0</span>..<span class="num">4095</span>] <span class="kw">of</span> <span class="type">Byte</span>;
+  ByteLetti: <span class="type">Integer</span>;
+
+<span class="kw">begin</span>
+  <span class="cmt">{ Copia binaria di un file a blocchi di 4KB }</span>
+  <span class="fn">AssignFile</span>(fIn, <span class="str">'input.dat'</span>);
+  <span class="fn">AssignFile</span>(fOut, <span class="str">'output.dat'</span>);
+
+  <span class="fn">Reset</span>(fIn, <span class="num">1</span>);              <span class="cmt">{ il 2° param = dimensione record in byte (1 = byte) }</span>
+  <span class="fn">Rewrite</span>(fOut, <span class="num">1</span>);
+
+  <span class="kw">repeat</span>
+    <span class="fn">BlockRead</span>(fIn, buf, <span class="fn">SizeOf</span>(buf), ByteLetti);   <span class="cmt">{ legge fino a 4096 byte }</span>
+    <span class="kw">if</span> ByteLetti &gt; <span class="num">0</span> <span class="kw">then</span>
+      <span class="fn">BlockWrite</span>(fOut, buf, ByteLetti);             <span class="cmt">{ scrive i byte letti }</span>
+  <span class="kw">until</span> ByteLetti = <span class="num">0</span>;
+
+  <span class="fn">CloseFile</span>(fIn);
+  <span class="fn">CloseFile</span>(fOut);
+<span class="kw">end</span>;
+</pre>
+      <p><code>BlockRead</code>/<code>BlockWrite</code> sono i pi&ugrave; efficienti per I/O binario a blocchi. Il quarto parametro (opzionale) restituisce i byte effettivamente letti/scritti.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TFileStream (approccio moderno, unit Classes)</div>
+<pre>
+<span class="kw">uses</span> Classes, SysUtils;
+
+<span class="kw">var</span>
+  fs: TFileStream;
+  buf: <span class="kw">array</span>[<span class="num">0</span>..<span class="num">255</span>] <span class="kw">of</span> <span class="type">Byte</span>;
+  s: <span class="type">String</span>;
+  n: <span class="type">Integer</span>;
+
+<span class="kw">begin</span>
+  <span class="cmt">{ Scrittura }</span>
+  fs := TFileStream.<span class="fn">Create</span>(<span class="str">'stream.bin'</span>, fmCreate);
+  <span class="kw">try</span>
+    n := <span class="num">42</span>;
+    fs.<span class="fn">Write</span>(n, <span class="fn">SizeOf</span>(n));            <span class="cmt">{ scrive 4 byte }</span>
+    s := <span class="str">'Ciao'</span>;
+    n := <span class="fn">Length</span>(s);
+    fs.<span class="fn">Write</span>(n, <span class="fn">SizeOf</span>(n));            <span class="cmt">{ scrive la lunghezza }</span>
+    fs.<span class="fn">Write</span>(s[<span class="num">1</span>], n);                  <span class="cmt">{ scrive i caratteri }</span>
+  <span class="kw">finally</span>
+    fs.<span class="fn">Free</span>;
+  <span class="kw">end</span>;
+
+  <span class="cmt">{ Lettura }</span>
+  fs := TFileStream.<span class="fn">Create</span>(<span class="str">'stream.bin'</span>, fmOpenRead);
+  <span class="kw">try</span>
+    fs.<span class="fn">Read</span>(n, <span class="fn">SizeOf</span>(n));             <span class="cmt">{ legge 4 byte in n }</span>
+    WriteLn(<span class="str">'Numero: '</span>, n);
+
+    fs.<span class="fn">Read</span>(n, <span class="fn">SizeOf</span>(n));             <span class="cmt">{ legge lunghezza stringa }</span>
+    <span class="fn">SetLength</span>(s, n);
+    fs.<span class="fn">Read</span>(s[<span class="num">1</span>], n);                  <span class="cmt">{ legge i caratteri }</span>
+    WriteLn(<span class="str">'Stringa: '</span>, s);
+
+    WriteLn(<span class="str">'Dimensione: '</span>, fs.Size);    <span class="cmt">{ dimensione totale del file }</span>
+    WriteLn(<span class="str">'Posizione: '</span>, fs.Position); <span class="cmt">{ posizione corrente }</span>
+    fs.Position := <span class="num">0</span>;                   <span class="cmt">{ equivalente a Seek }</span>
+  <span class="kw">finally</span>
+    fs.<span class="fn">Free</span>;
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+      <table>
+        <tr><th>Flag apertura</th><th>Descrizione</th></tr>
+        <tr><td><code>fmCreate</code></td><td>Crea il file (sovrascrive se esiste)</td></tr>
+        <tr><td><code>fmOpenRead</code></td><td>Apre in sola lettura</td></tr>
+        <tr><td><code>fmOpenWrite</code></td><td>Apre in sola scrittura</td></tr>
+        <tr><td><code>fmOpenReadWrite</code></td><td>Apre in lettura/scrittura</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Leggere/Scrivere Intero File come Stringa</div>
+<pre>
+<span class="kw">uses</span> Classes;
+
+<span class="kw">var</span>
+  SL: TStringList;
+  Contenuto: <span class="type">String</span>;
+
+<span class="kw">begin</span>
+  <span class="cmt">{ Con TStringList (riga per riga) }</span>
+  SL := TStringList.<span class="fn">Create</span>;
+  <span class="kw">try</span>
+    SL.<span class="fn">LoadFromFile</span>(<span class="str">'input.txt'</span>);      <span class="cmt">{ carica tutto il file }</span>
+    WriteLn(<span class="str">'Righe: '</span>, SL.Count);
+    WriteLn(<span class="str">'Riga 0: '</span>, SL[<span class="num">0</span>]);
+    Contenuto := SL.Text;                <span class="cmt">{ tutto il file come unica stringa }</span>
+
+    SL.<span class="fn">Add</span>(<span class="str">'Nuova riga'</span>);
+    SL.<span class="fn">SaveToFile</span>(<span class="str">'output.txt'</span>);        <span class="cmt">{ salva tutto }</span>
+  <span class="kw">finally</span>
+    SL.<span class="fn">Free</span>;
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Operazioni su File e Directory (unit SysUtils)</div>
+<pre>
+<span class="kw">uses</span> SysUtils;
+
+<span class="cmt">{ Test esistenza }</span>
+<span class="kw">if</span> <span class="fn">FileExists</span>(<span class="str">'file.txt'</span>) <span class="kw">then</span> ...
+<span class="kw">if</span> <span class="fn">DirectoryExists</span>(<span class="str">'/tmp'</span>) <span class="kw">then</span> ...
+
+<span class="cmt">{ Operazioni su file }</span>
+<span class="fn">DeleteFile</span>(<span class="str">'vecchio.txt'</span>);                <span class="cmt">{ restituisce True se ok }</span>
+<span class="fn">RenameFile</span>(<span class="str">'old.txt'</span>, <span class="str">'new.txt'</span>);         <span class="cmt">{ restituisce True se ok }</span>
+<span class="fn">CopyFile</span>(<span class="str">'src.txt'</span>, <span class="str">'dst.txt'</span>);           <span class="cmt">{ FPC: unit FileUtil }</span>
+
+<span class="cmt">{ Operazioni su directory }</span>
+<span class="fn">CreateDir</span>(<span class="str">'nuova_dir'</span>);                    <span class="cmt">{ crea una directory (un livello) }</span>
+<span class="fn">ForceDirectories</span>(<span class="str">'/tmp/a/b/c'</span>);            <span class="cmt">{ crea l'intero percorso }</span>
+<span class="fn">RemoveDir</span>(<span class="str">'dir_vuota'</span>);                    <span class="cmt">{ rimuove dir (deve essere vuota) }</span>
+s := <span class="fn">GetCurrentDir</span>;                        <span class="cmt">{ directory corrente }</span>
+<span class="fn">SetCurrentDir</span>(<span class="str">'/tmp'</span>);                     <span class="cmt">{ cambia directory }</span>
+s := <span class="fn">GetTempDir</span>;                           <span class="cmt">{ directory temporanea di sistema }</span>
+
+<span class="cmt">{ Manipolazione percorsi }</span>
+s := <span class="fn">ExtractFileName</span>(<span class="str">'/path/to/file.txt'</span>);    <span class="cmt">{ 'file.txt' }</span>
+s := <span class="fn">ExtractFileExt</span>(<span class="str">'file.txt'</span>);              <span class="cmt">{ '.txt' }</span>
+s := <span class="fn">ExtractFilePath</span>(<span class="str">'/path/to/file.txt'</span>);    <span class="cmt">{ '/path/to/' }</span>
+s := <span class="fn">ExtractFileDir</span>(<span class="str">'/path/to/file.txt'</span>);     <span class="cmt">{ '/path/to' (senza / finale) }</span>
+s := <span class="fn">ExtractFileNameOnly</span>(<span class="str">'file.txt'</span>);          <span class="cmt">{ 'file' (FPC) }</span>
+s := <span class="fn">ChangeFileExt</span>(<span class="str">'file.txt'</span>, <span class="str">'.bak'</span>);       <span class="cmt">{ 'file.bak' }</span>
+s := <span class="fn">ConcatPaths</span>([<span class="str">'/home'</span>, <span class="str">'user'</span>, <span class="str">'docs'</span>]); <span class="cmt">{ '/home/user/docs' (FPC) }</span>
+s := <span class="fn">IncludeTrailingPathDelimiter</span>(<span class="str">'/tmp'</span>);    <span class="cmt">{ '/tmp/' }</span>
+s := <span class="fn">ExcludeTrailingPathDelimiter</span>(<span class="str">'/tmp/'</span>);   <span class="cmt">{ '/tmp' }</span>
+
+<span class="cmt">{ Informazioni file }</span>
+WriteLn(<span class="fn">FileAge</span>(<span class="str">'file.txt'</span>));                 <span class="cmt">{ timestamp (TDateTime encoded) }</span>
+WriteLn(<span class="fn">FileDateToDateTime</span>(<span class="fn">FileAge</span>(<span class="str">'f.txt'</span>)));
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FindFirst / FindNext &mdash; Enumerazione File</div>
+<pre>
+<span class="kw">uses</span> SysUtils;
+
+<span class="kw">var</span>
+  SR: TSearchRec;
+
+<span class="kw">begin</span>
+  <span class="cmt">{ Cerca tutti i file .pas nella directory corrente }</span>
+  <span class="kw">if</span> <span class="fn">FindFirst</span>(<span class="str">'*.pas'</span>, faAnyFile, SR) = <span class="num">0</span> <span class="kw">then</span>
+  <span class="kw">begin</span>
+    <span class="kw">try</span>
+      <span class="kw">repeat</span>
+        <span class="kw">if</span> (SR.Attr <span class="kw">and</span> faDirectory) = <span class="num">0</span> <span class="kw">then</span>   <span class="cmt">{ escludi directory }</span>
+          WriteLn(SR.Name, <span class="str">'  '</span>, SR.Size, <span class="str">' bytes'</span>);
+      <span class="kw">until</span> <span class="fn">FindNext</span>(SR) &lt;&gt; <span class="num">0</span>;
+    <span class="kw">finally</span>
+      <span class="fn">FindClose</span>(SR);                             <span class="cmt">{ SEMPRE chiamare FindClose! }</span>
+    <span class="kw">end</span>;
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+      <table>
+        <tr><th>Attributo</th><th>Significato</th></tr>
+        <tr><td><code>faReadOnly</code></td><td>File di sola lettura</td></tr>
+        <tr><td><code>faHidden</code></td><td>File nascosto</td></tr>
+        <tr><td><code>faDirectory</code></td><td>&Egrave; una directory</td></tr>
+        <tr><td><code>faSymLink</code></td><td>Link simbolico (FPC)</td></tr>
+        <tr><td><code>faAnyFile</code></td><td>Qualsiasi tipo di file</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     UNIT
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-units"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> UNIT (MODULI)</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">unit</span> MiaUnit;
+
+<span class="dir">{$mode objfpc}{$H+}</span>
+
+<span class="kw">interface</span>          <span class="cmt">{ sezione pubblica: ci&ograve; che viene esportato }</span>
+
+<span class="kw">uses</span>
+  SysUtils;
+
+<span class="kw">const</span>
+  VERSIONE = <span class="str">'1.0'</span>;
+
+<span class="kw">type</span>
+  TCalcolatrice = <span class="kw">class</span>
+  <span class="kw">public</span>
+    <span class="kw">function</span> <span class="fn">Somma</span>(A, B: <span class="type">Double</span>): <span class="type">Double</span>;
+    <span class="kw">function</span> <span class="fn">Moltiplica</span>(A, B: <span class="type">Double</span>): <span class="type">Double</span>;
+  <span class="kw">end</span>;
+
+<span class="kw">function</span> <span class="fn">DoQualcosa</span>(X: <span class="type">Integer</span>): <span class="type">Integer</span>;
+
+<span class="kw">implementation</span>    <span class="cmt">{ sezione privata: implementazione }</span>
+
+<span class="kw">uses</span>
+  Math;           <span class="cmt">{ unit usate solo nell'implementazione }</span>
+
+<span class="kw">function</span> TCalcolatrice.<span class="fn">Somma</span>(A, B: <span class="type">Double</span>): <span class="type">Double</span>;
+<span class="kw">begin</span>
+  Result := A + B;
+<span class="kw">end</span>;
+
+<span class="kw">function</span> TCalcolatrice.<span class="fn">Moltiplica</span>(A, B: <span class="type">Double</span>): <span class="type">Double</span>;
+<span class="kw">begin</span>
+  Result := A * B;
+<span class="kw">end</span>;
+
+<span class="kw">function</span> <span class="fn">DoQualcosa</span>(X: <span class="type">Integer</span>): <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  Result := X * <span class="num">2</span>;
+<span class="kw">end</span>;
+
+<span class="kw">initialization</span>    <span class="cmt">{ opzionale: codice eseguito all'avvio }</span>
+  WriteLn(<span class="str">'Unit MiaUnit inizializzata.'</span>);
+
+<span class="kw">finalization</span>      <span class="cmt">{ opzionale: codice eseguito alla chiusura }</span>
+  WriteLn(<span class="str">'Unit MiaUnit finalizzata.'</span>);
+
+<span class="kw">end.</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Unit Comuni FPC / Lazarus</div>
+      <table>
+        <tr><th>Unit</th><th>Contenuto</th></tr>
+        <tr><td><code>System</code></td><td>Sempre inclusa. Tipi base, I/O, gestione memoria.</td></tr>
+        <tr><td><code>SysUtils</code></td><td>Conversioni, file, date, eccezioni, formato.</td></tr>
+        <tr><td><code>Classes</code></td><td>TStringList, TStream, TComponent, TList, ecc.</td></tr>
+        <tr><td><code>Math</code></td><td>Funzioni matematiche avanzate.</td></tr>
+        <tr><td><code>StrUtils</code></td><td>Utility aggiuntive per stringhe.</td></tr>
+        <tr><td><code>DateUtils</code></td><td>Manipolazione date/ore avanzata.</td></tr>
+        <tr><td><code>fgl</code></td><td>Collezioni generiche (TFPGList, TFPGMap, ecc.).</td></tr>
+        <tr><td><code>Generics.Collections</code></td><td>Collezioni generiche stile Delphi (FPC 3.2+).</td></tr>
+        <tr><td><code>Forms, Controls, Dialogs</code></td><td>LCL per applicazioni GUI Lazarus.</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ECCEZIONI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-exceptions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ECCEZIONI</div>
+  <div class="section-body">
+
+<pre>
+<span class="kw">uses</span> SysUtils;
+
+<span class="cmt">{ Try..Except: gestione degli errori }</span>
+<span class="kw">try</span>
+  x := <span class="fn">StrToInt</span>(<span class="str">'abc'</span>);     <span class="cmt">{ genera EConvertError }</span>
+<span class="kw">except</span>
+  <span class="kw">on</span> E: EConvertError <span class="kw">do</span>
+    WriteLn(<span class="str">'Errore conversione: '</span>, E.Message);
+  <span class="kw">on</span> E: ERangeError <span class="kw">do</span>
+    WriteLn(<span class="str">'Errore range: '</span>, E.Message);
+  <span class="kw">on</span> E: Exception <span class="kw">do</span>          <span class="cmt">{ cattura qualsiasi eccezione }</span>
+    WriteLn(<span class="str">'Errore generico: '</span>, E.Message);
+<span class="kw">end</span>;
+
+<span class="cmt">{ Try..Finally: pulizia risorse (eseguito sempre) }</span>
+<span class="kw">var</span>
+  Lista: TStringList;
+<span class="kw">begin</span>
+  Lista := TStringList.<span class="fn">Create</span>;
+  <span class="kw">try</span>
+    Lista.<span class="fn">Add</span>(<span class="str">'uno'</span>);
+    Lista.<span class="fn">Add</span>(<span class="str">'due'</span>);
+    <span class="cmt">{ ... usa la lista ... }</span>
+  <span class="kw">finally</span>
+    Lista.<span class="fn">Free</span>;               <span class="cmt">{ viene SEMPRE eseguito }</span>
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+
+<span class="cmt">{ Try..Except..Finally combinato }</span>
+<span class="kw">try</span>
+  <span class="kw">try</span>
+    <span class="cmt">{ codice rischioso }</span>
+  <span class="kw">except</span>
+    <span class="kw">on</span> E: Exception <span class="kw">do</span>
+      WriteLn(E.Message);
+  <span class="kw">end</span>;
+<span class="kw">finally</span>
+  <span class="cmt">{ pulizia }</span>
+<span class="kw">end</span>;
+
+<span class="cmt">{ Lanciare un'eccezione }</span>
+<span class="kw">raise</span> Exception.<span class="fn">Create</span>(<span class="str">'Qualcosa &egrave; andato storto'</span>);
+<span class="kw">raise</span> Exception.<span class="fn">CreateFmt</span>(<span class="str">'Errore nel file %s alla riga %d'</span>, [NomeFile, Riga]);
+
+<span class="cmt">{ Eccezione personalizzata }</span>
+<span class="kw">type</span>
+  EMiaEccezione = <span class="kw">class</span>(Exception);
+
+<span class="kw">raise</span> EMiaEccezione.<span class="fn">Create</span>(<span class="str">'Errore specifico'</span>);
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Eccezioni Comuni</div>
+      <table>
+        <tr><th>Eccezione</th><th>Quando viene lanciata</th></tr>
+        <tr><td><code>EConvertError</code></td><td>Conversione di tipo fallita (StrToInt, ecc.)</td></tr>
+        <tr><td><code>ERangeError</code></td><td>Indice fuori range (con <code>{$R+}</code>)</td></tr>
+        <tr><td><code>EOverflow</code></td><td>Overflow aritmetico (con <code>{$Q+}</code>)</td></tr>
+        <tr><td><code>EDivByZero</code></td><td>Divisione per zero</td></tr>
+        <tr><td><code>EAccessViolation</code></td><td>Accesso a memoria non valida (SIGSEGV)</td></tr>
+        <tr><td><code>EInOutError</code></td><td>Errore I/O su file</td></tr>
+        <tr><td><code>EOutOfMemory</code></td><td>Memoria insufficiente</td></tr>
+        <tr><td><code>EInvalidPointer</code></td><td>Operazione su puntatore non valido</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     DIRETTIVE COMPILATORE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-preprocessor"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> DIRETTIVE DEL COMPILATORE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Direttive Comuni</div>
+      <table>
+        <tr><th>Direttiva</th><th>Descrizione</th></tr>
+        <tr><td><code>{$mode objfpc}</code></td><td>Modalit&agrave; ObjFPC (default raccomandato)</td></tr>
+        <tr><td><code>{$mode delphi}</code></td><td>Modalit&agrave; compatibilit&agrave; Delphi</td></tr>
+        <tr><td><code>{$H+}</code> / <code>{$H-}</code></td><td>AnsiString / ShortString come default per <code>String</code></td></tr>
+        <tr><td><code>{$R+}</code> / <code>{$R-}</code></td><td>Abilita/disabilita controllo range</td></tr>
+        <tr><td><code>{$Q+}</code> / <code>{$Q-}</code></td><td>Abilita/disabilita controllo overflow</td></tr>
+        <tr><td><code>{$I+}</code> / <code>{$I-}</code></td><td>Abilita/disabilita controllo errori I/O</td></tr>
+        <tr><td><code>{$B+}</code> / <code>{$B-}</code></td><td>Valutazione completa / short-circuit dei booleani</td></tr>
+        <tr><td><code>{$J+}</code> / <code>{$J-}</code></td><td>Costanti tipizzate scrivibili / non scrivibili</td></tr>
+        <tr><td><code>{$INLINE ON}</code></td><td>Abilita il suggerimento <code>inline</code> per procedure</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Compilazione Condizionale</div>
+<pre>
+<span class="dir">{$IFDEF WINDOWS}</span>
+  WriteLn(<span class="str">'Compilato per Windows'</span>);
+<span class="dir">{$ENDIF}</span>
+
+<span class="dir">{$IFDEF LINUX}</span>
+  WriteLn(<span class="str">'Compilato per Linux'</span>);
+<span class="dir">{$ENDIF}</span>
+
+<span class="dir">{$IFDEF CPU64}</span>
+  WriteLn(<span class="str">'Architettura 64 bit'</span>);
+<span class="dir">{$ELSE}</span>
+  WriteLn(<span class="str">'Architettura 32 bit'</span>);
+<span class="dir">{$ENDIF}</span>
+
+<span class="cmt">{ Simboli predefiniti utili: }</span>
+<span class="cmt">{ FPC, FPC_FULLVERSION, WINDOWS, LINUX, DARWIN, UNIX,           }</span>
+<span class="cmt">{ CPU32, CPU64, CPUARM, CPUI386, CPUX86_64, ENDIAN_BIG/LITTLE  }</span>
+
+<span class="cmt">{ Definire simboli personalizzati }</span>
+<span class="dir">{$DEFINE DEBUG}</span>
+<span class="dir">{$IFDEF DEBUG}</span>
+  WriteLn(<span class="str">'Modalit&agrave; debug'</span>);
+<span class="dir">{$ENDIF}</span>
+<span class="dir">{$UNDEF DEBUG}</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Include &amp; Risorse</div>
+<pre>
+<span class="cmt">{ Inclusione di file sorgente }</span>
+<span class="dir">{$I nomefile.inc}</span>           <span class="cmt">{ inserisce il contenuto del file qui }</span>
+
+<span class="cmt">{ Risorse Lazarus (per icone, ecc.) }</span>
+<span class="dir">{$R *.lfm}</span>                  <span class="cmt">{ file form Lazarus }</span>
+<span class="dir">{$R risorse.res}</span>            <span class="cmt">{ file risorse Windows }</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     IDIOMI & TIPS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-idioms"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> IDIOMI &amp; TIPS</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Convenzioni di Naming FPC/Delphi</div>
+      <table>
+        <tr><th>Elemento</th><th>Convenzione</th><th>Esempio</th></tr>
+        <tr><td>Tipi</td><td>Prefisso <code>T</code></td><td><code>TPersona</code>, <code>TCalcolatrice</code></td></tr>
+        <tr><td>Classi eccezione</td><td>Prefisso <code>E</code></td><td><code>EMiaEccezione</code></td></tr>
+        <tr><td>Interfacce</td><td>Prefisso <code>I</code></td><td><code>IStampabile</code></td></tr>
+        <tr><td>Tipi puntatore</td><td>Prefisso <code>P</code></td><td><code>PInteger</code>, <code>PNodo</code></td></tr>
+        <tr><td>Campi privati</td><td>Prefisso <code>F</code></td><td><code>FNome</code>, <code>FEta</code></td></tr>
+        <tr><td>Parametri costruttore</td><td>Prefisso <code>a</code></td><td><code>aNome</code>, <code>aEta</code></td></tr>
+        <tr><td>Variabili globali</td><td>Prefisso <code>G</code></td><td><code>GConfig</code></td></tr>
+        <tr><td>Identificatori</td><td>PascalCase</td><td><code>CalcolaSomma</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern FreeAndNil</div>
+<pre>
+<span class="kw">uses</span> SysUtils;
+
+<span class="cmt">{ Libera l'oggetto E imposta il riferimento a nil }</span>
+<span class="fn">FreeAndNil</span>(MioOggetto);
+
+<span class="cmt">{ Equivale a: }</span>
+MioOggetto.<span class="fn">Free</span>;
+MioOggetto := <span class="kw">nil</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TStringList &mdash; Coltellino Svizzero</div>
+<pre>
+<span class="kw">uses</span> Classes;
+
+<span class="kw">var</span>
+  SL: TStringList;
+
+<span class="kw">begin</span>
+  SL := TStringList.<span class="fn">Create</span>;
+  <span class="kw">try</span>
+    <span class="cmt">{ Come lista di stringhe }</span>
+    SL.<span class="fn">Add</span>(<span class="str">'Prima'</span>);
+    SL.<span class="fn">Add</span>(<span class="str">'Seconda'</span>);
+    SL.<span class="fn">Add</span>(<span class="str">'Terza'</span>);
+    WriteLn(SL[<span class="num">0</span>]);            <span class="cmt">{ 'Prima' }</span>
+    WriteLn(SL.Count);         <span class="cmt">{ 3 }</span>
+
+    <span class="cmt">{ Ordinamento }</span>
+    SL.Sort;
+
+    <span class="cmt">{ Come mappa chiave=valore }</span>
+    SL.Clear;
+    SL.Values[<span class="str">'nome'</span>]  := <span class="str">'Mario'</span>;
+    SL.Values[<span class="str">'eta'</span>]   := <span class="str">'30'</span>;
+    WriteLn(SL.Values[<span class="str">'nome'</span>]);  <span class="cmt">{ 'Mario' }</span>
+
+    <span class="cmt">{ Carica/Salva da file }</span>
+    SL.<span class="fn">SaveToFile</span>(<span class="str">'dati.txt'</span>);
+    SL.<span class="fn">LoadFromFile</span>(<span class="str">'dati.txt'</span>);
+
+    <span class="cmt">{ Testo delimitato }</span>
+    SL.Delimiter := <span class="str">';'</span>;
+    SL.DelimitedText := <span class="str">'uno;due;tre'</span>;
+    WriteLn(SL[<span class="num">1</span>]);            <span class="cmt">{ 'due' }</span>
+
+    <span class="cmt">{ Unire tutte le stringhe }</span>
+    WriteLn(SL.Text);          <span class="cmt">{ tutte le righe con a capo }</span>
+    SL.LineBreak := <span class="str">', '</span>;
+    WriteLn(SL.Text);          <span class="cmt">{ 'uno, due, tre' }</span>
+  <span class="kw">finally</span>
+    SL.<span class="fn">Free</span>;
+  <span class="kw">end</span>;
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Date e Ore</div>
+<pre>
+<span class="kw">uses</span> SysUtils, DateUtils;
+
+<span class="kw">var</span>
+  Adesso: TDateTime;
+
+<span class="kw">begin</span>
+  Adesso := <span class="fn">Now</span>;
+  WriteLn(<span class="fn">DateToStr</span>(Adesso));                <span class="cmt">{ '29/03/2026' }</span>
+  WriteLn(<span class="fn">TimeToStr</span>(Adesso));                <span class="cmt">{ '14:30:00' }</span>
+  WriteLn(<span class="fn">FormatDateTime</span>(<span class="str">'yyyy-mm-dd hh:nn:ss'</span>, Adesso));
+  WriteLn(<span class="fn">YearOf</span>(Adesso));                   <span class="cmt">{ 2026 }</span>
+  WriteLn(<span class="fn">DaysBetween</span>(Adesso, <span class="fn">EncodeDate</span>(<span class="num">2025</span>, <span class="num">1</span>, <span class="num">1</span>)));
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Funzioni Matematiche (unit Math)</div>
+<pre>
+<span class="kw">uses</span> Math;
+
+WriteLn(<span class="fn">Min</span>(<span class="num">3</span>, <span class="num">7</span>));          <span class="cmt">{ 3 }</span>
+WriteLn(<span class="fn">Max</span>(<span class="num">3</span>, <span class="num">7</span>));          <span class="cmt">{ 7 }</span>
+WriteLn(<span class="fn">Power</span>(<span class="num">2</span>, <span class="num">10</span>));       <span class="cmt">{ 1024.0 }</span>
+WriteLn(<span class="fn">Log2</span>(<span class="num">1024</span>));        <span class="cmt">{ 10.0 }</span>
+WriteLn(<span class="fn">Ceil</span>(<span class="num">3.2</span>));          <span class="cmt">{ 4 }</span>
+WriteLn(<span class="fn">Floor</span>(<span class="num">3.8</span>));         <span class="cmt">{ 3 }</span>
+WriteLn(<span class="fn">EnsureRange</span>(<span class="num">15</span>, <span class="num">0</span>, <span class="num">10</span>));   <span class="cmt">{ 10 (clamp) }</span>
+WriteLn(<span class="fn">InRange</span>(<span class="num">5</span>, <span class="num">1</span>, <span class="num">10</span>));       <span class="cmt">{ True }</span>
+WriteLn(<span class="fn">RandomRange</span>(<span class="num">1</span>, <span class="num">100</span>));      <span class="cmt">{ random tra 1 e 99 }</span>
+
+<span class="cmt">{ Built-in (unit System, sempre disponibili) }</span>
+WriteLn(<span class="fn">Abs</span>(-<span class="num">42</span>));           <span class="cmt">{ 42 }</span>
+WriteLn(<span class="fn">Sqr</span>(<span class="num">5</span>));             <span class="cmt">{ 25 (quadrato) }</span>
+WriteLn(<span class="fn">Sqrt</span>(<span class="num">25</span>));           <span class="cmt">{ 5.0 (radice quadrata) }</span>
+WriteLn(<span class="fn">Round</span>(<span class="num">3.7</span>));          <span class="cmt">{ 4 }</span>
+WriteLn(<span class="fn">Trunc</span>(<span class="num">3.7</span>));          <span class="cmt">{ 3 }</span>
+WriteLn(<span class="fn">Odd</span>(<span class="num">7</span>));              <span class="cmt">{ True (dispari) }</span>
+<span class="fn">Randomize</span>;                    <span class="cmt">{ inizializza il seed random }</span>
+WriteLn(<span class="fn">Random</span>(<span class="num">100</span>));         <span class="cmt">{ 0..99 }</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Parametri da Riga di Comando</div>
+<pre>
+WriteLn(<span class="str">'Programma: '</span>, <span class="fn">ParamStr</span>(<span class="num">0</span>));       <span class="cmt">{ nome eseguibile }</span>
+WriteLn(<span class="str">'N. parametri: '</span>, <span class="fn">ParamCount</span>);
+
+<span class="kw">var</span> i: <span class="type">Integer</span>;
+<span class="kw">for</span> i := <span class="num">1</span> <span class="kw">to</span> <span class="fn">ParamCount</span> <span class="kw">do</span>
+  WriteLn(<span class="str">'Param '</span>, i, <span class="str">': '</span>, <span class="fn">ParamStr</span>(i));
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Procedure di tipo callback / Puntatori a funzione</div>
+<pre>
+<span class="kw">type</span>
+  TOperazione = <span class="kw">function</span>(A, B: <span class="type">Integer</span>): <span class="type">Integer</span>;
+
+<span class="kw">function</span> <span class="fn">Somma</span>(A, B: <span class="type">Integer</span>): <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  Result := A + B;
+<span class="kw">end</span>;
+
+<span class="kw">function</span> <span class="fn">Prodotto</span>(A, B: <span class="type">Integer</span>): <span class="type">Integer</span>;
+<span class="kw">begin</span>
+  Result := A * B;
+<span class="kw">end</span>;
+
+<span class="kw">procedure</span> <span class="fn">Applica</span>(Op: TOperazione; X, Y: <span class="type">Integer</span>);
+<span class="kw">begin</span>
+  WriteLn(<span class="str">'Risultato: '</span>, Op(X, Y));
+<span class="kw">end</span>;
+
+<span class="kw">begin</span>
+  <span class="fn">Applica</span>(@Somma, <span class="num">3</span>, <span class="num">4</span>);       <span class="cmt">{ Risultato: 7    (@ richiesto in mode objfpc) }</span>
+  <span class="fn">Applica</span>(@Prodotto, <span class="num">3</span>, <span class="num">4</span>);    <span class="cmt">{ Risultato: 12 }</span>
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Case-Insensitivity</div>
+      <p>Pascal &egrave; <strong>case-insensitive</strong>: <code>WriteLn</code>, <code>WRITELN</code>, <code>writeln</code> sono la stessa cosa. Per convenzione si usa PascalCase per identificatori e parole chiave in minuscolo (<code>begin</code>, <code>end</code>, <code>if</code>...) o tutto minuscolo.</p>
+    </div>
+
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
