@@ -323,7 +323,7 @@
 <span class="hd">ENVIRONMENT DIVISION.</span>
 <span class="kw">CONFIGURATION SECTION.</span>
 <span class="kw">REPOSITORY.</span>
-    <span class="kw">FUNCTION ALL INTRINSIC.</span> <span class="cmt">*> Permette di usare SQRT(X) invece di FUNCTION SQRT(X)</span>
+    <span class="kw">FUNCTION ALL INTRINSIC.</span>
 <span class="kw">SOURCE-COMPUTER.</span> Nome computer.
 <span class="kw">OBJECT-COMPUTER.</span> Nome computer
     MEMORY SIZE dimensione-memoria [CHARACTERS | WORDS | MODULES]
@@ -354,9 +354,7 @@
 
 <span class="hd">PROCEDURE DIVISION</span> [<span class="kw">USING</span> param1 param2] [<span class="kw">RETURNING</span> ret].
 <span class="kw">DECLARATIVES</span>.
-nome-sezione <span class="kw">SECTION.</span>
-    <span class="kw">USE AFTER STANDARD ERROR PROCEDURE ON</span> nome-file.
-    <span class="kw">DISPLAY</span> messaggio.
+      <span class="cmt">*> Gestione degli errori</span>
 <span class="kw">END DECLARATIVES</span>.
 
     <span class="cmt">*> Logica del programma</span>
