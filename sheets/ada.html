@@ -170,6 +170,25 @@
     <a href="#s-representation">Representation Clauses</a>
     <a href="#s-lowlevel">Low-Level / Interfacing</a>
     <a href="#s-compile">Compilazione (GNAT)</a>
+    <a href="#s-attributes">Attributi Comuni</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Libreria Standard</div>
+    <a href="#s-stdlib">Package Principali</a>
+    <a href="#s-unbounded">Stringhe / Unbounded</a>
+    <a href="#s-containers">Containers (Vectors, Maps)</a>
+    <a href="#s-controlled">Controlled Types / RAII</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Ada 2022</div>
+    <a href="#s-ada2022">Features Ada 2022</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Verifica</div>
+    <a href="#s-spark">SPARK</a>
   </div>
 </nav>
 
@@ -872,7 +891,7 @@ P.<span class="kw">all</span> := <span class="num">99</span>;                   
 
     <div class="warn">
       <strong>Safety:</strong> Ada non ha aritmetica dei puntatori. L'accesso a <code>null</code> solleva
-      <code>Constraint_Error</code> (o <code>Program_Error</code>). Usare <code>not null access</code> per
+      <code>Constraint_Error</code>. Usare <code>not null access</code> per
       forzare la non-nullità a livello di tipo.
     </div>
   </div>
@@ -1075,10 +1094,10 @@ P.<span class="kw">all</span> := <span class="num">99</span>;                   
       <table>
         <tr><th>Modo</th><th>Lettura</th><th>Scrittura</th><th>Uso tipico</th></tr>
         <tr><td><code>in</code> (default)</td><td>Sì</td><td>No</td><td>Input sola lettura</td></tr>
-        <tr><td><code>out</code></td><td>No*</td><td>Sì</td><td>Output (valore di ritorno multiplo)</td></tr>
+        <tr><td><code>out</code></td><td>Sì*</td><td>Sì</td><td>Output (valore di ritorno multiplo)</td></tr>
         <tr><td><code>in out</code></td><td>Sì</td><td>Sì</td><td>Modifica in-place</td></tr>
       </table>
-      <p>*In Ada 2012+ i parametri <code>out</code> possono avere valori di default e sono leggibili dopo la prima assegnazione.</p>
+      <p>*In Ada 2012+ i parametri <code>out</code> sono leggibili fin dall'inizio del sottoprogramma (hanno il valore di default del tipo o il valore passato). In Ada 95/2005 la lettura prima della prima assegnazione è erronea.</p>
     </div>
 
     <div class="sub">
@@ -1862,6 +1881,366 @@ Ctrl : Control_Register;
       <tr><td><code>System</code></td><td>Info sistema, Address, Storage_Elements</td><td>83</td></tr>
       <tr><td><code>GNAT.Sockets</code></td><td>Networking TCP/UDP (GNAT-specifico)</td><td>—</td></tr>
     </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- UNBOUNDED STRING                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-unbounded"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> STRINGHE — UNBOUNDED E OPERAZIONI</div>
+  <div class="section-body">
+    <p>Le <code>String</code> Ada sono a lunghezza <span class="safety">fissa</span> (array di Character).
+       Per stringhe a lunghezza variabile si usa <span class="acc">Unbounded_String</span>.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="sub-title">UNBOUNDED_STRING</div>
+<pre>
+<span class="kw">with</span> Ada.Strings.Unbounded;
+<span class="kw">use</span>  Ada.Strings.Unbounded;
+
+S : Unbounded_String;
+S := To_Unbounded_String (<span class="str">"Hello"</span>);
+S := S &amp; <span class="str">", World!"</span>;  <span class="cmt">-- concatenazione</span>
+
+<span class="cmt">-- Conversioni</span>
+Len : <span class="kw">Natural</span> := Length (S);
+Fix : <span class="kw">String</span>  := To_String (S);
+
+<span class="cmt">-- Operazioni</span>
+Ch : <span class="kw">Character</span> := Element (S, <span class="num">1</span>);
+Replace_Element (S, <span class="num">1</span>, <span class="str">'h'</span>);
+S := Head (S, <span class="num">5</span>);     <span class="cmt">-- primi 5 char</span>
+S := Tail (S, <span class="num">3</span>);     <span class="cmt">-- ultimi 3 char</span>
+</pre>
+      </div>
+      <div>
+        <div class="sub-title">OPERAZIONI SU STRING FISSE</div>
+<pre>
+<span class="kw">with</span> Ada.Strings.Fixed;
+<span class="kw">use</span>  Ada.Strings.Fixed;
+
+S : <span class="kw">String</span> (<span class="num">1</span>..<span class="num">20</span>);
+
+<span class="cmt">-- Ricerca</span>
+Pos := Index (S, <span class="str">"abc"</span>);    <span class="cmt">-- 0 se non trovato</span>
+Cnt := Count (S, <span class="str">"x"</span>);
+
+<span class="cmt">-- Trim spazi</span>
+T := Trim (S, Ada.Strings.Both);
+
+<span class="cmt">-- Sostituzione</span>
+R := Replace_Slice
+   (S, <span class="num">3</span>, <span class="num">5</span>, <span class="str">"XY"</span>);
+
+<span class="cmt">-- Padding e allineamento</span>
+H := Head (<span class="str">"Hi"</span>, <span class="num">10</span>);  <span class="cmt">-- "Hi        "</span>
+T := Tail (<span class="str">"Hi"</span>, <span class="num">10</span>);  <span class="cmt">-- "        Hi"</span>
+</pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ADA.CHARACTERS.HANDLING</div>
+<pre>
+<span class="kw">with</span> Ada.Characters.Handling; <span class="kw">use</span> Ada.Characters.Handling;
+
+Is_Letter ('A');        <span class="cmt">-- True</span>
+Is_Digit ('3');         <span class="cmt">-- True</span>
+Is_Alphanumeric ('_'); <span class="cmt">-- False</span>
+To_Upper ('a');         <span class="cmt">-- 'A'</span>
+To_Lower (<span class="str">"HELLO"</span>);    <span class="cmt">-- "hello"</span>
+</pre>
+    </div>
+
+    <div class="note">
+      <strong>Bounded_String:</strong> Per stringhe con lunghezza massima nota a compile-time senza allocazione heap,
+      usare <code>Ada.Strings.Bounded</code> — un buon compromesso tra <code>String</code> fissa e <code>Unbounded_String</code>.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CONTAINERS                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-containers"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ADA.CONTAINERS — VECTORS, MAPS, SETS (Ada 2005+)</div>
+  <div class="section-body">
+    <div class="sub">
+      <div class="sub-title">VECTORS (ARRAY DINAMICO)</div>
+<pre>
+<span class="kw">with</span> Ada.Containers.Vectors;
+
+<span class="kw">package</span> <span class="hd">Int_Vectors</span> <span class="kw">is new</span>
+   Ada.Containers.Vectors (Index_Type   =&gt; <span class="kw">Natural</span>,
+                           Element_Type =&gt; <span class="kw">Integer</span>);
+<span class="kw">use</span> Int_Vectors;
+
+V : Vector;
+
+V.Append (<span class="num">10</span>);                <span class="cmt">-- aggiunge in coda</span>
+V.Append (<span class="num">20</span>);
+V.Append (<span class="num">30</span>);
+V.Prepend (<span class="num">5</span>);               <span class="cmt">-- aggiunge in testa (Ada 2012)</span>
+
+Put (V.Length);                <span class="cmt">-- 4</span>
+Put (V.Element (<span class="num">0</span>));           <span class="cmt">-- 5 (primo elemento)</span>
+Put (V (<span class="num">2</span>));                   <span class="cmt">-- 20 (Ada 2012: indexing notation)</span>
+
+V.Replace_Element (<span class="num">1</span>, <span class="num">99</span>);   <span class="cmt">-- V(1) := 99</span>
+V.Delete_Last;                 <span class="cmt">-- rimuove ultimo</span>
+V.Insert (<span class="num">2</span>, <span class="num">42</span>);             <span class="cmt">-- inserisce 42 alla posizione 2</span>
+
+<span class="cmt">-- Iterazione</span>
+<span class="kw">for</span> E <span class="kw">of</span> V <span class="kw">loop</span>              <span class="cmt">-- Ada 2012: iterazione per elemento</span>
+   Put (E, Width =&gt; <span class="num">0</span>);
+<span class="kw">end loop</span>;
+
+<span class="kw">for</span> C <span class="kw">in</span> V.Iterate <span class="kw">loop</span>     <span class="cmt">-- iterazione per cursore</span>
+   Put (Element (C));
+<span class="kw">end loop</span>;
+
+V.Clear;                       <span class="cmt">-- svuota</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">HASHED_MAPS (HASH TABLE)</div>
+<pre>
+<span class="kw">with</span> Ada.Containers.Indefinite_Hashed_Maps;
+<span class="kw">with</span> Ada.Strings.Hash;
+
+<span class="kw">package</span> <span class="hd">Name_Map</span> <span class="kw">is new</span>
+   Ada.Containers.Indefinite_Hashed_Maps
+     (Key_Type        =&gt; <span class="kw">String</span>,
+      Element_Type    =&gt; <span class="kw">Integer</span>,
+      Hash            =&gt; Ada.Strings.Hash,
+      Equivalent_Keys =&gt; <span class="str">"="</span>);
+<span class="kw">use</span> Name_Map;
+
+M : Map;
+
+M.Insert (<span class="str">"alice"</span>, <span class="num">30</span>);
+M.Insert (<span class="str">"bob"</span>,   <span class="num">25</span>);
+M.Include (<span class="str">"alice"</span>, <span class="num">31</span>);   <span class="cmt">-- Insert o Replace (nessuna eccezione se esiste)</span>
+
+<span class="kw">if</span> M.Contains (<span class="str">"alice"</span>) <span class="kw">then</span>
+   Put (M.Element (<span class="str">"alice"</span>));  <span class="cmt">-- 31</span>
+<span class="kw">end if</span>;
+
+M.Delete (<span class="str">"bob"</span>);
+
+<span class="kw">for</span> C <span class="kw">in</span> M.Iterate <span class="kw">loop</span>
+   Put_Line (Key (C) &amp; <span class="str">" => "</span> &amp; Integer'Image (Element (C)));
+<span class="kw">end loop</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ORDERED_MAPS E SETS</div>
+<pre>
+<span class="cmt">-- Map ordinata per chiave (albero bilanciato)</span>
+<span class="kw">with</span> Ada.Containers.Ordered_Maps;
+<span class="kw">package</span> <span class="hd">Score_Map</span> <span class="kw">is new</span>
+   Ada.Containers.Ordered_Maps (Key_Type =&gt; <span class="kw">Integer</span>, Element_Type =&gt; <span class="kw">Float</span>);
+
+<span class="cmt">-- Set ordinato</span>
+<span class="kw">with</span> Ada.Containers.Ordered_Sets;
+<span class="kw">package</span> <span class="hd">Int_Sets</span> <span class="kw">is new</span>
+   Ada.Containers.Ordered_Sets (Element_Type =&gt; <span class="kw">Integer</span>);
+<span class="kw">use</span> Int_Sets;
+
+S : Set;
+S.Insert (<span class="num">10</span>);
+S.Insert (<span class="num">5</span>);
+S.Insert (<span class="num">10</span>);   <span class="cmt">-- nessun effetto (duplicato)</span>
+<span class="cmt">-- S contiene {5, 10}</span>
+</pre>
+    </div>
+
+    <table>
+      <tr><th>Container</th><th>Definite</th><th>Indefinite</th><th>Accesso</th></tr>
+      <tr><td>Vector</td><td><code>Vectors</code></td><td><code>Indefinite_Vectors</code></td><td>O(1) per indice</td></tr>
+      <tr><td>Lista</td><td><code>Doubly_Linked_Lists</code></td><td><code>Indefinite_Doubly_Linked_Lists</code></td><td>O(n) sequenziale</td></tr>
+      <tr><td>Hash Map</td><td><code>Hashed_Maps</code></td><td><code>Indefinite_Hashed_Maps</code></td><td>O(1) medio</td></tr>
+      <tr><td>Ordered Map</td><td><code>Ordered_Maps</code></td><td><code>Indefinite_Ordered_Maps</code></td><td>O(log n)</td></tr>
+      <tr><td>Hash Set</td><td><code>Hashed_Sets</code></td><td><code>Indefinite_Hashed_Sets</code></td><td>O(1) medio</td></tr>
+      <tr><td>Ordered Set</td><td><code>Ordered_Sets</code></td><td><code>Indefinite_Ordered_Sets</code></td><td>O(log n)</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>Definite vs Indefinite:</strong> Usare le versioni <em>Indefinite</em> quando il tipo dell'elemento è
+      <span class="acc">unconstrained</span> (es. <code>String</code>). Le versioni <em>Definite</em> sono più efficienti
+      per tipi a dimensione nota a compile-time.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CONTROLLED TYPES                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-controlled"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CONTROLLED TYPES — RAII / FINALIZZAZIONE</div>
+  <div class="section-body">
+    <p>I <span class="acc">Controlled Types</span> permettono di eseguire codice alla creazione, assegnamento e distruzione
+       di un oggetto — il pattern <span class="safety">RAII</span> (Resource Acquisition Is Initialization) di Ada.</p>
+<pre>
+<span class="kw">with</span> Ada.Finalization;
+
+<span class="kw">package</span> <span class="hd">Smart_Ptrs</span> <span class="kw">is</span>
+   <span class="kw">type</span> <span class="hd">Smart_Ptr</span> <span class="kw">is new</span> Ada.Finalization.Controlled <span class="kw">with private</span>;
+
+   <span class="cmt">-- Operazioni pubbliche</span>
+   <span class="kw">function</span> Create (Value : <span class="kw">Integer</span>) <span class="kw">return</span> Smart_Ptr;
+   <span class="kw">function</span> Get    (Self : Smart_Ptr)  <span class="kw">return</span> <span class="kw">Integer</span>;
+
+<span class="kw">private</span>
+   <span class="kw">type</span> <span class="hd">Int_Ptr</span> <span class="kw">is access</span> <span class="kw">Integer</span>;
+
+   <span class="kw">type</span> <span class="hd">Smart_Ptr</span> <span class="kw">is new</span> Ada.Finalization.Controlled <span class="kw">with record</span>
+      Ptr : Int_Ptr := <span class="kw">null</span>;
+   <span class="kw">end record</span>;
+
+   <span class="cmt">-- Override delle primitive di finalizzazione</span>
+   <span class="kw">overriding procedure</span> Initialize (Self : <span class="kw">in out</span> Smart_Ptr);  <span class="cmt">-- alla creazione</span>
+   <span class="kw">overriding procedure</span> Adjust     (Self : <span class="kw">in out</span> Smart_Ptr);  <span class="cmt">-- dopo assegnamento (:=)</span>
+   <span class="kw">overriding procedure</span> Finalize   (Self : <span class="kw">in out</span> Smart_Ptr);  <span class="cmt">-- alla distruzione</span>
+<span class="kw">end</span> Smart_Ptrs;
+</pre>
+
+    <table>
+      <tr><th>Primitiva</th><th>Quando viene chiamata</th><th>Uso tipico</th></tr>
+      <tr><td><code>Initialize</code></td><td>Alla creazione (se non inizializzato con aggregate)</td><td>Allocare risorse</td></tr>
+      <tr><td><code>Adjust</code></td><td>Dopo un assegnamento <code>:=</code> (sulla copia)</td><td>Deep copy di risorse</td></tr>
+      <tr><td><code>Finalize</code></td><td>Alla fine dello scope o prima di riassegnamento</td><td>Rilasciare risorse (free, close)</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>Limited_Controlled:</strong> Se il tipo è <code>limited</code> (non copiabile), estendere
+      <code>Ada.Finalization.Limited_Controlled</code> — ha solo <code>Initialize</code> e <code>Finalize</code> (niente <code>Adjust</code>).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ADA 2022 FEATURES                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-ada2022"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FEATURES ADA 2022 <span class="ver v22">Ada 2022</span></div>
+  <div class="section-body">
+    <p>Ada 2022 (ISO/IEC 8652:2023) introduce diverse funzionalità che rendono il linguaggio
+       più <span class="acc">espressivo</span> mantenendo la <span class="safety">sicurezza</span>. Compilare con <code>-gnat2022</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">DECLARE EXPRESSION</div>
+<pre>
+<span class="cmt">-- Variabili locali in un'espressione (senza statement)</span>
+Area : <span class="kw">Float</span> :=
+   (<span class="kw">declare</span>
+       R : <span class="kw">constant Float</span> := Radius (Shape);
+       Pi : <span class="kw">constant</span> := <span class="num">3.14159_26535</span>;
+    <span class="kw">begin</span>
+       Pi * R ** <span class="num">2</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DELTA AGGREGATES</div>
+<pre>
+<span class="cmt">-- Copia un record/array modificando solo alcuni campi</span>
+<span class="kw">type</span> <span class="hd">Config</span> <span class="kw">is record</span>
+   Port    : <span class="kw">Positive</span> := <span class="num">8080</span>;
+   Debug   : <span class="kw">Boolean</span>  := <span class="kw">False</span>;
+   Timeout : <span class="kw">Duration</span> := <span class="num">30.0</span>;
+<span class="kw">end record</span>;
+
+Default_Cfg : Config;
+Debug_Cfg   : Config := (Default_Cfg <span class="kw">with delta</span> Debug =&gt; <span class="kw">True</span>, Port =&gt; <span class="num">9090</span>);
+
+<span class="cmt">-- Funziona anche con array</span>
+A : <span class="kw">array</span> (<span class="num">1</span>..<span class="num">5</span>) <span class="kw">of</span> <span class="kw">Integer</span> := (<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>);
+B : <span class="kw">array</span> (<span class="num">1</span>..<span class="num">5</span>) <span class="kw">of</span> <span class="kw">Integer</span> := (A <span class="kw">with delta</span> <span class="num">3</span> =&gt; <span class="num">99</span>, <span class="num">5</span> =&gt; <span class="num">0</span>);
+<span class="cmt">-- B = (1, 2, 99, 4, 0)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TARGET NAME @ (AUTO-REFERENZA)</div>
+<pre>
+<span class="cmt">-- @ si riferisce alla variabile a sinistra dell'assegnamento</span>
+Count := @ + <span class="num">1</span>;                     <span class="cmt">-- equivale a: Count := Count + 1</span>
+Name  := To_Upper (@);               <span class="cmt">-- equivale a: Name := To_Upper (Name)</span>
+Rec.Field := @ * <span class="num">2</span>;                  <span class="cmt">-- equivale a: Rec.Field := Rec.Field * 2</span>
+Map.Reference (<span class="str">"key"</span>) := @ &amp; <span class="str">"!"</span>;  <span class="cmt">-- evita doppia valutazione della chiave</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">'REDUCE ATTRIBUTE</div>
+<pre>
+<span class="cmt">-- Riduzione (fold) su array e iterabili</span>
+Sum   : <span class="kw">Integer</span> := [<span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span>..<span class="num">100</span> =&gt; I]'Reduce (<span class="str">"+"</span>, <span class="num">0</span>);       <span class="cmt">-- 5050</span>
+Prod  : <span class="kw">Integer</span> := [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]'Reduce (<span class="str">"*"</span>, <span class="num">1</span>);              <span class="cmt">-- 120</span>
+
+<span class="cmt">-- Con funzione custom</span>
+Max_Val : <span class="kw">Integer</span> := Data'Reduce (Integer'Max, Integer'First);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ARRAY AGGREGATES CON ITERATORE</div>
+<pre>
+<span class="cmt">-- Sintassi [ ] per aggregati (Ada 2022)</span>
+Squares : <span class="kw">array</span> (<span class="num">1</span>..<span class="num">10</span>) <span class="kw">of</span> <span class="kw">Integer</span> :=
+   [<span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span>..<span class="num">10</span> =&gt; I ** <span class="num">2</span>];   <span class="cmt">-- [1, 4, 9, 16, ..., 100]</span>
+
+Evens : <span class="kw">array</span> (<span class="num">1</span>..<span class="num">5</span>) <span class="kw">of</span> <span class="kw">Integer</span> :=
+   [<span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span>..<span class="num">5</span> =&gt; I * <span class="num">2</span>];    <span class="cmt">-- [2, 4, 6, 8, 10]</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DICHIARAZIONI IN BLOCCHI SENZA DECLARE</div>
+<pre>
+<span class="cmt">-- Variabili dichiarate ovunque in sequenza di statement (non più solo dopo is/declare)</span>
+<span class="kw">begin</span>
+   Put_Line (<span class="str">"Inizio"</span>);
+   X : <span class="kw">constant Integer</span> := Compute_Value;  <span class="cmt">-- dichiarazione in-place</span>
+   Put (X);
+<span class="kw">end</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PARALLEL LOOP E PARALLEL BLOCK</div>
+<pre>
+<span class="cmt">-- Loop parallelo (iterazioni indipendenti)</span>
+<span class="kw">parallel</span>
+<span class="kw">for</span> I <span class="kw">in</span> <span class="num">1</span>..<span class="num">1_000</span> <span class="kw">loop</span>
+   Result (I) := Heavy_Compute (I);
+<span class="kw">end loop</span>;
+
+<span class="cmt">-- Blocco parallelo (sezioni indipendenti)</span>
+<span class="kw">parallel do</span>
+   A := Compute_A;
+<span class="kw">and</span>
+   B := Compute_B;
+<span class="kw">end do</span>;
+
+<span class="cmt">-- Riduzione parallela (Ada 2022 + 'Reduce)</span>
+Total : <span class="kw">Integer</span> := [<span class="kw">parallel for</span> I <span class="kw">in</span> <span class="num">1</span>..<span class="num">1_000_000</span> =&gt; F(I)]'Reduce(<span class="str">"+"</span>, <span class="num">0</span>);
+</pre>
+    </div>
+
+    <div class="note">
+      <strong>Compilazione:</strong> Per abilitare tutte le features Ada 2022, usare <code>gnatmake -gnat2022</code>
+      o <code>-gnat2022</code> nel file <code>.gpr</code>. GNAT 13+ supporta la maggior parte delle features.
+    </div>
   </div>
 </div>
 

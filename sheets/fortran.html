@@ -152,6 +152,14 @@
     <a href="#s-oop-adv">OOP Avanzata</a>
     <a href="#s-coarrays">Coarray (Parallelo)</a>
     <a href="#s-preprocessor">Preprocessore</a>
+    <a href="#s-cinterop">Interop. C (bind)</a>
+    <a href="#s-bitops">Operazioni su Bit</a>
+    <a href="#s-datetime">Data/Ora / Timing</a>
+    <a href="#s-cmdline">Riga di Comando</a>
+    <a href="#s-assoc">Associate / Block</a>
+    <a href="#s-namelist">Namelist I/O</a>
+    <a href="#s-enum">Enum</a>
+    <a href="#s-legacy">Legacy (COMMON)</a>
     <a href="#s-compile">Compilazione</a>
   </div>
 </nav>
@@ -191,7 +199,7 @@
       <tr>
         <td><span class="ver v95">Fortran 95</span></td>
         <td>1997</td>
-        <td>FORALL. PURE/ELEMENTAL functions. Miglioramenti HOF. Initializzazione automatica puntatori NULL(). Piccole correzioni F90.</td>
+        <td>FORALL. PURE/ELEMENTAL functions. Miglioramenti HOF. Inizializzazione automatica puntatori NULL(). Piccole correzioni F90.</td>
         <td><code>.f95</code></td>
       </tr>
       <tr>
@@ -273,7 +281,7 @@
           <tr><td>Caratteri</td><td>Lettere, cifre, underscore <code>_</code></td></tr>
           <tr><td>Lunghezza max</td><td>31 char (F90), 63 char (F2003+)</td></tr>
           <tr><td>Case</td><td>INSENSIBILE: <code>MyVar</code> = <code>myvar</code></td></tr>
-          <tr><td>Parole riservate</td><td>Non usabili come variabili</td></tr>
+          <tr><td>Parole riservate</td><td>Fortran NON ha parole riservate (ma evitare nomi di keyword)</td></tr>
         </table>
 
         <div class="sub-title" style="margin-top:10px">Commenti</div>
@@ -676,7 +684,7 @@ seed = 42   <span class="cmt">! valore fisso</span>
           <tr><td><code>exp(x)</code></td><td>e^x</td></tr>
           <tr><td><code>log(x)</code></td><td>log naturale</td></tr>
           <tr><td><code>log10(x)</code></td><td>log base 10</td></tr>
-          <tr><td><code>log2(x)</code></td><td>log base 2 (F2008+)</td></tr>
+          <tr><td><code>log(x)/log(2.0)</code></td><td>log base 2 (manuale)</td></tr>
           <tr><td><code>hypot(x,y)</code></td><td>√(x²+y²) (F2008+)</td></tr>
         </table>
         <div class="sub-title" style="margin-top:8px">Complessi</div>
@@ -839,7 +847,7 @@ outer: <span class="kw">if</span> (a > 0) <span class="kw">then</span>
 <span class="kw">rank</span>(1) <span class="cmt">! vettore</span>
 <span class="kw">rank</span>(2) <span class="cmt">! matrice</span>
 <span class="kw">rank default</span>
-<span class="kw">end select rank</span></pre>
+<span class="kw">end select</span></pre>
       </div>
     </div>
     <div class="note">⬛ <strong>Limitazioni SELECT CASE:</strong> funziona solo con tipi INTEGER, CHARACTER e LOGICAL. Non con REAL o tipi derivati.</div>
@@ -2384,6 +2392,490 @@ sync all
 <span class="kw">write</span>(stderr,*) <span class="str">"Errore su stderr"</span>
 <span class="kw">print</span> *, compiler_version()
 <span class="kw">print</span> *, compiler_options()</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- INTEROPERABILITÀ C                                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-cinterop"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> INTEROPERABILITÀ CON C — ISO_C_BINDING <span class="ver v03">F2003+</span></div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Tipi Corrispondenti C ↔ Fortran</div>
+        <pre><span class="kw">use</span> iso_c_binding
+<span class="kw">implicit none</span>
+
+<span class="cmt">! Tipi scalari equivalenti</span>
+<span class="kw">integer</span>(c_int)      :: i    <span class="cmt">! int</span>
+<span class="kw">integer</span>(c_long)     :: l    <span class="cmt">! long</span>
+<span class="kw">integer</span>(c_int64_t)  :: i64  <span class="cmt">! int64_t</span>
+<span class="kw">real</span>(c_float)       :: f    <span class="cmt">! float</span>
+<span class="kw">real</span>(c_double)      :: d    <span class="cmt">! double</span>
+<span class="kw">character</span>(c_char)   :: ch   <span class="cmt">! char</span>
+<span class="kw">logical</span>(c_bool)     :: b    <span class="cmt">! _Bool</span>
+<span class="kw">type</span>(c_ptr)         :: p    <span class="cmt">! void*</span>
+<span class="kw">type</span>(c_funptr)      :: fp   <span class="cmt">! function pointer</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">Chiamare Funzioni C da Fortran</div>
+        <pre><span class="cmt">! Dichiarazione interfaccia C</span>
+<span class="kw">interface</span>
+  <span class="kw">integer</span>(c_int) <span class="kw">function</span> c_abs(x) &amp;
+      bind(C, name=<span class="str">"abs"</span>)
+    <span class="kw">use</span> iso_c_binding
+    <span class="kw">integer</span>(c_int), value :: x
+  <span class="kw">end function</span>
+
+  <span class="kw">type</span>(c_ptr) <span class="kw">function</span> c_malloc(size) &amp;
+      bind(C, name=<span class="str">"malloc"</span>)
+    <span class="kw">use</span> iso_c_binding
+    <span class="kw">integer</span>(c_size_t), value :: size
+  <span class="kw">end function</span>
+<span class="kw">end interface</span>
+
+<span class="cmt">! Uso</span>
+<span class="kw">print</span> *, c_abs(-42_c_int)   <span class="cmt">! 42</span></pre>
+      </div>
+    </div>
+
+    <div class="sub-title">Esporre Funzioni Fortran al C</div>
+    <div class="grid2">
+      <div>
+        <pre><span class="cmt">! Funzione Fortran callable da C</span>
+<span class="kw">function</span> my_sum(a, b) result(s) bind(C, name=<span class="str">"my_sum"</span>)
+  <span class="kw">use</span> iso_c_binding
+  <span class="kw">integer</span>(c_int), value, <span class="kw">intent</span>(in) :: a, b
+  <span class="kw">integer</span>(c_int) :: s
+  s = a + b
+<span class="kw">end function</span>
+
+<span class="cmt">! In C: extern int my_sum(int a, int b);</span></pre>
+      </div>
+      <div>
+        <pre><span class="cmt">! Puntatori C ↔ Fortran</span>
+<span class="kw">use</span> iso_c_binding
+<span class="kw">real</span>(c_double), <span class="kw">pointer</span> :: fptr(:)
+<span class="kw">type</span>(c_ptr) :: cptr
+
+<span class="cmt">! C pointer → Fortran pointer</span>
+<span class="kw">call</span> c_f_pointer(cptr, fptr, [100])
+
+<span class="cmt">! Fortran → C pointer</span>
+<span class="kw">real</span>(c_double), <span class="kw">target</span> :: arr(100)
+cptr = c_loc(arr)
+
+<span class="cmt">! Stringa C (null-terminated)</span>
+<span class="kw">character</span>(len=6) :: s = <span class="str">"Hello"</span> // c_null_char</pre>
+      </div>
+    </div>
+
+    <div class="sub-title">Struct C ↔ Derived Type Fortran</div>
+    <pre><span class="cmt">! C struct:</span>
+<span class="cmt">! typedef struct { int x; double y; } point_t;</span>
+
+<span class="cmt">! Fortran equivalente:</span>
+<span class="kw">type</span>, bind(C) :: point_t
+  <span class="kw">integer</span>(c_int)    :: x
+  <span class="kw">real</span>(c_double)    :: y
+<span class="kw">end type</span> point_t
+
+<span class="cmt">! Subroutine che accetta struct C</span>
+<span class="kw">subroutine</span> process_point(p) bind(C, name=<span class="str">"process_point"</span>)
+  <span class="kw">type</span>(point_t), <span class="kw">intent</span>(in) :: p
+  <span class="kw">print</span> *, p%x, p%y
+<span class="kw">end subroutine</span></pre>
+    <div class="note">⬛ <strong>VALUE attribute:</strong> in <code>bind(C)</code> i parametri scalari vanno passati con <code>value</code> (pass by value come in C). Senza <code>value</code> si passa un puntatore (Fortran default = pass by reference).</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OPERAZIONI SU BIT                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bitops"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OPERAZIONI SU BIT</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Funzioni Bitwise Intrinseche</div>
+        <table>
+          <tr><th>Funzione</th><th>Equivalente C</th><th>Descrizione</th></tr>
+          <tr><td><code>iand(i, j)</code></td><td><code>i &amp; j</code></td><td>AND bit a bit</td></tr>
+          <tr><td><code>ior(i, j)</code></td><td><code>i | j</code></td><td>OR bit a bit</td></tr>
+          <tr><td><code>ieor(i, j)</code></td><td><code>i ^ j</code></td><td>XOR bit a bit</td></tr>
+          <tr><td><code>not(i)</code></td><td><code>~i</code></td><td>Complemento a 1</td></tr>
+          <tr><td><code>ishft(i, n)</code></td><td><code>n&gt;0 ? i&lt;&lt;n : i&gt;&gt;-n</code></td><td>Shift logico (n>0 sx, n&lt;0 dx)</td></tr>
+          <tr><td><code>ishftc(i, n)</code></td><td>—</td><td>Shift circolare</td></tr>
+          <tr><td><code>btest(i, pos)</code></td><td><code>(i&gt;&gt;pos)&amp;1</code></td><td>Test bit alla posizione pos</td></tr>
+          <tr><td><code>ibset(i, pos)</code></td><td><code>i|(1&lt;&lt;pos)</code></td><td>Set bit alla posizione pos</td></tr>
+          <tr><td><code>ibclr(i, pos)</code></td><td><code>i&amp;~(1&lt;&lt;pos)</code></td><td>Clear bit alla posizione pos</td></tr>
+          <tr><td><code>ibits(i, pos, len)</code></td><td>—</td><td>Estrai len bit da pos</td></tr>
+          <tr><td><code>bit_size(i)</code></td><td>—</td><td>Numero totale di bit</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="sub-title">Esempi</div>
+        <pre><span class="kw">integer</span> :: a = 12, b = 10  <span class="cmt">! 1100, 1010</span>
+
+<span class="kw">print</span> *, iand(a, b)    <span class="cmt">! 8   = 1000</span>
+<span class="kw">print</span> *, ior(a, b)     <span class="cmt">! 14  = 1110</span>
+<span class="kw">print</span> *, ieor(a, b)    <span class="cmt">! 6   = 0110</span>
+<span class="kw">print</span> *, not(a)        <span class="cmt">! complemento</span>
+<span class="kw">print</span> *, ishft(a, 2)   <span class="cmt">! 48  = 110000</span>
+<span class="kw">print</span> *, ishft(a, -2)  <span class="cmt">! 3   = 11</span>
+
+<span class="cmt">! Test/Set/Clear bit</span>
+<span class="kw">print</span> *, btest(a, 2)   <span class="cmt">! .TRUE.  (bit 2)</span>
+<span class="kw">print</span> *, btest(a, 0)   <span class="cmt">! .FALSE. (bit 0)</span>
+<span class="kw">print</span> *, ibset(a, 0)   <span class="cmt">! 13 = 1101</span>
+<span class="kw">print</span> *, ibclr(a, 2)   <span class="cmt">! 8  = 1000</span>
+
+<span class="cmt">! Info tipo</span>
+<span class="kw">print</span> *, bit_size(a)   <span class="cmt">! 32 (default int)</span>
+
+<span class="cmt">! Leadz / Trailz / Popcnt (F2008+)</span>
+<span class="kw">print</span> *, leadz(a)      <span class="cmt">! leading zeros</span>
+<span class="kw">print</span> *, trailz(a)     <span class="cmt">! trailing zeros</span>
+<span class="kw">print</span> *, popcnt(a)     <span class="cmt">! population count</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- DATA/ORA / TIMING                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-datetime"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> DATA/ORA / TIMING</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">date_and_time</div>
+        <pre><span class="kw">character</span>(8)  :: date_str
+<span class="kw">character</span>(10) :: time_str
+<span class="kw">character</span>(5)  :: zone_str
+<span class="kw">integer</span>       :: vals(8)
+
+<span class="kw">call</span> date_and_time(date_str, time_str, &amp;
+                   zone_str, vals)
+
+<span class="cmt">! date_str = "20260329" (YYYYMMDD)</span>
+<span class="cmt">! time_str = "143025.123" (hhmmss.sss)</span>
+<span class="cmt">! vals(1) = anno, (2) = mese, (3) = giorno</span>
+<span class="cmt">! vals(4) = diff UTC min, (5) = ore</span>
+<span class="cmt">! vals(6) = minuti, (7) = secondi</span>
+<span class="cmt">! vals(8) = millisecondi</span>
+
+<span class="kw">print</span> <span class="str">"(i4,a,i2.2,a,i2.2)"</span>, &amp;
+  vals(1), <span class="str">"-"</span>, vals(2), <span class="str">"-"</span>, vals(3)</pre>
+      </div>
+      <div>
+        <div class="sub-title">cpu_time / system_clock</div>
+        <pre><span class="cmt">! CPU time (tempo processore)</span>
+<span class="kw">real</span> :: t1, t2
+
+<span class="kw">call</span> cpu_time(t1)
+<span class="cmt">! ... lavoro da misurare ...</span>
+<span class="kw">call</span> cpu_time(t2)
+<span class="kw">print</span> *, <span class="str">"CPU time:"</span>, t2 - t1, <span class="str">"s"</span>
+
+<span class="cmt">! system_clock (wall-clock time)</span>
+<span class="kw">integer</span>(8) :: c1, c2, rate
+
+<span class="kw">call</span> system_clock(c1, rate)
+<span class="cmt">! ... lavoro da misurare ...</span>
+<span class="kw">call</span> system_clock(c2)
+<span class="kw">print</span> *, <span class="str">"Wall time:"</span>, &amp;
+  real(c2 - c1) / real(rate), <span class="str">"s"</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- RIGA DI COMANDO                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-cmdline"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ARGOMENTI RIGA DI COMANDO <span class="ver v03">F2003+</span></div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Lettura Argomenti</div>
+        <pre><span class="kw">integer</span> :: nargs, i
+<span class="kw">character</span>(len=256) :: arg
+
+<span class="cmt">! Numero argomenti (escluso nome programma)</span>
+nargs = command_argument_count()
+
+<span class="cmt">! Argomento 0 = nome programma</span>
+<span class="kw">call</span> get_command_argument(0, arg)
+<span class="kw">print</span> *, <span class="str">"Programma: "</span>, trim(arg)
+
+<span class="cmt">! Tutti gli argomenti</span>
+<span class="kw">do</span> i = 1, nargs
+  <span class="kw">call</span> get_command_argument(i, arg)
+  <span class="kw">print</span> *, <span class="str">"Arg"</span>, i, <span class="str">": "</span>, trim(arg)
+<span class="kw">end do</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">Parsing Numerico e Env</div>
+        <pre><span class="cmt">! Conversione argomento → numero</span>
+<span class="kw">integer</span> :: n, ierr
+<span class="kw">character</span>(256) :: buf
+
+<span class="kw">call</span> get_command_argument(1, buf)
+<span class="kw">read</span>(buf, *, iostat=ierr) n
+<span class="kw">if</span> (ierr /= 0) <span class="kw">then</span>
+  <span class="kw">print</span> *, <span class="str">"Uso: prog &lt;intero&gt;"</span>
+  <span class="kw">stop</span> 1
+<span class="kw">end if</span>
+
+<span class="cmt">! Variabili d'ambiente</span>
+<span class="kw">character</span>(256) :: home
+<span class="kw">call</span> get_environment_variable(<span class="str">"HOME"</span>, home)
+<span class="kw">print</span> *, <span class="str">"HOME = "</span>, trim(home)
+
+<span class="cmt">! Riga di comando completa</span>
+<span class="kw">character</span>(1024) :: cmdline
+<span class="kw">call</span> get_command(cmdline)
+<span class="kw">print</span> *, trim(cmdline)</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ASSOCIATE / BLOCK                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-assoc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ASSOCIATE / BLOCK</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">ASSOCIATE <span class="ver v03">F2003+</span></div>
+        <pre><span class="cmt">! Alias temporaneo per espressioni complesse</span>
+<span class="kw">type</span>(particle_t) :: particles(1000)
+
+<span class="kw">associate</span> (p => particles(idx), &amp;
+          v => particles(idx)%velocity, &amp;
+          n => size(particles))
+  <span class="kw">print</span> *, p%x, p%y     <span class="cmt">! accesso diretto</span>
+  v = v * 0.99           <span class="cmt">! modifica originale</span>
+  <span class="kw">print</span> *, <span class="str">"N ="</span>, n
+<span class="kw">end associate</span>
+
+<span class="cmt">! Utile per leggibilità con struct annidate</span>
+<span class="kw">associate</span> (cfg => app%config%network%timeout)
+  <span class="kw">if</span> (cfg > 30) cfg = 30   <span class="cmt">! modifica in-place</span>
+<span class="kw">end associate</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">BLOCK <span class="ver v08">F2008+</span></div>
+        <pre><span class="cmt">! Blocco con scope locale per variabili</span>
+<span class="kw">integer</span> :: i = 10
+
+<span class="kw">block</span>
+  <span class="kw">integer</span> :: i = 99  <span class="cmt">! nuova variabile locale</span>
+  <span class="kw">real</span> :: temp
+  temp = sqrt(real(i))
+  <span class="kw">print</span> *, i, temp   <span class="cmt">! 99, 9.949...</span>
+<span class="kw">end block</span>
+
+<span class="kw">print</span> *, i           <span class="cmt">! 10 (invariato)</span>
+
+<span class="cmt">! Utile per allocazioni temporanee</span>
+<span class="kw">block</span>
+  <span class="kw">real</span>, <span class="kw">allocatable</span> :: work(:)
+  <span class="kw">allocate</span>(work(n))
+  <span class="cmt">! ... usa work ...</span>
+<span class="kw">end block</span>  <span class="cmt">! work deallocato automaticamente</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- NAMELIST I/O                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-namelist"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> NAMELIST I/O</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">Scrittura e Lettura NAMELIST</div>
+        <pre><span class="kw">integer</span> :: nx = 100, ny = 200
+<span class="kw">real</span>    :: dt = 0.01, tmax = 10.0
+<span class="kw">character</span>(20) :: method = <span class="str">"euler"</span>
+
+<span class="cmt">! Definizione namelist</span>
+<span class="kw">namelist</span> /params/ nx, ny, dt, tmax, method
+
+<span class="cmt">! Scrittura su file</span>
+<span class="kw">open</span>(10, file=<span class="str">"config.nml"</span>)
+<span class="kw">write</span>(10, nml=params)
+<span class="kw">close</span>(10)
+
+<span class="cmt">! File generato (config.nml):</span>
+<span class="cmt">! &amp;PARAMS</span>
+<span class="cmt">!  NX = 100, NY = 200,</span>
+<span class="cmt">!  DT = 0.01, TMAX = 10.0,</span>
+<span class="cmt">!  METHOD = "euler"</span>
+<span class="cmt">! /</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">Lettura da File</div>
+        <pre><span class="cmt">! Lettura con valori di default</span>
+<span class="kw">integer</span> :: nx=10, ny=10, ierr
+<span class="kw">real</span> :: dt=0.001, tmax=1.0
+<span class="kw">character</span>(20) :: method=<span class="str">"rk4"</span>
+<span class="kw">namelist</span> /params/ nx,ny,dt,tmax,method
+
+<span class="kw">open</span>(10, file=<span class="str">"config.nml"</span>, &amp;
+     status=<span class="str">"old"</span>, iostat=ierr)
+<span class="kw">if</span> (ierr == 0) <span class="kw">then</span>
+  <span class="kw">read</span>(10, nml=params, iostat=ierr)
+  <span class="kw">close</span>(10)
+<span class="kw">end if</span>
+<span class="cmt">! Solo variabili presenti nel file</span>
+<span class="cmt">! vengono aggiornate, le altre restano</span>
+<span class="cmt">! al valore di default</span>
+
+<span class="cmt">! Stampa su stdout per debug</span>
+<span class="kw">write</span>(*, nml=params)</pre>
+      </div>
+    </div>
+    <div class="note">⬛ <strong>NAMELIST</strong> è ideale per file di configurazione: formato leggibile, ordine libero, non serve parsare manualmente. Ogni variabile non presente nel file mantiene il suo default.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ENUM                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-enum"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> ENUM <span class="ver v03">F2003+</span></div>
+  <div class="section-body">
+    <div class="grid2">
+      <div>
+        <div class="sub-title">ENUM, BIND(C)</div>
+        <pre><span class="cmt">! Fortran 2003: solo enum interoperabili con C</span>
+<span class="cmt">! I valori sono integer(c_int)</span>
+<span class="kw">use</span> iso_c_binding
+
+<span class="kw">enum</span>, bind(C)
+  <span class="kw">enumerator</span> :: RED = 0, GREEN = 1, BLUE = 2
+<span class="kw">end enum</span>
+
+<span class="cmt">! Valore automatico (incrementale)</span>
+<span class="kw">enum</span>, bind(C)
+  <span class="kw">enumerator</span> :: MON     <span class="cmt">! 0</span>
+  <span class="kw">enumerator</span> :: TUE     <span class="cmt">! 1</span>
+  <span class="kw">enumerator</span> :: WED     <span class="cmt">! 2</span>
+  <span class="kw">enumerator</span> :: THU = 10
+  <span class="kw">enumerator</span> :: FRI     <span class="cmt">! 11</span>
+<span class="kw">end enum</span>
+
+<span class="cmt">! Uso come variabile</span>
+<span class="kw">integer</span>(c_int) :: day = MON
+<span class="kw">if</span> (day == TUE) <span class="kw">print</span> *, <span class="str">"Martedì"</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">Alternativa con INTEGER PARAMETER</div>
+        <pre><span class="cmt">! Pattern comune pre-F2003 e più flessibile</span>
+<span class="kw">integer</span>, <span class="kw">parameter</span> :: &amp;
+  COLOR_RED   = 1, &amp;
+  COLOR_GREEN = 2, &amp;
+  COLOR_BLUE  = 3
+
+<span class="cmt">! Con tipo custom per type-safety</span>
+<span class="kw">type</span> :: color_enum
+  <span class="kw">integer</span> :: val
+<span class="kw">end type</span>
+
+<span class="kw">type</span>(color_enum), <span class="kw">parameter</span> :: &amp;
+  C_RED   = color_enum(1), &amp;
+  C_GREEN = color_enum(2), &amp;
+  C_BLUE  = color_enum(3)</pre>
+        <div class="note">⬛ <strong>Limitazione:</strong> <code>ENUM, BIND(C)</code> non crea un tipo distinto. Gli enumeratori sono semplici <code>INTEGER(C_INT)</code>. Per type-safety usare il pattern con derived type + PARAMETER.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- LEGACY: COMMON / EQUIVALENCE                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-legacy"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LEGACY — COMMON / EQUIVALENCE <span class="ver v77">F77</span></div>
+  <div class="section-body">
+    <div class="warn">⬛ <strong>Deprecati:</strong> COMMON e EQUIVALENCE sono legacy F77. Usare MODULE per condivisione dati e tipi derivati per layout memoria. Documentati qui per comprendere codice esistente.</div>
+    <div class="grid2">
+      <div>
+        <div class="sub-title">COMMON Block</div>
+        <pre><span class="cmt">! Condivisione variabili globali (F77)</span>
+<span class="cmt">! OGNI unità che usa il blocco deve dichiararlo</span>
+
+<span class="cmt">! === File: main.f90 ===</span>
+<span class="kw">program</span> main
+  <span class="kw">real</span> :: x, y, z
+  <span class="kw">common</span> /globals/ x, y, z
+  x = 1.0; y = 2.0; z = 3.0
+  <span class="kw">call</span> sub1()
+<span class="kw">end program</span>
+
+<span class="cmt">! === File: sub1.f90 ===</span>
+<span class="kw">subroutine</span> sub1()
+  <span class="kw">real</span> :: a, b, c
+  <span class="kw">common</span> /globals/ a, b, c
+  <span class="cmt">! a=1.0, b=2.0, c=3.0 (stessa memoria)</span>
+  <span class="kw">print</span> *, a, b, c
+<span class="kw">end subroutine</span>
+
+<span class="cmt">! Alternativa moderna: MODULE</span>
+<span class="kw">module</span> globals
+  <span class="kw">real</span> :: x, y, z
+<span class="kw">end module</span></pre>
+      </div>
+      <div>
+        <div class="sub-title">EQUIVALENCE</div>
+        <pre><span class="cmt">! Sovrappone variabili in memoria</span>
+<span class="kw">real</span>    :: r
+<span class="kw">integer</span> :: i
+<span class="kw">equivalence</span> (r, i)  <span class="cmt">! stessa memoria</span>
+
+r = 3.14
+<span class="kw">print</span> *, i  <span class="cmt">! bit di r interpretati come int</span>
+
+<span class="cmt">! Uso tipico: array con alias diversi</span>
+<span class="kw">real</span> :: vec(6)
+<span class="kw">real</span> :: mat(2,3)
+<span class="kw">equivalence</span> (vec, mat)
+<span class="cmt">! vec e mat condividono la stessa memoria</span>
+
+<span class="cmt">! Alternativa moderna: TRANSFER</span>
+<span class="kw">integer</span> :: ibits
+ibits = transfer(3.14, ibits)
+
+<span class="cmt">! DATA statement (inizializzazione F77)</span>
+<span class="kw">real</span> :: arr(5)
+<span class="kw">data</span> arr /1.0, 2.0, 3.0, 4.0, 5.0/
+
+<span class="cmt">! BLOCK DATA: inizializza COMMON</span>
+<span class="kw">block data</span> init_globals
+  <span class="kw">real</span> :: x, y, z
+  <span class="kw">common</span> /globals/ x, y, z
+  <span class="kw">data</span> x,y,z /0.0, 0.0, 0.0/
+<span class="kw">end block data</span></pre>
       </div>
     </div>
   </div>
