@@ -117,6 +117,7 @@
     <div class="nav-section-title">File I/O</div>
     <a href="#s-files-seq">File Sequenziali</a>
     <a href="#s-files-idx">File Indexed</a>
+    <a href="#s-files-rel">File Relative</a>
     <a href="#s-reports">Report Writer</a>
   </div>
 
@@ -157,6 +158,10 @@
     <div class="nav-section-title">Avanzato</div>
     <a href="#s-nested">Programmi Annidati</a>
     <a href="#s-intrinsic">Funzioni Intrinseche</a>
+    <a href="#s-registers">Special Registers</a>
+    <a href="#s-condcomp">Compilaz. Condizionale</a>
+    <a href="#s-json">JSON GENERATE/PARSE</a>
+    <a href="#s-debug">Debugging</a>
   </div>
 </nav>
 
@@ -1186,29 +1191,167 @@
   </div>
 </div>
 
+<!-- ─── FILE RELATIVE ─────────────────────────────────────────── -->
+<a class="anchor" id="s-files-rel"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FILE I/O — RELATIVE</div>
+  <div class="section-body">
+    <p>Organizzazione RELATIVE: ogni record ha un numero relativo (posizione). Accesso diretto per numero, utile per tabelle di lookup su disco.</p>
+    <pre><span class="kw">FILE-CONTROL.</span>
+<span class="kw">SELECT</span> SlotFile <span class="kw">ASSIGN TO</span> <span class="str">"slot.dat"</span>
+    <span class="kw">ORGANIZATION IS RELATIVE</span>
+    <span class="kw">ACCESS MODE IS DYNAMIC</span>    <span class="cmt">*> o SEQUENTIAL o RANDOM</span>
+    <span class="kw">RELATIVE KEY IS</span> WS-Slot
+    <span class="kw">FILE STATUS IS</span> WS-FS.
+
+<span class="kw">DATA DIVISION.</span>
+<span class="kw">FILE SECTION.</span>
+<span class="kw">FD</span> SlotFile.
+<span class="num">01</span> SlotRecord  <span class="kw">PIC X(80)</span>.
+
+<span class="kw">WORKING-STORAGE SECTION.</span>
+<span class="num">01</span> WS-Slot  <span class="kw">PIC 9(4)</span>.
+<span class="num">01</span> WS-FS    <span class="kw">PIC XX</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+<span class="kw">OPEN I-O</span> SlotFile.
+
+<span class="cmt">*> Scrittura diretta nello slot 5</span>
+<span class="kw">MOVE</span> <span class="num">5</span> <span class="kw">TO</span> WS-Slot.
+<span class="kw">MOVE</span> <span class="str">"Dati slot 5"</span> <span class="kw">TO</span> SlotRecord.
+<span class="kw">WRITE</span> SlotRecord <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Slot occupato"</span> <span class="kw">END-WRITE</span>.
+
+<span class="cmt">*> Lettura diretta per slot</span>
+<span class="kw">MOVE</span> <span class="num">3</span> <span class="kw">TO</span> WS-Slot.
+<span class="kw">READ</span> SlotFile <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Slot vuoto"</span> <span class="kw">END-READ</span>.
+
+<span class="cmt">*> Cancellazione</span>
+<span class="kw">DELETE</span> SlotFile <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Errore"</span> <span class="kw">END-DELETE</span>.
+
+<span class="cmt">*> Lettura sequenziale (ACCESS DYNAMIC)</span>
+<span class="kw">MOVE</span> <span class="num">1</span> <span class="kw">TO</span> WS-Slot.
+<span class="kw">START</span> SlotFile <span class="kw">KEY NOT LESS THAN</span> WS-Slot
+    <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Errore"</span> <span class="kw">END-START</span>.
+<span class="kw">READ</span> SlotFile <span class="kw">NEXT RECORD</span>
+    <span class="kw">AT END DISPLAY</span> <span class="str">"Fine"</span> <span class="kw">END-READ</span>.
+
+<span class="kw">CLOSE</span> SlotFile.</pre>
+
+    <table>
+      <tr><th>Confronto</th><th>SEQUENTIAL</th><th>RELATIVE</th><th>INDEXED</th></tr>
+      <tr><td>Accesso</td><td>Solo sequenziale</td><td>Per numero record</td><td>Per chiave alfanumerica</td></tr>
+      <tr><td>Chiave</td><td>Nessuna</td><td>Numero relativo (PIC 9)</td><td>Campo nel record</td></tr>
+      <tr><td>DELETE</td><td>No</td><td>Sì</td><td>Sì</td></tr>
+      <tr><td>REWRITE</td><td>Sì (stessa lunghezza)</td><td>Sì</td><td>Sì</td></tr>
+      <tr><td>Buchi</td><td>No</td><td>Sì (slot vuoti)</td><td>No</td></tr>
+      <tr><td>Uso tipico</td><td>Log, batch</td><td>Lookup fisso, hash</td><td>Database, anagrafe</td></tr>
+    </table>
+  </div>
+</div>
+
 <!-- ─── REPORT WRITER ─────────────────────────────────────────── -->
 <a class="anchor" id="s-reports"></a>
 <div class="section">
-  <div class="section-header"><span class="icon">◈</span> REPORT WRITER (stampa formattata)</div>
+  <div class="section-header"><span class="icon">◈</span> REPORT WRITER</div>
   <div class="section-body">
-    <pre><span class="cmt">*> Pattern per stampa report su file</span>
-<span class="num">01</span> PageHeading.
-   <span class="num">02</span> <span class="kw">FILLER</span> <span class="kw">PIC X(13)</span> <span class="kw">VALUE</span> <span class="str">"LISTA CLIENTI"</span>.
-<span class="num">01</span> PageFooting.
-   <span class="num">02</span> <span class="kw">FILLER</span>    <span class="kw">PIC X(7)</span>  <span class="kw">VALUE</span> <span class="str">"Pagina "</span>.
-   <span class="num">02</span> PrnPageNum <span class="kw">PIC Z9</span>.
-<span class="num">01</span> PrintLine    <span class="kw">PIC X(80)</span>.
-<span class="num">01</span> LineCount    <span class="kw">PIC 99</span>  <span class="kw">VALUE ZERO</span>.
-       <span class="num">88</span> NuovaPagina <span class="kw">VALUE</span> <span class="num">60</span> <span class="kw">THRU</span> <span class="num">99</span>.
-<span class="num">01</span> PageCount    <span class="kw">PIC 99</span>  <span class="kw">VALUE ZERO</span>.
+    <p>Il Report Writer (RW) automatizza intestazioni, piè pagina, subtotali e impaginazione. Richiede REPORT SECTION nella DATA DIVISION e verbi INITIATE/GENERATE/TERMINATE.</p>
 
-<span class="cmt">*> Stampa con avanzamento righe</span>
-<span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> PageHeading
+    <div class="sub-title">Definizione FILE-CONTROL e FD</div>
+    <pre><span class="kw">FILE-CONTROL.</span>
+<span class="kw">SELECT</span> ReportFile <span class="kw">ASSIGN TO</span> <span class="str">"report.txt"</span>.
+
+<span class="kw">FILE SECTION.</span>
+<span class="kw">FD</span> ReportFile <span class="kw">REPORT IS</span> VenditeReport.</pre>
+
+    <div class="sub-title" style="margin-top:10px">REPORT SECTION — Struttura RD</div>
+    <pre><span class="kw">REPORT SECTION.</span>
+<span class="kw">RD</span> VenditeReport
+    <span class="kw">CONTROLS ARE FINAL</span> WS-Regione
+    <span class="kw">PAGE LIMIT IS</span> <span class="num">60</span> <span class="kw">LINES</span>
+    <span class="kw">HEADING</span> <span class="num">1</span>
+    <span class="kw">FIRST DETAIL</span> <span class="num">5</span>
+    <span class="kw">LAST DETAIL</span> <span class="num">55</span>
+    <span class="kw">FOOTING</span> <span class="num">58</span>.
+
+<span class="cmt">*> PAGE HEADING — stampato in cima a ogni pagina</span>
+<span class="num">01</span> <span class="kw">TYPE PAGE HEADING</span>.
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">1</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">1</span>  <span class="kw">PIC X(20)</span> <span class="kw">VALUE</span> <span class="str">"REPORT VENDITE"</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">60</span> <span class="kw">PIC X(8)</span>  <span class="kw">SOURCE</span> WS-Data.
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">3</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">1</span>  <span class="kw">PIC X(10)</span> <span class="kw">VALUE</span> <span class="str">"Regione"</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">15</span> <span class="kw">PIC X(10)</span> <span class="kw">VALUE</span> <span class="str">"Prodotto"</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">30</span> <span class="kw">PIC X(10)</span> <span class="kw">VALUE</span> <span class="str">"Importo"</span>.
+
+<span class="cmt">*> CONTROL HEADING — all'inizio di ogni gruppo</span>
+<span class="num">01</span> <span class="kw">TYPE CONTROL HEADING</span> WS-Regione.
+   <span class="num">02</span> <span class="kw">LINE PLUS</span> <span class="num">1</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">1</span>  <span class="kw">PIC X(20)</span> <span class="kw">SOURCE</span> WS-Regione.
+
+<span class="cmt">*> DETAIL — riga di dettaglio per ogni GENERATE</span>
+<span class="num">01</span> RigaDettaglio <span class="kw">TYPE DETAIL</span>.
+   <span class="num">02</span> <span class="kw">LINE PLUS</span> <span class="num">1</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">15</span> <span class="kw">PIC X(15)</span> <span class="kw">SOURCE</span> WS-Prodotto.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">30</span> <span class="kw">PIC $$$,$$9.99</span> <span class="kw">SOURCE</span> WS-Importo.
+
+<span class="cmt">*> CONTROL FOOTING — alla fine di ogni gruppo (subtotale)</span>
+<span class="num">01</span> <span class="kw">TYPE CONTROL FOOTING</span> WS-Regione.
+   <span class="num">02</span> <span class="kw">LINE PLUS</span> <span class="num">1</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">20</span> <span class="kw">PIC X(10)</span> <span class="kw">VALUE</span> <span class="str">"Subtot:"</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">30</span> <span class="kw">PIC $$$,$$9.99</span> <span class="kw">SUM</span> WS-Importo.
+
+<span class="cmt">*> REPORT FOOTING (FINAL) — totale generale</span>
+<span class="num">01</span> <span class="kw">TYPE CONTROL FOOTING FINAL</span>.
+   <span class="num">02</span> <span class="kw">LINE PLUS</span> <span class="num">2</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">20</span> <span class="kw">PIC X(10)</span> <span class="kw">VALUE</span> <span class="str">"TOTALE:"</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">30</span> <span class="kw">PIC $$$$,$$9.99</span> <span class="kw">SUM</span> WS-Importo.
+
+<span class="cmt">*> PAGE FOOTING — piè pagina</span>
+<span class="num">01</span> <span class="kw">TYPE PAGE FOOTING</span>.
+   <span class="num">02</span> <span class="kw">LINE</span> <span class="num">58</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">30</span> <span class="kw">PIC X(7)</span>  <span class="kw">VALUE</span> <span class="str">"Pagina "</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">37</span> <span class="kw">PIC Z9</span>   <span class="kw">SOURCE PAGE-COUNTER</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Verbi Report Writer</div>
+    <pre><span class="hd">PROCEDURE DIVISION.</span>
+<span class="kw">OPEN OUTPUT</span> ReportFile.
+<span class="kw">INITIATE</span> VenditeReport.       <span class="cmt">*> inizializza contatori e report</span>
+
+<span class="kw">PERFORM UNTIL</span> EOF
+    <span class="kw">READ</span> InputFile <span class="kw">AT END SET</span> EOF <span class="kw">TO TRUE END-READ</span>
+    <span class="kw">GENERATE</span> RigaDettaglio    <span class="cmt">*> produce una riga, gestisce automaticamente</span>
+                                <span class="cmt">*> page break, heading, footing, subtotali</span>
+<span class="kw">END-PERFORM</span>.
+
+<span class="kw">TERMINATE</span> VenditeReport.      <span class="cmt">*> stampa gli ultimi footing e totali</span>
+<span class="kw">CLOSE</span> ReportFile.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Tipi di gruppo RD</div>
+    <table>
+      <tr><th>Tipo</th><th>Quando viene stampato</th></tr>
+      <tr><td><code>REPORT HEADING</code></td><td>Una volta, all'inizio del report (dopo INITIATE)</td></tr>
+      <tr><td><code>PAGE HEADING</code></td><td>In cima a ogni pagina</td></tr>
+      <tr><td><code>CONTROL HEADING</code></td><td>Quando il valore di un campo di controllo cambia</td></tr>
+      <tr><td><code>DETAIL</code></td><td>Per ogni GENERATE</td></tr>
+      <tr><td><code>CONTROL FOOTING</code></td><td>Alla fine di un gruppo di controllo (subtotali)</td></tr>
+      <tr><td><code>PAGE FOOTING</code></td><td>In fondo a ogni pagina</td></tr>
+      <tr><td><code>REPORT FOOTING</code></td><td>Una volta, alla fine del report (dopo TERMINATE)</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Stampa manuale (senza Report Writer)</div>
+    <pre><span class="cmt">*> Pattern alternativo con WRITE / ADVANCING</span>
+<span class="num">01</span> PrintLine  <span class="kw">PIC X(80)</span>.
+<span class="num">01</span> LineCount  <span class="kw">PIC 99</span>  <span class="kw">VALUE ZERO</span>.
+       <span class="num">88</span> NuovaPagina <span class="kw">VALUE</span> <span class="num">60</span> <span class="kw">THRU</span> <span class="num">99</span>.
+
+<span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> Intestazione
     <span class="kw">AFTER ADVANCING PAGE</span>.
 <span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> LineaDettaglio
     <span class="kw">AFTER ADVANCING</span> <span class="num">1</span> <span class="kw">LINE</span>.
 <span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> Separatore
     <span class="kw">BEFORE ADVANCING</span> <span class="num">2</span> <span class="kw">LINES</span>.</pre>
+
+    <div class="note">Il Report Writer automatizza ciò che altrimenti richiede gestione manuale di contatori pagina, intestazioni e subtotali. Non tutti i compilatori lo supportano pienamente: GnuCOBOL ha supporto parziale.</div>
   </div>
 </div>
 
@@ -1681,14 +1824,14 @@ matrice[1][2] = 7;</pre>
 
 <span class="kw">SCREEN SECTION.</span>
 <span class="num">01</span> SchermoPrincipale
-   <span class="kw">BACKGROUND-COLOR</span> <span class="num">4</span>    <span class="cmt">*> sfondo blu</span>
+   <span class="kw">BACKGROUND-COLOR</span> <span class="num">1</span>    <span class="cmt">*> sfondo blu</span>
    <span class="kw">FOREGROUND-COLOR</span> <span class="num">7</span>.   <span class="cmt">*> testo bianco</span>
    <span class="cmt">*> Sfondo e titolo</span>
    <span class="num">02</span> <span class="kw">BLANK SCREEN</span>.
    <span class="cmt">*> Titolo centrato riga 1</span>
    <span class="num">02</span> <span class="kw">LINE</span> <span class="num">1</span> <span class="kw">COLUMN</span> <span class="num">30</span>
          <span class="kw">VALUE</span> <span class="str">"=== GESTIONE CLIENTI ==="</span>
-         <span class="kw">FOREGROUND-COLOR</span> <span class="num">3</span>     <span class="cmt">*> giallo</span>
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">6</span>     <span class="cmt">*> giallo</span>
          <span class="kw">HIGHLIGHT</span>.
    <span class="cmt">*> Label</span>
    <span class="num">02</span> <span class="kw">LINE</span> <span class="num">4</span> <span class="kw">COLUMN</span> <span class="num">5</span>
@@ -1698,7 +1841,7 @@ matrice[1][2] = 7;</pre>
    <span class="num">02</span> <span class="kw">LINE</span> <span class="num">4</span> <span class="kw">COLUMN</span> <span class="num">12</span>
          <span class="kw">PIC X(30)</span>
          <span class="kw">USING</span> WS-Nome
-         <span class="kw">FOREGROUND-COLOR</span> <span class="num">6</span>     <span class="cmt">*> ciano</span>
+         <span class="kw">FOREGROUND-COLOR</span> <span class="num">3</span>     <span class="cmt">*> ciano</span>
          <span class="kw">BACKGROUND-COLOR</span> <span class="num">0</span>     <span class="cmt">*> nero</span>
          <span class="kw">REQUIRED AUTO</span>.
    <span class="cmt">*> Età</span>
@@ -2188,6 +2331,302 @@ clean:
 <span class="kw">COMPUTE</span> X = SQRT(<span class="num">2</span>).</pre>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SPECIAL REGISTERS                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-registers"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> SPECIAL REGISTERS</div>
+  <div class="section-body">
+    <p>I registri speciali sono variabili predefinite dal compilatore, disponibili senza dichiarazione in WORKING-STORAGE.</p>
+    <table>
+      <tr><th>Registro</th><th>Tipo</th><th>Descrizione</th></tr>
+      <tr><td><code>RETURN-CODE</code></td><td>PIC S9(4) COMP</td><td>Codice di ritorno del programma o dell'ultimo CALL. Visibile al sistema operativo dopo STOP RUN.</td></tr>
+      <tr><td><code>SORT-STATUS</code></td><td>PIC 9(4)</td><td>Stato dell'ultima operazione SORT/MERGE. 0 = successo.</td></tr>
+      <tr><td><code>SORT-RETURN</code></td><td>PIC S9(4) COMP</td><td>Alias di SORT-STATUS in alcuni dialetti (IBM).</td></tr>
+      <tr><td><code>LINAGE-COUNTER</code></td><td>PIC 9(n)</td><td>Numero riga corrente in un file con clausola LINAGE. Gestito automaticamente da WRITE ADVANCING.</td></tr>
+      <tr><td><code>PAGE-COUNTER</code></td><td>PIC 9(n)</td><td>Contatore pagine nel Report Writer. Incrementato automaticamente.</td></tr>
+      <tr><td><code>LINE-COUNTER</code></td><td>PIC 9(n)</td><td>Contatore righe nel Report Writer.</td></tr>
+      <tr><td><code>NUMBER-OF-CALL-PARAMETERS</code></td><td>PIC 9(2) COMP</td><td>Numero di parametri passati all'ultima CALL (GnuCOBOL).</td></tr>
+      <tr><td><code>COB-CRT-STATUS</code></td><td>PIC 9(4)</td><td>Stato dell'ultimo ACCEPT da schermo. Tasti funzione: 1001=F1, 1002=F2, ecc. (GnuCOBOL).</td></tr>
+      <tr><td><code>WHEN-COMPILED</code></td><td>PIC X(21)</td><td>Data/ora di compilazione.</td></tr>
+    </table>
+    <pre><span class="cmt">*> RETURN-CODE: comunicazione tra programmi</span>
+<span class="kw">CALL</span> <span class="str">"VALIDATORE"</span> <span class="kw">USING</span> Dati.
+<span class="kw">IF</span> RETURN-CODE NOT = <span class="num">0</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Validazione fallita, codice: "</span> RETURN-CODE
+<span class="kw">END-IF</span>.
+
+<span class="cmt">*> Impostare il return code per il chiamante</span>
+<span class="kw">MOVE</span> <span class="num">0</span> <span class="kw">TO</span> RETURN-CODE.
+<span class="kw">STOP RUN</span>.       <span class="cmt">*> il sistema vede exit code 0</span>
+
+<span class="cmt">*> GOBACK al posto di STOP RUN (nei sottoprogrammi)</span>
+<span class="kw">MOVE</span> <span class="num">4</span> <span class="kw">TO</span> RETURN-CODE.
+<span class="kw">GOBACK</span>.          <span class="cmt">*> ritorna al chiamante, RC=4</span>
+
+<span class="cmt">*> SORT-STATUS: controllo dopo SORT</span>
+<span class="kw">SORT</span> WorkFile <span class="kw">ON ASCENDING KEY</span> WKey
+    <span class="kw">USING</span> InFile <span class="kw">GIVING</span> OutFile.
+<span class="kw">IF</span> SORT-STATUS NOT = <span class="num">0</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Errore SORT: "</span> SORT-STATUS
+<span class="kw">END-IF</span>.
+
+<span class="cmt">*> NUMBER-OF-CALL-PARAMETERS (GnuCOBOL)</span>
+<span class="cmt">*> Utile per parametri opzionali in sottoprogrammi</span>
+<span class="kw">IF</span> NUMBER-OF-CALL-PARAMETERS < <span class="num">3</span>
+    <span class="kw">MOVE SPACES TO</span> LParam3   <span class="cmt">*> default se non passato</span>
+<span class="kw">END-IF</span>.
+
+<span class="cmt">*> COB-CRT-STATUS: rilevare tasti funzione (GnuCOBOL)</span>
+<span class="cmt">*> Richiede: SET ENVIRONMENT "COB_SCREEN_EXCEPTIONS" TO "Y"</span>
+<span class="kw">ACCEPT</span> WS-Campo <span class="kw">AT LINE</span> <span class="num">5</span> <span class="kw">COLUMN</span> <span class="num">10</span>.
+<span class="kw">EVALUATE</span> COB-CRT-STATUS
+    <span class="kw">WHEN</span> <span class="num">0</span>    <span class="kw">CONTINUE</span>          <span class="cmt">*> Enter</span>
+    <span class="kw">WHEN</span> <span class="num">1001</span> <span class="kw">PERFORM</span> Aiuto     <span class="cmt">*> F1</span>
+    <span class="kw">WHEN</span> <span class="num">1003</span> <span class="kw">STOP RUN</span>         <span class="cmt">*> F3 = Esci</span>
+    <span class="kw">WHEN</span> <span class="num">2005</span> <span class="kw">CONTINUE</span>         <span class="cmt">*> PgDn</span>
+<span class="kw">END-EVALUATE</span>.</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- COMPILAZIONE CONDIZIONALE                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-condcomp"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COMPILAZIONE CONDIZIONALE</div>
+  <div class="section-body">
+    <p>Da COBOL 2002/2014: direttive del preprocessore per includere/escludere codice a compile time. Sintassi: <code>&gt;&gt;</code> in colonna 7+ (free) o colonna 7 (fixed).</p>
+    <pre><span class="cmt">*> Definizione costante di compilazione</span>
+<span class="hd">&gt;&gt;DEFINE VERSIONE AS 2</span>
+<span class="hd">&gt;&gt;DEFINE DEBUG-MODE AS 1</span>
+<span class="hd">&gt;&gt;DEFINE PIATTAFORMA AS "LINUX"</span>
+
+<span class="cmt">*> Condizionale semplice</span>
+<span class="hd">&gt;&gt;IF DEBUG-MODE = 1</span>
+    <span class="kw">DISPLAY</span> <span class="str">"[DEBUG] Valore: "</span> Variabile.
+<span class="hd">&gt;&gt;END-IF</span>
+
+<span class="cmt">*> IF / ELSE</span>
+<span class="hd">&gt;&gt;IF PIATTAFORMA = "LINUX"</span>
+    <span class="kw">CALL</span> <span class="str">"system"</span> <span class="kw">USING BY REFERENCE</span> CmdLinux.
+<span class="hd">&gt;&gt;ELSE</span>
+    <span class="kw">CALL</span> <span class="str">"system"</span> <span class="kw">USING BY REFERENCE</span> CmdWindows.
+<span class="hd">&gt;&gt;END-IF</span>
+
+<span class="cmt">*> Verifica se definito</span>
+<span class="hd">&gt;&gt;IF VERSIONE IS DEFINED</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Versione attiva"</span>.
+<span class="hd">&gt;&gt;END-IF</span>
+
+<span class="hd">&gt;&gt;IF MODULO-EXTRA IS NOT DEFINED</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Modulo extra non disponibile"</span>.
+<span class="hd">&gt;&gt;END-IF</span>
+
+<span class="cmt">*> Definizione da riga di comando (GnuCOBOL)</span>
+<span class="dim">cobc -x -D DEBUG-MODE=1 -D PIATTAFORMA="LINUX" prog.cob</span>
+
+<span class="cmt">*> Attivazione/disattivazione in cascata</span>
+<span class="hd">&gt;&gt;DEFINE LIVELLO AS 3</span>
+<span class="hd">&gt;&gt;IF LIVELLO >= 2</span>
+    <span class="kw">PERFORM</span> LogDettagliato.
+<span class="hd">&gt;&gt;END-IF</span>
+<span class="hd">&gt;&gt;IF LIVELLO >= 3</span>
+    <span class="kw">PERFORM</span> LogVerbose.
+<span class="hd">&gt;&gt;END-IF</span></pre>
+
+    <table>
+      <tr><th>Direttiva</th><th>Effetto</th></tr>
+      <tr><td><code>&gt;&gt;DEFINE nome AS valore</code></td><td>Definisce una costante di compilazione</td></tr>
+      <tr><td><code>&gt;&gt;IF condizione</code></td><td>Inizio blocco condizionale</td></tr>
+      <tr><td><code>&gt;&gt;ELSE</code></td><td>Ramo alternativo</td></tr>
+      <tr><td><code>&gt;&gt;END-IF</code></td><td>Fine blocco condizionale</td></tr>
+      <tr><td><code>&gt;&gt;SET nome AS valore</code></td><td>Ridefinisce una costante (se già definita)</td></tr>
+      <tr><td><code>&gt;&gt;TURN EC-BOUND CHECKING ON</code></td><td>Attiva/disattiva controlli runtime specifici</td></tr>
+      <tr><td><code>&gt;&gt;SOURCE FORMAT FREE/FIXED</code></td><td>Cambia formato sorgente</td></tr>
+    </table>
+
+    <div class="note">In GnuCOBOL, le direttive <code>&gt;&gt;DEFINE</code> possono anche essere passate da riga di comando con <code>-D NOME=VALORE</code>. Utile per build differenziati (debug/produzione, piattaforme diverse).</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- JSON GENERATE / PARSE                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-json"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> JSON GENERATE / PARSE (COBOL 2014+)</div>
+  <div class="section-body">
+    <p>Da COBOL 2014, con supporto in GnuCOBOL 3.x+, IBM Enterprise COBOL V6.2+ e Micro Focus.</p>
+
+    <div class="sub-title">JSON GENERATE — da record COBOL a stringa JSON</div>
+    <pre><span class="kw">WORKING-STORAGE SECTION.</span>
+<span class="num">01</span> Prodotto.
+   <span class="num">02</span> ProdID     <span class="kw">PIC 9(5)</span> <span class="kw">VALUE</span> <span class="num">12345</span>.
+   <span class="num">02</span> ProdNome   <span class="kw">PIC X(20)</span> <span class="kw">VALUE</span> <span class="str">"Widget"</span>.
+   <span class="num">02</span> ProdPrezzo <span class="kw">PIC 9(5)V99</span> <span class="kw">VALUE</span> <span class="num">49.99</span>.
+   <span class="num">02</span> ProdAttivo <span class="kw">PIC 9</span> <span class="kw">VALUE</span> <span class="num">1</span>.
+<span class="num">01</span> JsonOutput <span class="kw">PIC X(500)</span>.
+<span class="num">01</span> JsonLen    <span class="kw">PIC 9(5)</span>.
+
+<span class="cmt">*> Generazione base</span>
+<span class="kw">JSON GENERATE</span> JsonOutput <span class="kw">FROM</span> Prodotto
+    <span class="kw">COUNT IN</span> JsonLen
+    <span class="kw">ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Errore JSON GENERATE"</span>
+    <span class="kw">NOT ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> JsonOutput(<span class="num">1</span> : JsonLen)
+<span class="kw">END-JSON</span>.
+<span class="cmt">*> Output: {"ProdID":12345,"ProdNome":"Widget","ProdPrezzo":49.99,"ProdAttivo":1}</span>
+
+<span class="cmt">*> Con NAME (rinomina chiavi JSON)</span>
+<span class="kw">JSON GENERATE</span> JsonOutput <span class="kw">FROM</span> Prodotto
+    <span class="kw">COUNT IN</span> JsonLen
+    <span class="kw">NAME OF</span> ProdID <span class="kw">IS</span> <span class="str">"id"</span>
+             ProdNome <span class="kw">IS</span> <span class="str">"name"</span>
+             ProdPrezzo <span class="kw">IS</span> <span class="str">"price"</span>
+             ProdAttivo <span class="kw">IS</span> <span class="str">"active"</span>
+<span class="kw">END-JSON</span>.
+<span class="cmt">*> Output: {"id":12345,"name":"Widget","price":49.99,"active":1}</span>
+
+<span class="cmt">*> Con SUPPRESS (escludi campi)</span>
+<span class="kw">JSON GENERATE</span> JsonOutput <span class="kw">FROM</span> Prodotto
+    <span class="kw">COUNT IN</span> JsonLen
+    <span class="kw">SUPPRESS</span> ProdAttivo
+<span class="kw">END-JSON</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">JSON PARSE — da stringa JSON a record COBOL</div>
+    <pre><span class="num">01</span> JsonInput  <span class="kw">PIC X(500)</span>
+    <span class="kw">VALUE</span> <span class="str">'{"id":99,"name":"Gadget","price":19.99}'</span>.
+<span class="num">01</span> ParsedProd.
+   <span class="num">02</span> ProdID     <span class="kw">PIC 9(5)</span>.
+   <span class="num">02</span> ProdNome   <span class="kw">PIC X(20)</span>.
+   <span class="num">02</span> ProdPrezzo <span class="kw">PIC 9(5)V99</span>.
+
+<span class="kw">JSON PARSE</span> JsonInput <span class="kw">INTO</span> ParsedProd
+    <span class="kw">NAME OF</span> ProdID <span class="kw">IS</span> <span class="str">"id"</span>
+             ProdNome <span class="kw">IS</span> <span class="str">"name"</span>
+             ProdPrezzo <span class="kw">IS</span> <span class="str">"price"</span>
+    <span class="kw">ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Errore parsing JSON"</span>
+    <span class="kw">NOT ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> <span class="str">"ID: "</span> ProdID
+        <span class="kw">DISPLAY</span> <span class="str">"Nome: "</span> ProdNome
+        <span class="kw">DISPLAY</span> <span class="str">"Prezzo: "</span> ProdPrezzo
+<span class="kw">END-JSON</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">XML GENERATE / PARSE</div>
+    <pre><span class="cmt">*> Sintassi analoga a JSON</span>
+<span class="num">01</span> XmlOutput <span class="kw">PIC X(1000)</span>.
+<span class="num">01</span> XmlLen    <span class="kw">PIC 9(5)</span>.
+
+<span class="kw">XML GENERATE</span> XmlOutput <span class="kw">FROM</span> Prodotto
+    <span class="kw">COUNT IN</span> XmlLen
+    <span class="kw">WITH ATTRIBUTES</span>       <span class="cmt">*> oppure WITH ENCODING (UTF-8, ecc.)</span>
+    <span class="kw">ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Errore XML"</span>
+<span class="kw">END-XML</span>.
+
+<span class="kw">XML PARSE</span> XmlInput
+    <span class="kw">PROCESSING PROCEDURE IS</span> HandleXml
+<span class="kw">END-XML</span>.
+<span class="cmt">*> HandleXml riceve eventi SAX: XML-EVENT, XML-TEXT, XML-NTEXT</span></pre>
+
+    <div class="warn">Il supporto JSON/XML varia molto tra compilatori. GnuCOBOL 3.2+ supporta JSON GENERATE. JSON PARSE e XML sono meglio supportati in IBM Enterprise COBOL V6.2+ e Micro Focus.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- DEBUGGING                                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-debug"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> DEBUGGING</div>
+  <div class="section-body">
+    <div class="sub-title">Debugging Lines (Fixed Format)</div>
+    <pre><span class="cmt">*> 'D' in colonna 7 = riga di debug (compilata solo con -fdebugging-line)</span>
+<span class="cmt">      *  Codice normale:</span>
+       <span class="kw">MOVE</span> <span class="num">42</span> <span class="kw">TO</span> Valore.
+<span class="cmt">      D DISPLAY "DEBUG: Valore = " Valore.</span>
+
+<span class="cmt">*> Attivazione:</span>
+<span class="dim">cobc -x -fdebugging-line prog.cob</span>
+<span class="cmt">*> Senza il flag, le righe D sono ignorate dal compilatore.</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Runtime checks con GnuCOBOL</div>
+    <table>
+      <tr><th>Flag</th><th>Controllo</th></tr>
+      <tr><td><code>-debug</code></td><td>Abilita tutti i controlli runtime (bounds, subscript, overflow)</td></tr>
+      <tr><td><code>-g</code></td><td>Genera simboli di debug per gdb/lldb</td></tr>
+      <tr><td><code>-ftrace</code></td><td>Traccia l'esecuzione di ogni statement (molto verboso)</td></tr>
+      <tr><td><code>-ftraceall</code></td><td>Traccia tutto incluse le sezioni DECLARATIVES</td></tr>
+      <tr><td><code>-fsource-location</code></td><td>Mostra file e riga nei messaggi di errore runtime</td></tr>
+      <tr><td><code>-fstack-check</code></td><td>Controlla overflow dello stack</td></tr>
+    </table>
+    <pre><span class="cmt"># Compilazione per debugging completo</span>
+<span class="dim">cobc -x -debug -g -fsource-location -Wall prog.cob</span>
+
+<span class="cmt"># Esecuzione con tracing a runtime</span>
+<span class="dim">export COB_SET_TRACE=Y</span>
+<span class="dim">./prog</span>
+<span class="cmt"># Stampa ogni statement eseguito: Source: 'prog.cob', Line: 42, ...</span>
+
+<span class="cmt"># Redirect trace su file</span>
+<span class="dim">export COB_TRACE_FILE=debug.log</span>
+<span class="dim">./prog</span>
+
+<span class="cmt"># Debug con gdb</span>
+<span class="dim">cobc -x -g prog.cob</span>
+<span class="dim">gdb ./prog</span>
+<span class="cmt"># In gdb: break cob_stop_run per fermarsi prima dell'uscita</span>
+<span class="cmt"># In gdb: print b_42 per vedere variabile dichiarata alla riga 42</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">USE FOR DEBUGGING (COBOL-85)</div>
+    <pre><span class="cmt">*> Richiede SOURCE-COMPUTER con WITH DEBUGGING MODE</span>
+<span class="kw">ENVIRONMENT DIVISION.</span>
+<span class="kw">CONFIGURATION SECTION.</span>
+<span class="kw">SOURCE-COMPUTER.</span> X86 <span class="kw">WITH DEBUGGING MODE</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+<span class="kw">DECLARATIVES.</span>
+<span class="lbl">Debug-Handler SECTION.</span>
+    <span class="kw">USE FOR DEBUGGING ON</span> CalcolaIVA.
+<span class="lbl">Debug-Para.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Entrato in CalcolaIVA"</span>
+    <span class="kw">DISPLAY</span> <span class="str">"DEBUG-LINE: "</span> DEBUG-LINE
+    <span class="kw">DISPLAY</span> <span class="str">"DEBUG-NAME: "</span> DEBUG-NAME.
+<span class="kw">END DECLARATIVES.</span>
+
+<span class="cmt">*> DEBUG-ITEM contiene:</span>
+<span class="cmt">*>   DEBUG-LINE    - numero riga sorgente</span>
+<span class="cmt">*>   DEBUG-NAME    - nome del paragrafo/variabile monitorata</span>
+<span class="cmt">*>   DEBUG-CONTENTS - contenuto (valore precedente, se variabile)</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Tecniche di debug pratiche</div>
+    <pre><span class="cmt">*> Pattern: trace manuale con timestamp</span>
+<span class="num">01</span> WS-Debug-Ts <span class="kw">PIC X(21)</span>.
+<span class="kw">MOVE FUNCTION CURRENT-DATE TO</span> WS-Debug-Ts.
+<span class="kw">DISPLAY</span> <span class="str">"[" </span>WS-Debug-Ts <span class="str">"] CalcolaIVA: Imp="</span>
+    Imponibile <span class="str">" IVA="</span> TotaleIVA.
+
+<span class="cmt">*> Pattern: dump di un record</span>
+<span class="kw">DISPLAY</span> <span class="str">"=== DUMP Cliente ==="</span>.
+<span class="kw">DISPLAY</span> <span class="str">"  ID: ["</span>   IDCliente   <span class="str">"]"</span>.
+<span class="kw">DISPLAY</span> <span class="str">"  Nome: ["</span> NomeCliente <span class="str">"]"</span>.
+<span class="kw">DISPLAY</span> <span class="str">"  HEX: "</span> <span class="kw">FUNCTION</span> ORD(IDCliente(<span class="num">1</span>:<span class="num">1</span>)).
+
+<span class="cmt">*> Pattern: validazione invarianti</span>
+<span class="kw">IF</span> Totale < <span class="num">0</span>
+    <span class="kw">DISPLAY</span> <span class="str">"ASSERT FAIL: Totale negativo = "</span> Totale
+    <span class="kw">UPON</span> STDERR
+    <span class="kw">STOP RUN</span>
+<span class="kw">END-IF</span>.</pre>
+
+    <div class="note">Per debug interattivo in GnuCOBOL: compilare con <code>-g</code> e usare <code>gdb</code>. I nomi delle variabili COBOL sono convertiti in nomi C (es. <code>WS-Conta</code> → <code>b_WS_Conta</code>). Il prefisso <code>b_</code> indica variabili COBOL nel codice C generato.</div>
   </div>
 </div>
 
