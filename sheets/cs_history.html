@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storia dell'Informatica (1900–1970) CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #050a0a;
+    --bg2:       #080e0e;
+    --panel:     #0c1414;
+    --panel2:    #101818;
+    --border:    #142222;
+    --border2:   #203a3a;
+    --glow:      #00bbaa;
+    --glow2:     #22ddcc;
+    --glow-dim:  #003b33;
+    --dim:       #204a44;
+    --text:      #a0b8b4;
+    --text2:     #b8d0cc;
+    --bright:    #ccffee;
+    --accent:    #00aa99;
+    --accent2:   #33ccbb;
+    --key:       #55aa99;
+    --kw:        #66ddcc;
+    --str:       #aaddaa;
+    --num:       #ddaa77;
+    --cmt:       #447766;
+    --fn:        #77ccbb;
+    --cls:       #eecc88;
+    --op:        #cc8888;
+    --var:       #88bbdd;
+    --dec:       #ddbb88;
+    --lbl:       #bbddaa;
+    --head:      #ccffee;
+    --hr:        #142222;
+    --scan:      rgba(0,187,170,0.025);
+    --vignette:          rgba(0,10,10,0.7);
+    --header-top:        #081a18;
+    --header-shadow:     rgba(0,187,170,0.15);
+    --sidebar-hover-bg:  rgba(0,187,170,0.08);
+    --section-shadow:    rgba(0,60,55,0.5);
+    --th-bg:             rgba(0,187,170,0.12);
+    --tr-even-bg:        rgba(0,40,35,0.3);
+    --tr-hover-bg:       rgba(0,187,170,0.06);
+    --note-bg:           rgba(0,187,170,0.08);
+  }
+
+  /* ═══ OVERRIDE: main body gets custom timeline layout ═══ */
+
+  /* Kill common.css .section styling for #main */
+  #main .section {
+    background: none;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 0;
+    overflow: visible;
+  }
+  #main .section-header {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  #main .section-body {
+    padding: 0;
+  }
+
+  /* ─── DECADE HEADER ───────────────────────────── */
+  .decade-label {
+    font-family: 'VT323', monospace;
+    font-size: 2rem;
+    color: var(--cls);
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(238,204,136,0.4), 0 0 40px rgba(238,204,136,0.15);
+    padding: 28px 0 6px 60px;
+    position: relative;
+  }
+  .decade-label::before {
+    content: '>>>';
+    color: var(--glow-dim);
+    margin-right: 10px;
+    font-size: 1.4rem;
+  }
+  .decade-label::after {
+    content: '';
+    display: block;
+    height: 1px;
+    margin-top: 8px;
+    background: linear-gradient(90deg, var(--cls) 0%, transparent 70%);
+    opacity: 0.25;
+  }
+
+  /* ─── THE VERTICAL TIMELINE SPINE ─────────────── */
+  .timeline {
+    position: relative;
+    padding: 10px 0 20px 60px;
+  }
+  /* The vertical line */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      var(--glow-dim) 5%,
+      var(--glow-dim) 95%,
+      transparent 100%
+    );
+  }
+
+  /* ─── SINGLE EVENT NODE ───────────────────────── */
+  .timeline-item {
+    position: relative;
+    padding: 10px 16px 12px;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    transition: all 0.2s ease;
+  }
+
+  /* The dot on the timeline spine */
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -45px;
+    top: 16px;
+    width: 8px;
+    height: 8px;
+    background: var(--bg);
+    border: 2px solid var(--glow-dim);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 1;
+  }
+  /* Connector line from dot to card */
+  .timeline-item::after {
+    content: '';
+    position: absolute;
+    left: -35px;
+    top: 19px;
+    width: 28px;
+    height: 1px;
+    background: var(--glow-dim);
+    transition: all 0.2s ease;
+  }
+
+  .timeline-item:hover {
+    background: rgba(0,187,170,0.04);
+    border-color: var(--border);
+    box-shadow: 0 0 20px rgba(0,187,170,0.08), inset 0 0 30px rgba(0,0,0,0.2);
+  }
+  .timeline-item:hover::before {
+    background: var(--glow);
+    border-color: var(--glow2);
+    box-shadow: 0 0 10px var(--glow), 0 0 20px rgba(0,187,170,0.3);
+  }
+  .timeline-item:hover::after {
+    background: var(--glow);
+    box-shadow: 0 0 6px rgba(0,187,170,0.4);
+  }
+
+  /* ─── YEAR TAG ────────────────────────────────── */
+  .year {
+    display: inline-block;
+    font-family: 'VT323', monospace;
+    font-size: 1.25rem;
+    color: var(--cls);
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(238,204,136,0.3);
+    padding: 1px 8px;
+    background: rgba(238,204,136,0.06);
+    border: 1px solid rgba(238,204,136,0.15);
+    border-radius: 2px;
+    margin-right: 6px;
+  }
+
+  /* ─── PLACE TAG ───────────────────────────────── */
+  .place {
+    font-family: 'VT323', monospace;
+    font-size: 0.9rem;
+    color: var(--cmt);
+    letter-spacing: 2px;
+    opacity: 0.8;
+  }
+
+  /* ─── EVENT TITLE ─────────────────────────────── */
+  .event-title {
+    display: block;
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: var(--bright);
+    letter-spacing: 1.5px;
+    margin-top: 4px;
+    text-shadow: 0 0 6px rgba(0,187,170,0.2);
+  }
+  .event-title::before {
+    content: 'C:\\> ';
+    color: var(--glow-dim);
+    font-size: 0.95rem;
+  }
+
+  /* ─── EVENT DESCRIPTION ───────────────────────── */
+  .event-desc {
+    color: var(--text);
+    font-size: 12px;
+    margin-top: 4px;
+    line-height: 1.65;
+    padding-left: 4px;
+    border-left: 1px dashed var(--border);
+    margin-left: 2px;
+  }
+
+  /* ─── RESPONSIVE: collapse timeline for mobile ── */
+  @media(max-width:900px) {
+    .decade-label { padding-left: 30px; font-size: 1.5rem; }
+    .timeline { padding-left: 30px; }
+    .timeline::before { left: 8px; }
+    .timeline-item::before { left: -27px; width: 6px; height: 6px; }
+    .timeline-item::after { left: -19px; width: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; STORIA DELL'INFORMATICA (1900&ndash;1970) <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>Timeline degli eventi fondamentali</span> &mdash; v1.0</div>
+</div>
+
+<div id="layout">
+
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Decenni</div>
+    <a href="#s-1900">1900&ndash;1909</a>
+    <a href="#s-1910">1910&ndash;1919</a>
+    <a href="#s-1920">1920&ndash;1929</a>
+    <a href="#s-1930">1930&ndash;1939</a>
+    <a href="#s-1940">1940&ndash;1949</a>
+    <a href="#s-1950">1950&ndash;1959</a>
+    <a href="#s-1960">1960&ndash;1969</a>
+    <a href="#s-1970">1970</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════
+     1900–1909
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-1900"></a>
+<div class="decade-label">1900&ndash;1909</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1900</span> <span class="place">// FRANCIA</span>
+      <div class="event-title">Congresso Internazionale di Matematica &mdash; I problemi di Hilbert</div>
+      <div class="event-desc">David Hilbert presenta 23 problemi fondamentali a Parigi. Il decimo problema (decidibilit&agrave; delle equazioni diofantee) influenzer&agrave; profondamente la teoria della computazione.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1904</span> <span class="place">// UK</span>
+      <div class="event-title">Valvola termoionica (diodo a vuoto)</div>
+      <div class="event-desc">John Ambrose Fleming inventa il primo diodo a vuoto. Sar&agrave; il componente fondamentale dei primi computer elettronici.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1907</span> <span class="place">// USA</span>
+      <div class="event-title">Triodo (Audion)</div>
+      <div class="event-desc">Lee De Forest aggiunge un terzo elettrodo al diodo, creando il triodo. Permette amplificazione e commutazione del segnale elettrico, base dell'elettronica digitale.</div>
+    </div>
+
+</div>
+
+<a class="anchor" id="s-1910"></a>
+<div class="decade-label">1910&ndash;1919</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1910&ndash;1913</span> <span class="place">// UK</span>
+      <div class="event-title">Principia Mathematica</div>
+      <div class="event-desc">Bertrand Russell e Alfred N. Whitehead pubblicano i tre volumi dei Principia Mathematica, tentando di fondare tutta la matematica sulla logica formale. Opera fondamentale per la logica computazionale.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1918</span> <span class="place">// GERMANIA</span>
+      <div class="event-title">Circuito flip-flop (Eccles&ndash;Jordan)</div>
+      <div class="event-desc">William Eccles e Frank Jordan brevettano il circuito flip-flop (trigger circuit), il primo circuito elettronico bistabile. Diventer&agrave; la base delle memorie digitali.</div>
+    </div>
+
+</div>
+
+<a class="anchor" id="s-1920"></a>
+<div class="decade-label">1920&ndash;1929</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1920</span> <span class="place">// CECOSLOVACCHIA</span>
+      <div class="event-title">Il termine &ldquo;robot&rdquo;</div>
+      <div class="event-desc">Karel &Ccaron;apek introduce il termine &ldquo;robot&rdquo; (dal ceco &ldquo;robota&rdquo;, lavoro forzato) nel dramma R.U.R. Segna l'inizio del dibattito su macchine intelligenti e automazione.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1928</span> <span class="place">// GERMANIA</span>
+      <div class="event-title">Entscheidungsproblem (Problema della decisione)</div>
+      <div class="event-desc">Hilbert e Ackermann formulano il problema della decisione: esiste un procedimento meccanico per stabilire la verit&agrave; di qualsiasi enunciato logico? La risposta negativa (Turing, Church, 1936) fonder&agrave; la teoria della computabilit&agrave;.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1929</span> <span class="place">// GERMANIA</span>
+      <div class="event-title">Teorema di completezza di G&ouml;del</div>
+      <div class="event-desc">Kurt G&ouml;del dimostra che la logica del primo ordine &egrave; completa: ogni formula valida &egrave; dimostrabile. Un risultato chiave per i fondamenti della logica formale.</div>
+    </div>
+
+</div>
+
+<a class="anchor" id="s-1930"></a>
+<div class="decade-label">1930&ndash;1939</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1931</span> <span class="place">// AUSTRIA</span>
+      <div class="event-title">Teoremi di incompletezza di G&ouml;del</div>
+      <div class="event-desc">Kurt G&ouml;del dimostra che in ogni sistema formale coerente e sufficientemente potente esistono enunciati veri ma non dimostrabili. Distrugge il programma di Hilbert e apre la strada alla teoria della computabilit&agrave;.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1936</span> <span class="place">// UK</span>
+      <div class="event-title">Macchina di Turing</div>
+      <div class="event-desc">Alan Turing pubblica &ldquo;On Computable Numbers&rdquo;. Definisce la Macchina di Turing e dimostra l'esistenza di problemi indecidibili (Halting Problem). Nasce il concetto formale di algoritmo e di calcolatore universale.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1936</span> <span class="place">// USA</span>
+      <div class="event-title">Lambda calcolo di Church</div>
+      <div class="event-desc">Alonzo Church, indipendentemente da Turing, risolve l'Entscheidungsproblem usando il lambda calcolo. La tesi di Church&ndash;Turing stabilisce l'equivalenza tra i due formalismi.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1937</span> <span class="place">// USA</span>
+      <div class="event-title">Tesi di Master di Shannon &mdash; Algebra booleana e circuiti</div>
+      <div class="event-desc">Claude Shannon dimostra nella sua tesi al MIT che l'algebra booleana pu&ograve; descrivere e ottimizzare i circuiti a rel&egrave;. Fonda la progettazione logica dei circuiti digitali.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1938</span> <span class="place">// GERMANIA</span>
+      <div class="event-title">Zuse Z1</div>
+      <div class="event-desc">Konrad Zuse completa lo Z1, il primo calcolatore meccanico programmabile binario (a virgola mobile). Costruito interamente a mano nel soggiorno dei genitori a Berlino.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1939</span> <span class="place">// USA</span>
+      <div class="event-title">Atanasoff&ndash;Berry Computer (ABC)</div>
+      <div class="event-desc">John Atanasoff e Clifford Berry costruiscono il primo calcolatore elettronico digitale all'Iowa State University. Usa valvole termoioniche e aritmetica binaria.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1939</span> <span class="place">// GERMANIA</span>
+      <div class="event-title">Zuse Z2</div>
+      <div class="event-desc">Konrad Zuse completa lo Z2, evoluzione dello Z1 con rel&egrave; telefonici al posto dei componenti meccanici, migliorandone drasticamente l'affidabilit&agrave;.</div>
+    </div>
+
+</div>
+
+<a class="anchor" id="s-1940"></a>
+<div class="decade-label">1940&ndash;1949</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1941</span> <span class="place">// GERMANIA</span>
+      <div class="event-title">Zuse Z3</div>
+      <div class="event-desc">Konrad Zuse completa lo Z3, il primo calcolatore programmabile completamente automatico al mondo. Usa rel&egrave; elettromagnetici, aritmetica binaria a virgola mobile e un programma su pellicola perforata.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1943</span> <span class="place">// UK</span>
+      <div class="event-title">Colossus</div>
+      <div class="event-desc">Tommy Flowers costruisce il Colossus a Bletchley Park per decifrare i messaggi cifrati tedeschi (Lorenz). Primo calcolatore elettronico programmabile (a valvole). La sua esistenza rimarr&agrave; segreta fino agli anni '70.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1944</span> <span class="place">// USA</span>
+      <div class="event-title">Harvard Mark I (IBM ASCC)</div>
+      <div class="event-desc">Howard Aiken e IBM completano il Mark I ad Harvard. Calcolatore elettromeccanico lungo 16 metri, capace di eseguire operazioni in sequenza automatica tramite nastro perforato.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1945</span> <span class="place">// USA / UNGHERIA</span>
+      <div class="event-title">Architettura di Von Neumann</div>
+      <div class="event-desc">John von Neumann pubblica il &ldquo;First Draft of a Report on the EDVAC&rdquo;, descrivendo l'architettura a programma memorizzato: un'unica memoria per dati e istruzioni. Diventer&agrave; il paradigma dominante.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1945</span> <span class="place">// USA</span>
+      <div class="event-title">Bug informatico &mdash; Grace Hopper</div>
+      <div class="event-desc">Grace Hopper documenta un insetto (moth) trovato nei rel&egrave; del Mark II ad Harvard, popolarizzando il termine &ldquo;bug&rdquo; per indicare un errore nel software.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1946</span> <span class="place">// USA</span>
+      <div class="event-title">ENIAC</div>
+      <div class="event-desc">J. Presper Eckert e John Mauchly completano l'ENIAC all'Universit&agrave; della Pennsylvania. Primo computer elettronico general-purpose, con 17.468 valvole termoioniche. Programmato ricablando fisicamente i circuiti.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1947</span> <span class="place">// USA</span>
+      <div class="event-title">Invenzione del transistor</div>
+      <div class="event-desc">John Bardeen, Walter Brattain e William Shockley inventano il transistor ai Bell Labs. Sostituir&agrave; le valvole termoioniche, rendendo i computer pi&ugrave; piccoli, veloci, affidabili ed economici.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1948</span> <span class="place">// USA</span>
+      <div class="event-title">Teoria dell'informazione di Shannon</div>
+      <div class="event-desc">Claude Shannon pubblica &ldquo;A Mathematical Theory of Communication&rdquo;. Introduce il concetto di bit come unit&agrave; fondamentale dell'informazione, fondando la teoria dell'informazione.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1948</span> <span class="place">// UK</span>
+      <div class="event-title">Manchester Baby (SSEM)</div>
+      <div class="event-desc">La Small-Scale Experimental Machine all'Universit&agrave; di Manchester &egrave; il primo computer a programma memorizzato a eseguire con successo un programma (21 giugno 1948). Usa tubi Williams per la memoria.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1949</span> <span class="place">// UK</span>
+      <div class="event-title">EDSAC</div>
+      <div class="event-desc">Maurice Wilkes completa l'EDSAC a Cambridge, il primo computer a programma memorizzato praticamente utilizzabile. Esegue il primo programma il 6 maggio 1949.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1949</span> <span class="place">// URSS</span>
+      <div class="event-title">MESM (MESM / МЭСМ)</div>
+      <div class="event-desc">Sergej Lebedev inizia la costruzione del MESM (Piccola Macchina Calcolatrice Elettronica) a Kiev. Sar&agrave; il primo computer a programma memorizzato dell'Europa continentale (operativo nel 1950).</div>
+    </div>
+
+</div>
+
+<a class="anchor" id="s-1950"></a>
+<div class="decade-label">1950&ndash;1959</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1950</span> <span class="place">// UK</span>
+      <div class="event-title">Test di Turing</div>
+      <div class="event-desc">Alan Turing pubblica &ldquo;Computing Machinery and Intelligence&rdquo; su Mind. Propone il &ldquo;gioco dell'imitazione&rdquo; come criterio per determinare se una macchina pu&ograve; pensare.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1951</span> <span class="place">// URSS</span>
+      <div class="event-title">BESM-1</div>
+      <div class="event-desc">Sergej Lebedev completa il BESM-1 a Mosca, il computer pi&ugrave; veloce d'Europa al momento dell'inaugurazione. Usa valvole termoioniche e memoria a tubi Williams.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1951</span> <span class="place">// UK</span>
+      <div class="event-title">LEO I &mdash; Primo computer commerciale per il business</div>
+      <div class="event-desc">J. Lyons &amp; Co. mette in funzione LEO I (Lyons Electronic Office), basato sull'EDSAC. &Egrave; il primo computer usato per applicazioni commerciali (gestione ordini e logistica).</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1951</span> <span class="place">// USA</span>
+      <div class="event-title">UNIVAC I</div>
+      <div class="event-desc">Eckert e Mauchly consegnano l'UNIVAC I al Census Bureau. Primo computer commerciale americano. Diventa famoso predicendo correttamente la vittoria di Eisenhower nel 1952.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1952</span> <span class="place">// USA</span>
+      <div class="event-title">Primo compilatore &mdash; A-0 System (Grace Hopper)</div>
+      <div class="event-desc">Grace Hopper sviluppa il sistema A-0, il primo compilatore della storia. Traduce notazione matematica in codice macchina, aprendo la strada ai linguaggi di alto livello.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1953</span> <span class="place">// USA</span>
+      <div class="event-title">Memoria a nuclei magnetici (core memory)</div>
+      <div class="event-desc">Jay Forrester installa la memoria a nuclei di ferrite magnetica nel Whirlwind al MIT. Diventer&agrave; la tecnologia di memoria dominante per i successivi 20 anni.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1954</span> <span class="place">// USA</span>
+      <div class="event-title">FORTRAN (FORmula TRANslation)</div>
+      <div class="event-desc">John Backus e il team IBM iniziano lo sviluppo di FORTRAN, il primo linguaggio di programmazione ad alto livello di successo. Il compilatore verr&agrave; rilasciato nel 1957.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1955</span> <span class="place">// USA</span>
+      <div class="event-title">TRADIC &mdash; Primo computer a transistor</div>
+      <div class="event-desc">I Bell Labs completano il TRADIC (TRAnsistor DIgital Computer), il primo computer interamente a transistor. Segna l'inizio della transizione dalle valvole ai transistor.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1956</span> <span class="place">// USA</span>
+      <div class="event-title">Conferenza di Dartmouth &mdash; Nasce l'Intelligenza Artificiale</div>
+      <div class="event-desc">John McCarthy, Marvin Minsky, Claude Shannon e Nathaniel Rochester organizzano il workshop di Dartmouth. Viene coniato il termine &ldquo;Artificial Intelligence&rdquo;.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1956</span> <span class="place">// USA</span>
+      <div class="event-title">IBM 305 RAMAC &mdash; Primo hard disk</div>
+      <div class="event-desc">IBM presenta il RAMAC (Random Access Method of Accounting and Control) con il primo disco rigido commerciale: 50 dischi da 24 pollici per 5 MB di capacit&agrave;.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1957</span> <span class="place">// URSS</span>
+      <div class="event-title">Sputnik e l'impatto sull'informatica</div>
+      <div class="event-desc">Il lancio dello Sputnik scatena la corsa spaziale e porta alla creazione dell'ARPA (1958) negli USA, che finanzier&agrave; massicciamente la ricerca informatica e creer&agrave; ARPANET.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1958</span> <span class="place">// USA</span>
+      <div class="event-title">Circuito integrato</div>
+      <div class="event-desc">Jack Kilby (Texas Instruments) e Robert Noyce (Fairchild) inventano indipendentemente il circuito integrato. Kilby dimostra il primo prototipo funzionante il 12 settembre 1958.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1958</span> <span class="place">// USA / EUROPA</span>
+      <div class="event-title">LISP e ALGOL</div>
+      <div class="event-desc">John McCarthy crea LISP (LISt Processing) al MIT. Contemporaneamente, un comitato internazionale pubblica ALGOL 58, capostipite della famiglia di linguaggi strutturati (ALGOL 60, Pascal, C).</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1959</span> <span class="place">// USA</span>
+      <div class="event-title">COBOL</div>
+      <div class="event-desc">Il comitato CODASYL, con il contributo fondamentale di Grace Hopper, progetta COBOL (COmmon Business-Oriented Language). Diventer&agrave; il linguaggio dominante per applicazioni business e bancarie.</div>
+    </div>
+
+</div>
+
+<a class="anchor" id="s-1960"></a>
+<div class="decade-label">1960&ndash;1969</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1960</span> <span class="place">// EUROPA / USA</span>
+      <div class="event-title">ALGOL 60</div>
+      <div class="event-desc">Pubblicazione del report di ALGOL 60, risultato di una collaborazione internazionale. Introduce la notazione BNF, la struttura a blocchi, la ricorsione e lo scope lessicale. Influenzer&agrave; tutti i linguaggi successivi.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1961</span> <span class="place">// USA</span>
+      <div class="event-title">Time-sharing &mdash; CTSS</div>
+      <div class="event-desc">Il MIT presenta il Compatible Time-Sharing System (CTSS), che permette a pi&ugrave; utenti di usare lo stesso computer simultaneamente tramite terminali. Rivoluziona l'accesso ai calcolatori.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1962</span> <span class="place">// USA</span>
+      <div class="event-title">Spacewar! &mdash; Primo videogioco</div>
+      <div class="event-desc">Steve Russell e colleghi al MIT creano Spacewar! sul PDP-1, uno dei primi videogiochi interattivi della storia. Dimostra il potenziale dei computer per l'intrattenimento.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1962</span> <span class="place">// URSS</span>
+      <div class="event-title">Progetto OGAS</div>
+      <div class="event-desc">Viktor Glushkov propone OGAS, una rete informatica nazionale per gestire l'economia pianificata sovietica. Il progetto, che anticipa Internet, verr&agrave; ostacolato dalla burocrazia e mai completamente realizzato.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1964</span> <span class="place">// USA</span>
+      <div class="event-title">IBM System/360</div>
+      <div class="event-desc">IBM lancia la famiglia System/360, prima linea di computer con architettura compatibile tra modelli diversi. Introduce il concetto di &ldquo;famiglia di computer&rdquo; e domina il mercato mainframe per decenni.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1964</span> <span class="place">// USA</span>
+      <div class="event-title">BASIC</div>
+      <div class="event-desc">John Kemeny e Thomas Kurtz creano BASIC (Beginner's All-purpose Symbolic Instruction Code) a Dartmouth. Progettato per rendere la programmazione accessibile a non-specialisti e studenti.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1965</span> <span class="place">// USA</span>
+      <div class="event-title">Legge di Moore</div>
+      <div class="event-desc">Gordon Moore pubblica la sua osservazione: il numero di transistor su un chip raddoppia ogni 18&ndash;24 mesi. Questa &ldquo;legge&rdquo; guider&agrave; l'industria dei semiconduttori per oltre 50 anni.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1965</span> <span class="place">// URSS</span>
+      <div class="event-title">BESM-6</div>
+      <div class="event-desc">Viene completato il BESM-6, il supercomputer sovietico pi&ugrave; potente dell'epoca (circa 1 MFLOPS). Rester&agrave; in uso fino agli anni '90 e sar&agrave; impiegato nel programma spaziale sovietico.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1966</span> <span class="place">// ITALIA / EUROPA</span>
+      <div class="event-title">Teorema di B&ouml;hm&ndash;Jacopini</div>
+      <div class="event-desc">Corrado B&ouml;hm e Giuseppe Jacopini dimostrano che qualsiasi programma pu&ograve; essere scritto usando solo tre strutture di controllo: sequenza, selezione e iterazione. Base teorica della programmazione strutturata.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1967</span> <span class="place">// NORVEGIA</span>
+      <div class="event-title">Simula 67 &mdash; Primo linguaggio a oggetti</div>
+      <div class="event-desc">Ole-Johan Dahl e Kristen Nygaard al Norwegian Computing Center creano Simula 67. Introduce classi, oggetti, ereditariet&agrave; e polimorfismo. &Egrave; il primo linguaggio di programmazione orientato agli oggetti.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1968</span> <span class="place">// NATO / EUROPA</span>
+      <div class="event-title">Conferenza NATO &mdash; &ldquo;Software Engineering&rdquo;</div>
+      <div class="event-desc">Alla conferenza NATO di Garmisch-Partenkirchen (Germania) viene coniato il termine &ldquo;Software Engineering&rdquo; per affrontare la &ldquo;crisi del software&rdquo;: progetti in ritardo, oltre budget e pieni di bug.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1968</span> <span class="place">// USA</span>
+      <div class="event-title">Dijkstra &mdash; &ldquo;Go To Statement Considered Harmful&rdquo;</div>
+      <div class="event-desc">Edsger Dijkstra pubblica la celebre lettera che critica l'uso del GOTO. Contribuisce alla diffusione della programmazione strutturata e influenza il design dei linguaggi futuri.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1968</span> <span class="place">// USA</span>
+      <div class="event-title">&ldquo;The Mother of All Demos&rdquo; &mdash; Douglas Engelbart</div>
+      <div class="event-desc">Douglas Engelbart presenta il mouse, le finestre, l'ipertesto, la videoconferenza e l'editing collaborativo in una singola dimostrazione a San Francisco. Anticipa di decenni il personal computing.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1969</span> <span class="place">// USA</span>
+      <div class="event-title">ARPANET &mdash; Nasce Internet</div>
+      <div class="event-desc">Il 29 ottobre 1969, il primo messaggio (&ldquo;LO&rdquo; &mdash; doveva essere &ldquo;LOGIN&rdquo; ma il sistema crash&ograve;) viene inviato tra UCLA e Stanford Research Institute. ARPANET, finanziata dal DoD, &egrave; il predecessore diretto di Internet.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1969</span> <span class="place">// USA</span>
+      <div class="event-title">UNIX</div>
+      <div class="event-desc">Ken Thompson e Dennis Ritchie iniziano lo sviluppo di UNIX ai Bell Labs su un PDP-7. Nasce come progetto personale dopo la cancellazione di Multics. Diventer&agrave; il sistema operativo pi&ugrave; influente della storia.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1969</span> <span class="place">// USA</span>
+      <div class="event-title">Apollo 11 &mdash; Software spaziale</div>
+      <div class="event-desc">Il software dell'Apollo Guidance Computer, sviluppato dal team di Margaret Hamilton al MIT, guida con successo lo sbarco sulla Luna. Hamilton conia il termine &ldquo;software engineering&rdquo; applicato alla pratica.</div>
+    </div>
+
+</div>
+
+<a class="anchor" id="s-1970"></a>
+<div class="decade-label">1970</div>
+<div class="timeline">
+
+    <div class="timeline-item">
+      <span class="year">1970</span> <span class="place">// USA / UK</span>
+      <div class="event-title">Modello relazionale &mdash; Edgar F. Codd</div>
+      <div class="event-desc">Edgar F. Codd (IBM, ricercatore britannico) pubblica &ldquo;A Relational Model of Data for Large Shared Data Banks&rdquo;. Fonda la teoria dei database relazionali, base di SQL, Oracle, PostgreSQL e di tutta l'industria dei dati moderna.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1970</span> <span class="place">// USA</span>
+      <div class="event-title">Pascal</div>
+      <div class="event-desc">Niklaus Wirth pubblica il linguaggio Pascal, progettato per l'insegnamento della programmazione strutturata. Ispirato ad ALGOL, diventer&agrave; uno dei linguaggi pi&ugrave; usati nelle universit&agrave; degli anni '70 e '80.</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="year">1970</span> <span class="place">// USA</span>
+      <div class="event-title">ARPANET si espande</div>
+      <div class="event-desc">ARPANET collega 13 nodi tra universit&agrave; e centri di ricerca americani. Viene implementato il protocollo NCP (Network Control Protocol), predecessore di TCP/IP.</div>
+    </div>
+
+</div>
+
+</main>
+</div>
+
+<script>
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+<script src="../assets/js/mobile.js"></script>
+</body>
+</html>
