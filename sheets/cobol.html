@@ -85,8 +85,9 @@
     <a href="#s-comp">COMP / USAGE Clause</a>
     <a href="#s-compx">COMP-X Dettaglio</a>
     <a href="#s-edited">Edited Pictures</a>
-    <a href="#s-redefines">REDEFINES</a>
+    <a href="#s-redefines">REDEFINES & FILLER</a>
     <a href="#s-level88">Level 88 / Condition Names</a>
+    <a href="#s-local-storage">LOCAL-STORAGE Section</a>
   </div>
 
   <div class="nav-section">
@@ -115,6 +116,8 @@
 
   <div class="nav-section">
     <div class="nav-section-title">File I/O</div>
+    <a href="#s-file-mgmt">File Management</a>
+    <a href="#s-iocontrol">I-O-CONTROL</a>
     <a href="#s-files-seq">File Sequenziali</a>
     <a href="#s-files-idx">File Indexed</a>
     <a href="#s-files-rel">File Relative</a>
@@ -159,8 +162,15 @@
     <a href="#s-nested">Programmi Annidati</a>
     <a href="#s-intrinsic">Funzioni Intrinseche</a>
     <a href="#s-registers">Special Registers</a>
+    <a href="#s-refmod">Reference Modification</a>
+    <a href="#s-occurs-dyn">OCCURS DYNAMIC</a>
     <a href="#s-condcomp">Compilaz. Condizionale</a>
+    <a href="#s-copy-adv">COPY &amp; REPLACING</a>
+    <a href="#s-filelock">File Locking</a>
     <a href="#s-json">JSON GENERATE/PARSE</a>
+    <a href="#s-embedsql">Embedded SQL</a>
+    <a href="#s-cics">CICS</a>
+    <a href="#s-jcl">JCL</a>
     <a href="#s-debug">Debugging</a>
   </div>
 </nav>
@@ -646,23 +656,84 @@
 <!-- ─── REDEFINES ────────────────────────────────────────────── -->
 <a class="anchor" id="s-redefines"></a>
 <div class="section">
-  <div class="section-header"><span class="icon">◈</span> REDEFINES — UNIONE DI VARIABILI</div>
+  <div class="section-header"><span class="icon">◈</span> REDEFINES &amp; FILLER — RI-MAPPATURA DELLA MEMORIA</div>
   <div class="section-body">
-    <p>REDEFINES permette di accedere alla stessa area di memoria con layout diversi (simile a <code>union</code> in C).</p>
-    <pre><span class="cmt">*> Stesso storage, visto come testo o come float</span>
-<span class="num">01</span> TextoNumero   <span class="kw">PIC X(6)</span>.
-<span class="num">01</span> FloatNumero   <span class="kw">REDEFINES</span> TextoNumero <span class="kw">PIC 9(4)V99</span>.
+    <p>REDEFINES permette di accedere alla <b>stessa area di memoria</b> con layout diversi (simile a <code>union</code> in C). Il campo ridefinito e quello originale condividono gli stessi byte fisici: scrivere in uno modifica l'altro.</p>
 
-<span class="cmt">*> Pre-riempimento tabella con REDEFINES</span>
-<span class="num">01</span> ProdTable.
-   <span class="num">02</span> ProdData.
-       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(8)</span> <span class="kw">VALUE</span> <span class="str">"Red  SML"</span>.
-       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(8)</span> <span class="kw">VALUE</span> <span class="str">"Blue SML"</span>.
-       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(8)</span> <span class="kw">VALUE</span> <span class="str">"GreenSML"</span>.
-   <span class="num">02</span> <span class="kw">FILLER REDEFINES</span> ProdData.
-       <span class="num">03</span> Shirt <span class="kw">OCCURS 3 TIMES</span>.
-           <span class="num">04</span> ProdName  <span class="kw">PIC X(5)</span>.
-           <span class="num">04</span> ProdSizes <span class="kw">PIC A OCCURS 3 TIMES</span>.</pre>
+    <div class="sub-title">Regole REDEFINES</div>
+    <table>
+      <tr><th>Regola</th><th>Dettaglio</th></tr>
+      <tr><td>Stesso livello</td><td>Il campo REDEFINES deve avere lo <b>stesso numero di livello</b> del campo originale</td></tr>
+      <tr><td>Dimensione</td><td>Il campo ridefinente non deve essere <b>piu' grande</b> dell'originale (puo' essere uguale o piu' piccolo)</td></tr>
+      <tr><td>Ordine</td><td>La clausola REDEFINES deve seguire <b>immediatamente</b> il campo originale (senza campi intermedi allo stesso livello)</td></tr>
+      <tr><td>No VALUE</td><td>Un campo con REDEFINES <b>non puo' avere clausola VALUE</b> (lo standard lo vieta; alcuni compilatori lo tollerano)</td></tr>
+      <tr><td>No su livello 01 in FILE SECTION</td><td>In FILE SECTION, i record 01 sono gia' ridefinizioni implicite dello stesso buffer</td></tr>
+      <tr><td>No su 66, 77, 88</td><td>REDEFINES non e' applicabile ai livelli speciali</td></tr>
+      <tr><td>REDEFINES multipli</td><td>Piu' campi possono ridefinire lo <b>stesso</b> campo originale (catena di REDEFINES)</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Esempi di REDEFINES</div>
+    <pre><span class="cmt">*> Stesso storage, visto come testo o come numero</span>
+<span class="num">01</span> DataGrezza    <span class="kw">PIC X(8)</span>.
+<span class="num">01</span> DataNum       <span class="kw">REDEFINES</span> DataGrezza <span class="kw">PIC 9(8)</span>.
+<span class="num">01</span> DataStruct    <span class="kw">REDEFINES</span> DataGrezza.
+   <span class="num">02</span> Anno         <span class="kw">PIC 9(4)</span>.
+   <span class="num">02</span> Mese         <span class="kw">PIC 99</span>.
+   <span class="num">02</span> Giorno       <span class="kw">PIC 99</span>.
+<span class="cmt">*> MOVE "20241225" TO DataGrezza</span>
+<span class="cmt">*> DISPLAY Anno    -> "2024"</span>
+<span class="cmt">*> DISPLAY DataNum -> 20241225</span>
+
+<span class="cmt">*> Union-style: interpretare lo stesso dato come int o float</span>
+<span class="num">01</span> RawArea       <span class="kw">PIC X(4)</span>.
+<span class="num">01</span> IntView       <span class="kw">REDEFINES</span> RawArea <span class="kw">USAGE BINARY-LONG</span>.
+<span class="num">01</span> FloatView     <span class="kw">REDEFINES</span> RawArea <span class="kw">USAGE FLOAT-SHORT</span>.
+
+<span class="cmt">*> REDEFINES in strutture di gruppo (subordinati)</span>
+<span class="num">01</span> Indirizzo.
+   <span class="num">02</span> CodicePostale <span class="kw">PIC X(5)</span>.
+   <span class="num">02</span> CPStrutturato <span class="kw">REDEFINES</span> CodicePostale.
+       <span class="num">03</span> Regione      <span class="kw">PIC XX</span>.
+       <span class="num">03</span> Comune       <span class="kw">PIC X(3)</span>.
+   <span class="num">02</span> Citta         <span class="kw">PIC X(30)</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Pattern: pre-riempimento tabella con REDEFINES + FILLER</div>
+    <pre><span class="cmt">*> Tecnica classica per inizializzare una tabella con valori noti</span>
+<span class="num">01</span> MesiTable.
+   <span class="num">02</span> MesiData.
+       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(9)</span> <span class="kw">VALUE</span> <span class="str">"Gennaio  "</span>.
+       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(9)</span> <span class="kw">VALUE</span> <span class="str">"Febbraio "</span>.
+       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(9)</span> <span class="kw">VALUE</span> <span class="str">"Marzo    "</span>.
+       <span class="num">03</span> <span class="kw">FILLER</span> <span class="kw">PIC X(9)</span> <span class="kw">VALUE</span> <span class="str">"Aprile   "</span>.
+       <span class="cmt">*> ... (12 FILLER totali)</span>
+   <span class="num">02</span> <span class="kw">FILLER REDEFINES</span> MesiData.
+       <span class="num">03</span> NomeMese <span class="kw">PIC X(9) OCCURS 12 TIMES</span>.
+<span class="cmt">*> DISPLAY NomeMese(3)  -> "Marzo    "</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">FILLER &mdash; Campi senza nome</div>
+    <p>FILLER e' un campo <b>anonimo</b> (senza nome referenziabile) che occupa spazio nel record ma non e' indirizzabile direttamente nel codice. Usi principali:</p>
+    <table>
+      <tr><th>Uso</th><th>Descrizione</th><th>Esempio</th></tr>
+      <tr><td>Spaziatura nei record</td><td>Padding tra campi per allineamento o formato fisso</td><td><code>02 FILLER PIC X(5) VALUE SPACES.</code></td></tr>
+      <tr><td>Aree riservate</td><td>Byte riservati per future espansioni del tracciato</td><td><code>02 FILLER PIC X(20).</code></td></tr>
+      <tr><td>Costanti in tabelle</td><td>Dati pre-caricati (vedi pattern REDEFINES sopra)</td><td><code>03 FILLER PIC X(10) VALUE "Testo".</code></td></tr>
+      <tr><td>Label in SCREEN SECTION</td><td>Testo fisso sullo schermo non referenziabile</td><td><code>02 FILLER VALUE "Titolo".</code></td></tr>
+      <tr><td>Record di output</td><td>Separatori e decorazioni nelle righe di stampa</td><td><code>02 FILLER PIC X VALUE "/".</code></td></tr>
+    </table>
+    <pre><span class="cmt">*> Record con FILLER per formato tracciato fisso</span>
+<span class="num">01</span> RecordFisso.
+   <span class="num">02</span> RF-Codice     <span class="kw">PIC 9(5)</span>.
+   <span class="num">02</span> <span class="kw">FILLER</span>        <span class="kw">PIC X(3)</span> <span class="kw">VALUE SPACES</span>.   <span class="cmt">*> separatore</span>
+   <span class="num">02</span> RF-Nome       <span class="kw">PIC X(30)</span>.
+   <span class="num">02</span> <span class="kw">FILLER</span>        <span class="kw">PIC X(12)</span>.              <span class="cmt">*> riservato</span>
+   <span class="num">02</span> RF-Importo    <span class="kw">PIC 9(7)V99</span>.
+
+<span class="cmt">*> Da COBOL-85: la parola FILLER e' opzionale</span>
+<span class="num">01</span> RecordModerno.
+   <span class="num">02</span> <span class="kw">PIC X(5)</span> <span class="kw">VALUE SPACES</span>.  <span class="cmt">*> FILLER implicito</span>
+   <span class="num">02</span> RM-Nome <span class="kw">PIC X(20)</span>.</pre>
+
+    <div class="note"><b>INITIALIZE e FILLER:</b> per default, INITIALIZE <b>non tocca</b> i campi FILLER. Per includerli: <code>INITIALIZE Record WITH FILLER</code>. Analogamente, <code>MOVE CORRESPONDING</code> ignora i FILLER.</div>
   </div>
 </div>
 
@@ -671,22 +742,173 @@
 <div class="section">
   <div class="section-header"><span class="icon">◈</span> LEVEL 88 — CONDITION NAMES</div>
   <div class="section-body">
-    <pre><span class="num">01</span> PuoVotare    <span class="kw">PIC 9</span> <span class="kw">VALUE</span> <span class="num">0</span>.
-   <span class="num">88</span> SiVota       <span class="kw">VALUE</span> <span class="num">1</span>.
-   <span class="num">88</span> NoVota       <span class="kw">VALUE</span> <span class="num">0</span>.
+    <p>I livelli 88 definiscono <b>nomi di condizione</b> associati a un campo genitore. Non occupano memoria propria: sono alias booleani che testano se il genitore contiene determinati valori. Sono l'equivalente COBOL degli <code>enum</code> e dei flag booleani dei linguaggi moderni.</p>
 
+    <div class="sub-title">Sintassi e forme di VALUE</div>
+    <table>
+      <tr><th>Forma</th><th>Significato</th><th>Esempio</th></tr>
+      <tr><td><code>VALUE literal</code></td><td>Singolo valore</td><td><code>88 Attivo VALUE 1.</code></td></tr>
+      <tr><td><code>VALUE lit1, lit2, ...</code></td><td>Lista di valori (OR implicito)</td><td><code>88 Errore VALUE 'E', 'F', 'G'.</code></td></tr>
+      <tr><td><code>VALUE lit1 THRU lit2</code></td><td>Range continuo (estremi inclusi)</td><td><code>88 Valido VALUE 1 THRU 99.</code></td></tr>
+      <tr><td><code>VALUES ARE lit1 THRU lit2, lit3</code></td><td>Range + valori singoli combinati</td><td><code>88 OK VALUES ARE 'A' THRU 'F', 'X'.</code></td></tr>
+      <tr><td><code>VALUE FALSE IS literal</code></td><td>Valore assegnato con SET ... TO FALSE</td><td><code>88 Flag VALUE 'Y' FALSE 'N'.</code></td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Definizione &mdash; Esempi completi</div>
+    <pre><span class="cmt">*> Booleano semplice (flag On/Off)</span>
+<span class="num">01</span> WS-EOF       <span class="kw">PIC 9</span> <span class="kw">VALUE</span> <span class="num">0</span>.
+   <span class="num">88</span> EOF-Reached  <span class="kw">VALUE</span> <span class="num">1</span>.
+   <span class="num">88</span> Not-EOF      <span class="kw">VALUE</span> <span class="num">0</span>.
+
+<span class="cmt">*> Stato con valori multipli (lista)</span>
 <span class="num">01</span> Stato          <span class="kw">PIC X</span>.
    <span class="num">88</span> StApertura   <span class="kw">VALUE</span> <span class="str">'A'</span>.
    <span class="num">88</span> StChiusura   <span class="kw">VALUE</span> <span class="str">'C'</span>.
    <span class="num">88</span> StErrore     <span class="kw">VALUE</span> <span class="str">'E'</span>, <span class="str">'F'</span>, <span class="str">'G'</span>.
-   <span class="num">88</span> StRange      <span class="kw">VALUE</span> <span class="str">'1'</span> <span class="kw">THRU</span> <span class="str">'5'</span>.
-   <span class="num">88</span> EOF-Flag     <span class="kw">VALUE HIGH-VALUES</span>.
+   <span class="cmt">*> StErrore e' TRUE se Stato = 'E' OR 'F' OR 'G'</span>
 
-<span class="cmt">*> Uso in PROCEDURE</span>
-<span class="kw">SET</span> SiVota <span class="kw">TO TRUE</span>.
-<span class="kw">IF</span> SiVota   <span class="kw">DISPLAY</span> <span class="str">"Vota!"</span> <span class="kw">END-IF</span>.
-<span class="kw">IF NOT</span> StApertura <span class="kw">DISPLAY</span> <span class="str">"Non aperto"</span> <span class="kw">END-IF</span>.</pre>
-    <div class="note">Un livello 88 non ha PIC proprio — è una condizione sul valore del genitore. <code>SET x TO TRUE</code> scrive il primo VALUE in genitore.</div>
+<span class="cmt">*> Range continuo con THRU</span>
+<span class="num">01</span> Voto           <span class="kw">PIC 99</span>.
+   <span class="num">88</span> Insufficiente <span class="kw">VALUE</span> <span class="num">0</span> <span class="kw">THRU</span> <span class="num">17</span>.
+   <span class="num">88</span> Sufficiente   <span class="kw">VALUE</span> <span class="num">18</span> <span class="kw">THRU</span> <span class="num">23</span>.
+   <span class="num">88</span> Buono         <span class="kw">VALUE</span> <span class="num">24</span> <span class="kw">THRU</span> <span class="num">27</span>.
+   <span class="num">88</span> Ottimo        <span class="kw">VALUE</span> <span class="num">28</span> <span class="kw">THRU</span> <span class="num">30</span>.
+   <span class="num">88</span> VotoValido    <span class="kw">VALUE</span> <span class="num">0</span> <span class="kw">THRU</span> <span class="num">30</span>.
+
+<span class="cmt">*> Range combinato con valori singoli</span>
+<span class="num">01</span> CodiceResp     <span class="kw">PIC X(2)</span>.
+   <span class="num">88</span> RespOK       <span class="kw">VALUES ARE</span> <span class="str">"00"</span>, <span class="str">"02"</span>, <span class="str">"04"</span>.
+   <span class="num">88</span> RespWarning  <span class="kw">VALUES ARE</span> <span class="str">"10"</span> <span class="kw">THRU</span> <span class="str">"19"</span>.
+   <span class="num">88</span> RespError    <span class="kw">VALUES ARE</span> <span class="str">"20"</span> <span class="kw">THRU</span> <span class="str">"49"</span>, <span class="str">"99"</span>.
+
+<span class="cmt">*> FALSE IS: permette SET ... TO FALSE</span>
+<span class="num">01</span> WS-Switch      <span class="kw">PIC X</span> <span class="kw">VALUE</span> <span class="str">'N'</span>.
+   <span class="num">88</span> Attivato     <span class="kw">VALUE</span> <span class="str">'Y'</span> <span class="kw">FALSE</span> <span class="str">'N'</span>.
+
+<span class="cmt">*> Su campo alfanumerico (HIGH-VALUES per EOF)</span>
+<span class="num">01</span> WS-Flag        <span class="kw">PIC X</span>.
+   <span class="num">88</span> EOF-Flag     <span class="kw">VALUE HIGH-VALUES</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">SET &mdash; Assegnamento tramite Condition Name</div>
+    <p><code>SET condizione TO TRUE</code> scrive nel campo genitore il <b>primo valore</b> della lista VALUE. E' il modo idiomatico COBOL per modificare lo stato di un flag senza conoscere il valore concreto.</p>
+    <pre><span class="cmt">*> SET ... TO TRUE: assegna il primo VALUE al genitore</span>
+<span class="kw">SET</span> EOF-Reached <span class="kw">TO TRUE</span>.    <span class="cmt">*> WS-EOF diventa 1</span>
+<span class="kw">SET</span> StApertura  <span class="kw">TO TRUE</span>.    <span class="cmt">*> Stato diventa 'A'</span>
+<span class="kw">SET</span> StErrore    <span class="kw">TO TRUE</span>.    <span class="cmt">*> Stato diventa 'E' (primo della lista)</span>
+<span class="kw">SET</span> Sufficiente <span class="kw">TO TRUE</span>.    <span class="cmt">*> Voto diventa 18 (inizio del range)</span>
+
+<span class="cmt">*> SET ... TO FALSE: richiede clausola FALSE IS nella definizione</span>
+<span class="kw">SET</span> Attivato <span class="kw">TO FALSE</span>.       <span class="cmt">*> WS-Switch diventa 'N'</span>
+<span class="cmt">*> ERRORE se FALSE IS non dichiarato: SET StApertura TO FALSE</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Uso nelle condizioni (IF / EVALUATE / PERFORM)</div>
+    <pre><span class="cmt">*> Test diretto: il livello 88 e' gia' una condizione booleana</span>
+<span class="kw">IF</span> EOF-Reached
+    <span class="kw">DISPLAY</span> <span class="str">"Fine file"</span>
+<span class="kw">END-IF</span>.
+
+<span class="cmt">*> Negazione</span>
+<span class="kw">IF NOT</span> StApertura
+    <span class="kw">DISPLAY</span> <span class="str">"Non in stato aperto"</span>
+<span class="kw">END-IF</span>.
+
+<span class="cmt">*> In EVALUATE TRUE (pattern switch idiomatico)</span>
+<span class="kw">EVALUATE TRUE</span>
+    <span class="kw">WHEN</span> Insufficiente <span class="kw">DISPLAY</span> <span class="str">"Bocciato"</span>
+    <span class="kw">WHEN</span> Sufficiente   <span class="kw">DISPLAY</span> <span class="str">"Sufficiente"</span>
+    <span class="kw">WHEN</span> Buono         <span class="kw">DISPLAY</span> <span class="str">"Buono"</span>
+    <span class="kw">WHEN</span> Ottimo        <span class="kw">DISPLAY</span> <span class="str">"Ottimo"</span>
+<span class="kw">END-EVALUATE</span>.
+
+<span class="cmt">*> In condizione di loop</span>
+<span class="kw">PERFORM UNTIL</span> EOF-Reached
+    <span class="kw">READ</span> InputFile
+        <span class="kw">AT END SET</span> EOF-Reached <span class="kw">TO TRUE</span>
+        <span class="kw">NOT AT END PERFORM</span> ProcessaRecord
+    <span class="kw">END-READ</span>
+<span class="kw">END-PERFORM</span>.
+
+<span class="cmt">*> Validazione input con range</span>
+<span class="kw">ACCEPT</span> Voto <span class="kw">FROM</span> CONSOLE.
+<span class="kw">IF NOT</span> VotoValido
+    <span class="kw">DISPLAY</span> <span class="str">"Voto non valido (0-30)"</span>
+<span class="kw">END-IF</span>.</pre>
+
+    <div class="note"><b>Regole chiave:</b><br>
+    &bull; Un livello 88 non ha PIC proprio &mdash; eredita il tipo dal genitore.<br>
+    &bull; <code>SET x TO TRUE</code> assegna il <b>primo</b> valore della clausola VALUE al campo genitore.<br>
+    &bull; <code>SET x TO FALSE</code> e' legale solo se la definizione include <code>FALSE IS</code>.<br>
+    &bull; Un campo puo' avere un numero illimitato di livelli 88 associati.<br>
+    &bull; THRU segue l'ordinamento collating sequence (EBCDIC o ASCII) per i campi alfanumerici.<br>
+    &bull; I livelli 88 sono il meccanismo standard per evitare <i>magic numbers</i> nel codice COBOL.</div>
+  </div>
+</div>
+
+<!-- ─── LOCAL-STORAGE SECTION ─────────────────────────────────── -->
+<a class="anchor" id="s-local-storage"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> LOCAL-STORAGE SECTION</div>
+  <div class="section-body">
+    <p>La LOCAL-STORAGE SECTION, introdotta in COBOL 2002, e' una sezione della DATA DIVISION che dichiara variabili <b>reinizializzate automaticamente</b> ad ogni invocazione del programma (tramite CALL). La differenza fondamentale con la WORKING-STORAGE e' il ciclo di vita dei dati.</p>
+
+    <div class="sub-title">WORKING-STORAGE vs LOCAL-STORAGE</div>
+    <table>
+      <tr><th>Caratteristica</th><th>WORKING-STORAGE</th><th>LOCAL-STORAGE</th></tr>
+      <tr><td><b>Persistenza</b></td><td>I dati persistono tra CALL successive allo stesso programma</td><td>I dati vengono reinizializzati (ai VALUE) ad ogni CALL</td></tr>
+      <tr><td><b>Allocazione</b></td><td>Statica: allocata una volta al primo caricamento</td><td>Dinamica: allocata/deallocata ad ogni invocazione (stack-like)</td></tr>
+      <tr><td><b>VALUE iniziale</b></td><td>Assegnato solo alla prima esecuzione (o dopo CANCEL)</td><td>Assegnato ad <b>ogni</b> esecuzione</td></tr>
+      <tr><td><b>Senza VALUE</b></td><td>Contenuto indefinito (di solito zero-filled dalla prima volta)</td><td>Contenuto <b>indefinito</b> ad ogni invocazione</td></tr>
+      <tr><td><b>Thread safety</b></td><td>Condivisa tra thread (non thread-safe)</td><td>Ogni thread ha la propria copia (thread-safe)</td></tr>
+      <tr><td><b>Visibilita'</b></td><td>Visibile per tutta la durata del programma in memoria</td><td>Visibile solo durante l'esecuzione corrente</td></tr>
+      <tr><td><b>Uso tipico</b></td><td>Contatori persistenti, tabelle, configurazione, record buffer</td><td>Variabili temporanee, contatori locali, flag di invocazione</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Posizione nella DATA DIVISION</div>
+    <pre><span class="hd">DATA DIVISION.</span>
+<span class="kw">FILE SECTION.</span>
+    <span class="cmt">*> FD / SD</span>
+<span class="kw">WORKING-STORAGE SECTION.</span>
+    <span class="cmt">*> Dati persistenti tra CALL</span>
+    <span class="num">01</span> WS-CallCount   <span class="kw">PIC 9(5)</span> <span class="kw">VALUE</span> <span class="num">0</span>.   <span class="cmt">*> inizializzato 1 volta</span>
+<span class="kw">LOCAL-STORAGE SECTION.</span>
+    <span class="cmt">*> Dati reinizializzati ad ogni CALL</span>
+    <span class="num">01</span> LS-Temp        <span class="kw">PIC X(50)</span> <span class="kw">VALUE SPACES</span>. <span class="cmt">*> SPACES ad ogni CALL</span>
+    <span class="num">01</span> LS-Counter     <span class="kw">PIC 9(3)</span> <span class="kw">VALUE</span> <span class="num">0</span>.     <span class="cmt">*> 0 ad ogni CALL</span>
+    <span class="num">01</span> LS-NoValue     <span class="kw">PIC X(10)</span>.              <span class="cmt">*> INDEFINITO ad ogni CALL</span>
+<span class="kw">LINKAGE SECTION.</span>
+    <span class="cmt">*> Parametri dal chiamante</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Esempio: differenza di comportamento</div>
+    <pre><span class="hd">IDENTIFICATION DIVISION.</span>
+<span class="kw">PROGRAM-ID.</span> CONTATORE.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">WORKING-STORAGE SECTION.</span>
+<span class="num">01</span> WS-Count <span class="kw">PIC 9(3)</span> <span class="kw">VALUE</span> <span class="num">0</span>.
+<span class="kw">LOCAL-STORAGE SECTION.</span>
+<span class="num">01</span> LS-Count <span class="kw">PIC 9(3)</span> <span class="kw">VALUE</span> <span class="num">0</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+    <span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> WS-Count.
+    <span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> LS-Count.
+    <span class="kw">DISPLAY</span> <span class="str">"WS: "</span> WS-Count <span class="str">" LS: "</span> LS-Count.
+    <span class="kw">EXIT PROGRAM</span>.
+
+<span class="cmt">*> Risultato dopo 3 CALL consecutive:</span>
+<span class="cmt">*> CALL 1: WS: 001 LS: 001</span>
+<span class="cmt">*> CALL 2: WS: 002 LS: 001  (LS reinizializzato!)</span>
+<span class="cmt">*> CALL 3: WS: 003 LS: 001  (LS reinizializzato!)</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Quando usare LOCAL-STORAGE</div>
+    <table>
+      <tr><th>Scenario</th><th>Sezione consigliata</th><th>Motivazione</th></tr>
+      <tr><td>Sottoprogramma chiamato piu' volte</td><td>LOCAL-STORAGE</td><td>Ogni invocazione parte da uno stato pulito, senza residui dalla CALL precedente</td></tr>
+      <tr><td>Programma multi-thread (COBOL in server application)</td><td>LOCAL-STORAGE</td><td>Ogni thread ottiene la propria copia indipendente</td></tr>
+      <tr><td>Contatore che deve accumularsi tra CALL</td><td>WORKING-STORAGE</td><td>I dati devono persistere</td></tr>
+      <tr><td>Tabella di lookup caricata una sola volta</td><td>WORKING-STORAGE</td><td>Evita di ricaricare ad ogni invocazione</td></tr>
+      <tr><td>Buffer temporaneo in un sottoprogramma</td><td>LOCAL-STORAGE</td><td>Garantisce un buffer pulito ad ogni chiamata</td></tr>
+    </table>
+
+    <div class="warn">&#9888; Se un campo LOCAL-STORAGE <b>non ha VALUE</b>, il suo contenuto e' <b>indefinito</b> ad ogni invocazione (non e' garantito che sia zero o spaces). Sempre dichiarare VALUE per i campi LOCAL-STORAGE che verranno letti prima di essere scritti.</div>
   </div>
 </div>
 
@@ -709,11 +931,50 @@
 <span class="kw">MOVE</span> RecordA <span class="kw">TO</span> RecordB.</pre>
       </div>
       <div>
+        <div class="sub-title">Regole di troncamento e padding</div>
         <div class="note">Regole MOVE:<br>
-          • Numerico → Numerico: allineamento al punto decimale<br>
-          • Alfa → Alfa: allineamento a sinistra, troncamento o padding con spazi<br>
-          • Numerico → Alfa: converte in stringa<br>
-          • Alfa → Numerico: converte se il contenuto è numerico valido</div>
+          • Numerico → Numerico: allineamento al punto decimale; cifre in eccesso troncate a sinistra (interi) e a destra (decimali)<br>
+          • Alfa → Alfa: allineamento a sinistra, troncamento a destra o padding con SPACES a destra<br>
+          • Numerico → Alfa: converte in stringa, allineamento a sinistra<br>
+          • Alfa → Numerico: converte se il contenuto è numerico valido, altrimenti risultato indefinito<br>
+          • Group → Group: copia byte-per-byte (alphanumeric), nessuna conversione di tipo</div>
+        <pre><span class="cmt">*> Troncamento numerico: PIC 9(3) contiene max 999</span>
+<span class="kw">MOVE</span> <span class="num">12345</span> <span class="kw">TO</span> Campo3Dig.  <span class="cmt">*> risultato: 345 (troncato a sx)</span>
+
+<span class="cmt">*> Troncamento decimale: PIC 9(3)V99</span>
+<span class="kw">MOVE</span> <span class="num">3.14159</span> <span class="kw">TO</span> CampoDec.  <span class="cmt">*> risultato: 003.14 (troncato a dx)</span>
+
+<span class="cmt">*> Troncamento alfanumerico: PIC X(5)</span>
+<span class="kw">MOVE</span> <span class="str">"Hello World"</span> <span class="kw">TO</span> Corto. <span class="cmt">*> risultato: "Hello" (troncato a dx)</span>
+<span class="kw">MOVE</span> <span class="str">"Hi"</span>          <span class="kw">TO</span> Corto. <span class="cmt">*> risultato: "Hi   " (padding spazi)</span></pre>
+
+        <div class="sub-title" style="margin-top:10px">Tabella compatibilità MOVE</div>
+        <table>
+          <tr><th>Sorgente ↓ / Dest →</th><th>Alphanumeric</th><th>Numeric display</th><th>Numeric edited</th><th>Alpha edited</th><th>Group</th></tr>
+          <tr><td><b>Alphanumeric</b></td><td>OK</td><td>OK (se numerico)</td><td>OK (se numerico)</td><td>OK</td><td>OK</td></tr>
+          <tr><td><b>Numeric display</b></td><td>OK</td><td>OK</td><td>OK</td><td>OK</td><td>OK</td></tr>
+          <tr><td><b>Numeric edited</b></td><td>OK</td><td>NO</td><td>NO</td><td>OK</td><td>OK</td></tr>
+          <tr><td><b>Alpha edited</b></td><td>OK</td><td>NO</td><td>NO</td><td>OK</td><td>OK</td></tr>
+          <tr><td><b>Group</b></td><td>OK</td><td>OK (come alfa)</td><td>OK (come alfa)</td><td>OK</td><td>OK</td></tr>
+        </table>
+
+        <div class="sub-title" style="margin-top:10px">MOVE CORRESPONDING — Dettaglio</div>
+        <pre><span class="cmt">*> MOVE CORR copia solo i campi con NOME identico</span>
+<span class="num">01</span> RecordA.
+   <span class="num">02</span> Nome    <span class="kw">PIC X(20)</span> <span class="kw">VALUE</span> <span class="str">"Mario"</span>.
+   <span class="num">02</span> Eta     <span class="kw">PIC 99</span>    <span class="kw">VALUE</span> <span class="num">30</span>.
+   <span class="num">02</span> Codice  <span class="kw">PIC X(5)</span>  <span class="kw">VALUE</span> <span class="str">"AB123"</span>.
+<span class="num">01</span> RecordB.
+   <span class="num">02</span> Nome    <span class="kw">PIC X(20)</span>.
+   <span class="num">02</span> Eta     <span class="kw">PIC 99</span>.
+   <span class="num">02</span> Indirizzo <span class="kw">PIC X(30)</span>.
+
+<span class="kw">MOVE CORRESPONDING</span> RecordA <span class="kw">TO</span> RecordB.
+<span class="cmt">*> Copia solo Nome e Eta (nomi in comune)</span>
+<span class="cmt">*> Codice ignorato (non esiste in RecordB)</span>
+<span class="cmt">*> Indirizzo non toccato (non esiste in RecordA)</span>
+<span class="cmt">*> FILLER ignorato sempre da MOVE CORRESPONDING</span></pre>
+        <div class="warn">MOVE CORRESPONDING confronta solo i nomi al primo livello subordinato. Non funziona ricorsivamente su strutture annidate nello standard COBOL-85. COBOL 2002+ permette il confronto ricorsivo con stesse regole.</div>
       </div>
     </div>
   </div>
@@ -826,7 +1087,30 @@
     <span class="kw">REPLACING ALL</span> <span class="str">'e'</span> <span class="kw">BY</span> <span class="str">'3'</span>.
 
 <span class="cmt">*> CONVERTING (mappatura carattere per carattere)</span>
-<span class="kw">INSPECT</span> Str <span class="kw">CONVERTING</span> <span class="str">"aeiou"</span> <span class="kw">TO</span> <span class="str">"AEIOU"</span>.</pre>
+<span class="kw">INSPECT</span> Str <span class="kw">CONVERTING</span> <span class="str">"aeiou"</span> <span class="kw">TO</span> <span class="str">"AEIOU"</span>.
+
+<span class="cmt">*> ─── BEFORE / AFTER INITIAL ───</span>
+<span class="cmt">*> Limita l'azione a una porzione della stringa</span>
+
+<span class="cmt">*> Conta le 'a' solo PRIMA della prima virgola</span>
+<span class="kw">INSPECT</span> Str <span class="kw">TALLYING</span>
+    Cnt <span class="kw">FOR ALL</span> <span class="str">'a'</span> <span class="kw">BEFORE INITIAL</span> <span class="str">','</span>.
+
+<span class="cmt">*> Conta le 'a' solo DOPO la prima virgola</span>
+<span class="kw">INSPECT</span> Str <span class="kw">TALLYING</span>
+    Cnt <span class="kw">FOR ALL</span> <span class="str">'a'</span> <span class="kw">AFTER INITIAL</span> <span class="str">','</span>.
+
+<span class="cmt">*> Sostituisci spazi con zeri solo prima del primo '.'</span>
+<span class="kw">INSPECT</span> NumStr <span class="kw">REPLACING</span>
+    <span class="kw">LEADING</span> <span class="str">' '</span> <span class="kw">BY</span> <span class="str">'0'</span> <span class="kw">BEFORE INITIAL</span> <span class="str">'.'</span>.
+
+<span class="cmt">*> Conversione case solo dopo un separatore</span>
+<span class="kw">INSPECT</span> Str <span class="kw">CONVERTING</span>
+    <span class="str">"abcdefghijklmnopqrstuvwxyz"</span> <span class="kw">TO</span>
+    <span class="str">"ABCDEFGHIJKLMNOPQRSTUVWXYZ"</span>
+    <span class="kw">AFTER INITIAL</span> <span class="str">":"</span>.</pre>
+
+    <div class="note"><b>BEFORE/AFTER INITIAL</b> si applica a TALLYING, REPLACING e CONVERTING. <b>INITIAL</b> indica la <b>prima</b> occorrenza del delimitatore. Se il delimitatore non viene trovato: BEFORE opera sull'intera stringa, AFTER non opera su nulla. Si possono combinare BEFORE e AFTER nella stessa clausola per delimitare una sottostringa.</div>
   </div>
 </div>
 
@@ -889,7 +1173,28 @@
 <span class="cmt">*> NOT EQUAL TO</span>
 <span class="cmt">*> AND, OR, NOT (logici)</span>
 <span class="cmt">*> IS NUMERIC / ALPHABETIC</span>
-<span class="cmt">*> IS ALPHABETIC-UPPER/LOWER</span></pre>
+<span class="cmt">*> IS ALPHABETIC-UPPER/LOWER</span>
+
+<span class="cmt">*> ─── Class Conditions ───</span>
+<span class="kw">IF</span> Campo <span class="kw">IS NUMERIC</span>       <span class="cmt">*> solo 0-9, +, -, .</span>
+<span class="kw">IF</span> Campo <span class="kw">IS ALPHABETIC</span>    <span class="cmt">*> solo A-Z, a-z, spazi</span>
+<span class="kw">IF</span> Campo <span class="kw">IS ALPHABETIC-UPPER</span>
+<span class="kw">IF</span> Campo <span class="kw">IS ALPHABETIC-LOWER</span>
+<span class="kw">IF</span> Campo <span class="kw">IS NOT NUMERIC</span>
+
+<span class="cmt">*> ─── Sign Conditions ───</span>
+<span class="kw">IF</span> Saldo <span class="kw">IS POSITIVE</span>     <span class="cmt">*> > 0</span>
+<span class="kw">IF</span> Saldo <span class="kw">IS NEGATIVE</span>     <span class="cmt">*> &lt; 0</span>
+<span class="kw">IF</span> Saldo <span class="kw">IS ZERO</span>         <span class="cmt">*> = 0</span>
+<span class="kw">IF</span> Saldo <span class="kw">IS NOT ZERO</span>
+
+<span class="cmt">*> ─── Abbreviated Conditions ───</span>
+<span class="cmt">*> Invece di: IF A = 1 OR A = 2 OR A = 3</span>
+<span class="kw">IF</span> A = <span class="num">1</span> <span class="kw">OR</span> <span class="num">2</span> <span class="kw">OR</span> <span class="num">3</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Valido"</span>.
+<span class="cmt">*> Invece di: IF A > 5 AND A &lt; 10</span>
+<span class="kw">IF</span> A > <span class="num">5</span> <span class="kw">AND</span> &lt; <span class="num">10</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Nel range"</span>.</pre>
       </div>
       <div>
         <div class="sub-title">EVALUATE (switch)</div>
@@ -964,8 +1269,21 @@
 <span class="kw">EXIT PARAGRAPH</span>. <span class="cmt">*> esce dal paragrafo corrente</span>
 <span class="kw">EXIT PROGRAM</span>.   <span class="cmt">*> ritorna al chiamante</span>
 <span class="kw">EXIT SECTION</span>.   <span class="cmt">*> esce dalla sezione corrente</span>
-<span class="kw">STOP RUN</span>.       <span class="cmt">*> termina il programma</span></pre>
-    <div class="warn">⚠ GO TO è sconsigliato nella programmazione strutturata moderna. Preferire PERFORM.</div>
+<span class="kw">STOP RUN</span>.       <span class="cmt">*> termina il programma</span>
+
+<span class="cmt">*> ─── ALTER (COBOL-68/74 — OBSOLETO) ───</span>
+<span class="cmt">*> Modifica a runtime la destinazione di un GO TO</span>
+<span class="lbl">Dispatch.</span>
+    <span class="kw">GO TO</span> DefaultHandler.
+<span class="lbl">DefaultHandler.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Nessun handler"</span>.
+<span class="lbl">SpecialHandler.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Handler speciale"</span>.
+
+<span class="cmt">*> Cambia la destinazione di Dispatch</span>
+<span class="kw">ALTER</span> Dispatch <span class="kw">TO PROCEED TO</span> SpecialHandler.
+<span class="cmt">*> Ora GO TO in Dispatch salta a SpecialHandler</span></pre>
+    <div class="warn">⚠ GO TO è sconsigliato nella programmazione strutturata moderna. Preferire PERFORM. ALTER è stato rimosso dallo standard COBOL 2002+ ed è considerato una delle feature più pericolose del linguaggio: rende il flusso di controllo non determinabile staticamente. Nessun codice nuovo dovrebbe usarlo.</div>
   </div>
 </div>
 
@@ -974,23 +1292,48 @@
 <div class="section">
   <div class="section-header"><span class="icon">◈</span> PARAGRAFI, SEZIONI E GRAVITY</div>
   <div class="section-body">
-    <p><b>Open paragraph</b> = blocco di codice con etichetta; eseguito per "gravity" (cascata). <b>Closed paragraph</b> = funzione tradizionale con dati locali.</p>
+    <p><b>Gravity (fall-through):</b> in COBOL, l'esecuzione scorre sequenzialmente da un paragrafo al successivo, senza fermarsi. Un paragrafo <b>non è una funzione</b>: senza STOP RUN, GO TO o EXIT, il controllo "cade" nel paragrafo seguente.</p>
+
+    <div class="sub-title">Gravity — Esempio critico</div>
     <pre><span class="hd">PROCEDURE DIVISION.</span>
 <span class="lbl">Main.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Inizio"</span>.
     <span class="kw">PERFORM</span> CalcolaIVA.
     <span class="kw">DISPLAY</span> <span class="str">"Fatto"</span>.
-    <span class="kw">STOP RUN</span>.
+    <span class="kw">STOP RUN</span>.           <span class="cmt">*> SENZA questo, cade in CalcolaIVA!</span>
 
 <span class="lbl">CalcolaIVA.</span>
     <span class="kw">COMPUTE</span> TotaleIVA = Imponibile * <span class="num">1.22</span>.
+    <span class="cmt">*> Senza STOP RUN sopra, dopo Main il controllo</span>
+    <span class="cmt">*> cadrebbe qui per gravity, eseguendo CalcolaIVA</span>
+    <span class="cmt">*> DUE VOLTE: una via PERFORM, una via fall-through.</span>
 
-<span class="cmt">*> Sezione nella PROCEDURE DIVISION</span>
+<span class="lbl">Stampa.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Totale: "</span> TotaleIVA.
+    <span class="cmt">*> Dopo CalcolaIVA, cade qui per gravity</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">PERFORM vs Gravity</div>
+    <table>
+      <tr><th>Meccanismo</th><th>Comportamento</th><th>Ritorno</th></tr>
+      <tr><td><code>PERFORM Para</code></td><td>Esegue il paragrafo e <b>ritorna</b> al chiamante</td><td>Automatico alla fine del paragrafo</td></tr>
+      <tr><td><code>PERFORM Para THRU ParaFine</code></td><td>Esegue da Para a ParaFine incluso, poi ritorna</td><td>Alla fine di ParaFine</td></tr>
+      <tr><td>Gravity (fall-through)</td><td>L'esecuzione scorre sequenzialmente senza ritorno</td><td>Nessuno — continua al paragrafo successivo</td></tr>
+      <tr><td><code>GO TO Para</code></td><td>Salto incondizionato, <b>non ritorna</b></td><td>Nessuno</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Sezioni nella PROCEDURE DIVISION</div>
+    <pre><span class="cmt">*> Una SECTION raggruppa più paragrafi</span>
 <span class="lbl">SezioneUno SECTION.</span>
 <span class="lbl">    ParagA.</span>
         <span class="kw">DISPLAY</span> <span class="str">"A"</span>.
+        <span class="cmt">*> Cade in ParagB per gravity</span>
 <span class="lbl">    ParagB.</span>
         <span class="kw">DISPLAY</span> <span class="str">"B"</span>.
-        <span class="kw">EXIT SECTION</span>.</pre>
+        <span class="kw">EXIT SECTION</span>.  <span class="cmt">*> Esce dalla sezione</span>
+
+<span class="cmt">*> PERFORM SezioneUno esegue TUTTI i paragrafi</span>
+<span class="cmt">*> della sezione (ParagA + ParagB) e poi ritorna.</span></pre>
+    <div class="warn">Il pattern più sicuro per evitare errori di gravity: terminare sempre il paragrafo "main" con STOP RUN o GOBACK, e usare PERFORM per chiamare i paragrafi di servizio. Nei programmi legacy, il fall-through è intenzionale e il flusso è controllato con GO TO.</div>
   </div>
 </div>
 
@@ -1065,8 +1408,34 @@
     <span class="kw">WHEN</span> CodID(KI) = Cerca
         <span class="kw">DISPLAY</span> CodDesc(KI)
 <span class="kw">END-SEARCH</span>.</pre>
+
+        <div class="sub-title" style="margin-top:10px">Precondizioni per SEARCH ALL</div>
+        <pre><span class="cmt">*> 1. La tabella DEVE dichiarare ASCENDING/DESCENDING KEY</span>
+<span class="num">01</span> TabCodici.
+   <span class="num">02</span> CodEntry <span class="kw">OCCURS 100 TIMES</span>
+       <span class="kw">ASCENDING KEY IS</span> CodID
+       <span class="kw">INDEXED BY</span> KI.
+       <span class="num">03</span> CodID   <span class="kw">PIC 9(5)</span>.
+       <span class="num">03</span> CodDesc <span class="kw">PIC X(20)</span>.
+
+<span class="cmt">*> 2. I dati DEVONO essere pre-ordinati sulla KEY</span>
+<span class="cmt">*>    SEARCH ALL non ordina: esegue ricerca binaria</span>
+<span class="cmt">*>    su dati che ASSUME siano già ordinati.</span>
+<span class="cmt">*>    Dati non ordinati → risultati imprevedibili!</span>
+
+<span class="cmt">*> 3. La WHEN può usare SOLO = (non > o &lt;)</span>
+<span class="cmt">*> 4. Non serve SET prima di SEARCH ALL (l'indice</span>
+<span class="cmt">*>    è gestito automaticamente dall'algoritmo binario)</span>
+<span class="cmt">*> 5. Condizioni multiple: solo AND, mai OR</span>
+<span class="kw">SEARCH ALL</span> CodEntry
+    <span class="kw">AT END DISPLAY</span> <span class="str">"Non trovato"</span>
+    <span class="kw">WHEN</span> CodID(KI) = Cerca
+      <span class="kw">AND</span> CodDesc(KI) = DescCerca
+        <span class="kw">DISPLAY</span> <span class="str">"Trovato"</span>
+<span class="kw">END-SEARCH</span>.</pre>
       </div>
     </div>
+    <div class="note"><b>SEARCH vs SEARCH ALL:</b> SEARCH (lineare) è O(n) e richiede SET dell'indice prima della chiamata. SEARCH ALL (binaria) è O(log n) ma richiede dati pre-ordinati e ASCENDING/DESCENDING KEY nella definizione. Per tabelle piccole (&lt;50 elementi) la differenza è trascurabile.</div>
   </div>
 </div>
 
@@ -1096,6 +1465,191 @@
 <span class="kw">RELEASE</span> WStudData <span class="kw">FROM</span> StudData.
 <span class="cmt">*> RETURN (dentro OUTPUT PROCEDURE) → legge record dal sort</span>
 <span class="kw">RETURN</span> WorkFile <span class="kw">INTO</span> StudData <span class="kw">AT END</span> <span class="kw">MOVE</span> <span class="str">'Y'</span> <span class="kw">TO</span> Done.</pre>
+
+    <div class="sub-title" style="margin-top:10px">INPUT/OUTPUT PROCEDURE — Esempio completo</div>
+    <p>Le procedure permettono di filtrare/trasformare i record prima e dopo l'ordinamento.</p>
+    <pre><span class="kw">SORT</span> WorkFile <span class="kw">ON ASCENDING KEY</span> WIDNum
+    <span class="kw">INPUT PROCEDURE</span>  IS FiltraInput
+    <span class="kw">OUTPUT PROCEDURE</span> IS ScriviOutput.
+
+<span class="cmt">*> ─── INPUT PROCEDURE: legge, filtra e passa al sort ───</span>
+<span class="lbl">FiltraInput.</span>
+    <span class="kw">OPEN INPUT</span> OrgFile.
+    <span class="kw">PERFORM UNTIL</span> EOF
+        <span class="kw">READ</span> OrgFile <span class="kw">AT END SET</span> EOF <span class="kw">TO TRUE END-READ</span>
+        <span class="kw">IF NOT</span> EOF
+            <span class="kw">IF</span> Stato = <span class="str">"A"</span>              <span class="cmt">*> filtra: solo attivi</span>
+                <span class="kw">RELEASE</span> WStudData <span class="kw">FROM</span> StudData
+            <span class="kw">END-IF</span>
+        <span class="kw">END-IF</span>
+    <span class="kw">END-PERFORM</span>.
+    <span class="kw">CLOSE</span> OrgFile.
+
+<span class="cmt">*> ─── OUTPUT PROCEDURE: legge dal sort e scrive ───</span>
+<span class="lbl">ScriviOutput.</span>
+    <span class="kw">OPEN OUTPUT</span> SortedFile.
+    <span class="kw">PERFORM UNTIL</span> SortDone
+        <span class="kw">RETURN</span> WorkFile <span class="kw">INTO</span> StudData
+            <span class="kw">AT END SET</span> SortDone <span class="kw">TO TRUE</span>
+        <span class="kw">END-RETURN</span>
+        <span class="kw">IF NOT</span> SortDone
+            <span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> RecCount       <span class="cmt">*> conteggio</span>
+            <span class="kw">WRITE</span> OutRec <span class="kw">FROM</span> StudData
+        <span class="kw">END-IF</span>
+    <span class="kw">END-PERFORM</span>.
+    <span class="kw">CLOSE</span> SortedFile.</pre>
+
+    <div class="note"><b>Regole:</b> Dentro INPUT PROCEDURE si usa solo RELEASE (mai WRITE). Dentro OUTPUT PROCEDURE si usa solo RETURN (mai READ sul sort file). USING/GIVING e INPUT/OUTPUT PROCEDURE sono mutuamente esclusivi: non si possono combinare nella stessa clausola.</div>
+  </div>
+</div>
+
+<!-- ─── FILE MANAGEMENT OVERVIEW ──────────────────────────────── -->
+<a class="anchor" id="s-file-mgmt"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FILE MANAGEMENT &mdash; ARCHITETTURA SELECT / FD</div>
+  <div class="section-body">
+    <p>La gestione file in COBOL si articola su <b>tre livelli</b> distribuiti tra le divisioni. Comprendere la relazione tra questi livelli e' fondamentale per qualsiasi programma batch o transazionale.</p>
+
+    <div class="sub-title">I tre livelli della gestione file</div>
+    <table>
+      <tr><th>Livello</th><th>Dove</th><th>Clausola</th><th>Scopo</th></tr>
+      <tr><td><b>1. Associazione logica</b></td><td>ENVIRONMENT DIVISION &rarr; INPUT-OUTPUT SECTION &rarr; FILE-CONTROL</td><td><code>SELECT</code></td><td>Associa un nome-file logico COBOL a un file fisico esterno, e dichiara organizzazione, modalita' di accesso e chiavi</td></tr>
+      <tr><td><b>2. Descrizione record</b></td><td>DATA DIVISION &rarr; FILE SECTION</td><td><code>FD</code> / <code>SD</code></td><td>Definisce la struttura (layout) dei record del file: campi, tipi, dimensioni</td></tr>
+      <tr><td><b>3. Operazioni I/O</b></td><td>PROCEDURE DIVISION</td><td>OPEN, READ, WRITE, REWRITE, DELETE, START, CLOSE</td><td>Esegue le operazioni fisiche di lettura/scrittura</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">SELECT (FILE-CONTROL) &mdash; Anatomia completa</div>
+    <pre><span class="kw">INPUT-OUTPUT SECTION.</span>
+<span class="kw">FILE-CONTROL.</span>
+    <span class="kw">SELECT</span> [<span class="kw">OPTIONAL</span>] nome-file-logico
+        <span class="kw">ASSIGN TO</span> <span class="str">"percorso-fisico"</span>  <span class="cmt">*> o variabile WS</span>
+        <span class="kw">ORGANIZATION IS</span> tipo-org       <span class="cmt">*> SEQUENTIAL | LINE SEQUENTIAL | INDEXED | RELATIVE</span>
+        <span class="kw">ACCESS MODE IS</span> tipo-accesso     <span class="cmt">*> SEQUENTIAL | RANDOM | DYNAMIC</span>
+        [<span class="kw">RECORD KEY IS</span> campo-chiave]    <span class="cmt">*> solo INDEXED</span>
+        [<span class="kw">ALTERNATE RECORD KEY IS</span> campo
+            [<span class="kw">WITH DUPLICATES</span>]]          <span class="cmt">*> solo INDEXED</span>
+        [<span class="kw">RELATIVE KEY IS</span> campo]         <span class="cmt">*> solo RELATIVE</span>
+        [<span class="kw">FILE STATUS IS</span> ws-status]      <span class="cmt">*> PIC XX per controllo errori</span>
+        [<span class="kw">LOCK MODE IS</span> tipo-lock]        <span class="cmt">*> MANUAL | AUTOMATIC | EXCLUSIVE</span>
+        .</pre>
+
+    <div class="sub-title" style="margin-top:10px">FD (FILE SECTION) &mdash; Descrittore di file</div>
+    <pre><span class="kw">FILE SECTION.</span>
+<span class="kw">FD</span> nome-file-logico                    <span class="cmt">*> DEVE corrispondere al nome nel SELECT</span>
+    [<span class="kw">BLOCK CONTAINS</span> n <span class="kw">RECORDS</span>]        <span class="cmt">*> blocco fisico (performance I/O)</span>
+    [<span class="kw">RECORD CONTAINS</span> n <span class="kw">CHARACTERS</span>]    <span class="cmt">*> lunghezza record fissa</span>
+    [<span class="kw">RECORD IS VARYING IN SIZE</span>
+        <span class="kw">FROM</span> min <span class="kw">TO</span> max <span class="kw">CHARACTERS</span>
+        <span class="kw">DEPENDING ON</span> ws-len]            <span class="cmt">*> record a lunghezza variabile</span>
+    [<span class="kw">LABEL RECORDS ARE STANDARD</span>]       <span class="cmt">*> label tape (obsoleto, ma richiesto in alcuni dialect)</span>
+    [<span class="kw">DATA RECORD IS</span> nome-record]       <span class="cmt">*> informativo</span>
+    [<span class="kw">LINAGE IS</span> n <span class="kw">LINES</span>]              <span class="cmt">*> per file di stampa</span>
+    [<span class="kw">REPORT IS</span> nome-report]            <span class="cmt">*> per Report Writer</span>
+    .
+<span class="cmt">*> Segue la definizione dei record (uno o piu' 01)</span>
+<span class="num">01</span> NomeRecord.
+   <span class="num">02</span> Campo1 <span class="kw">PIC ...</span>
+   <span class="num">02</span> Campo2 <span class="kw">PIC ...</span>
+
+<span class="cmt">*> SD: Sort/merge file Descriptor (per file di lavoro SORT)</span>
+<span class="kw">SD</span> WorkFile.
+<span class="num">01</span> WorkRecord.
+   <span class="num">02</span> WKey   <span class="kw">PIC 9(5)</span>.
+   <span class="num">02</span> WData  <span class="kw">PIC X(75)</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Relazione SELECT &harr; FD</div>
+    <p>Il legame e' basato sul <b>nome-file-logico</b>: il nome usato nel <code>SELECT</code> deve corrispondere esattamente a quello nell'<code>FD</code>. La SELECT definisce <i>come</i> si accede al file; la FD definisce <i>cosa</i> contiene il file.</p>
+    <pre><span class="cmt">*> ─── ENVIRONMENT DIVISION ───</span>
+<span class="kw">FILE-CONTROL.</span>
+    <span class="kw">SELECT</span> <b>ClienteFile</b>               <span class="cmt">*> nome logico (1)</span>
+        <span class="kw">ASSIGN TO</span> <span class="str">"clienti.idx"</span>      <span class="cmt">*> file fisico</span>
+        <span class="kw">ORGANIZATION IS INDEXED</span>        <span class="cmt">*> tipo organizzazione</span>
+        <span class="kw">ACCESS MODE IS DYNAMIC</span>         <span class="cmt">*> modalita' di accesso</span>
+        <span class="kw">RECORD KEY IS</span> CL-ID            <span class="cmt">*> chiave primaria (campo nel record FD)</span>
+        <span class="kw">FILE STATUS IS</span> WS-FS.
+
+<span class="cmt">*> ─── DATA DIVISION ───</span>
+<span class="kw">FILE SECTION.</span>
+<span class="kw">FD</span> <b>ClienteFile</b>                      <span class="cmt">*> stesso nome logico (1)</span>
+    <span class="kw">RECORD CONTAINS 80 CHARACTERS</span>.
+<span class="num">01</span> ClienteRecord.
+   <span class="num">02</span> CL-ID      <span class="kw">PIC 9(5)</span>.          <span class="cmt">*> questa e' la RECORD KEY</span>
+   <span class="num">02</span> CL-Nome    <span class="kw">PIC X(30)</span>.
+   <span class="num">02</span> CL-Saldo   <span class="kw">PIC S9(7)V99</span>.
+   <span class="num">02</span> <span class="kw">FILLER</span>     <span class="kw">PIC X(36)</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Tipi di organizzazione</div>
+    <table>
+      <tr><th>ORGANIZATION</th><th>Struttura</th><th>Accesso consentito</th><th>Uso tipico</th></tr>
+      <tr><td><code>SEQUENTIAL</code></td><td>Record in sequenza binaria (record-length header)</td><td>Solo SEQUENTIAL</td><td>File batch, comunicazione inter-programma</td></tr>
+      <tr><td><code>LINE SEQUENTIAL</code></td><td>Righe di testo delimitale da newline (CR/LF)</td><td>Solo SEQUENTIAL</td><td>File di testo, log, CSV, interfaccia con Unix</td></tr>
+      <tr><td><code>INDEXED</code></td><td>Record con indice B-tree su una o piu' chiavi</td><td>SEQUENTIAL, RANDOM, DYNAMIC</td><td>Anagrafe, archivi, tabelle di lookup</td></tr>
+      <tr><td><code>RELATIVE</code></td><td>Record identificati da numero di posizione (slot)</td><td>SEQUENTIAL, RANDOM, DYNAMIC</td><td>Hash table su disco, buffer circolare</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Modalita' di accesso (ACCESS MODE)</div>
+    <table>
+      <tr><th>ACCESS MODE</th><th>Significato</th><th>Operazioni</th></tr>
+      <tr><td><code>SEQUENTIAL</code></td><td>I record vengono letti/scritti nell'ordine in cui sono memorizzati</td><td>READ (next), WRITE (append), REWRITE (in-place)</td></tr>
+      <tr><td><code>RANDOM</code></td><td>Accesso diretto tramite chiave (INDEXED) o numero relativo (RELATIVE)</td><td>READ (per chiave), WRITE, REWRITE, DELETE</td></tr>
+      <tr><td><code>DYNAMIC</code></td><td>Combinazione: permette sia accesso sequenziale che random nello stesso OPEN</td><td>READ, READ NEXT, WRITE, REWRITE, DELETE, START</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Verbi I/O e modalita' di apertura</div>
+    <table>
+      <tr><th>Verbo</th><th>INPUT</th><th>OUTPUT</th><th>I-O</th><th>EXTEND</th></tr>
+      <tr><td><code>READ</code></td><td>Si'</td><td>No</td><td>Si'</td><td>No</td></tr>
+      <tr><td><code>WRITE</code></td><td>No</td><td>Si'</td><td>Si' (solo INDEXED/RELATIVE)</td><td>Si'</td></tr>
+      <tr><td><code>REWRITE</code></td><td>No</td><td>No</td><td>Si'</td><td>No</td></tr>
+      <tr><td><code>DELETE</code></td><td>No</td><td>No</td><td>Si'</td><td>No</td></tr>
+      <tr><td><code>START</code></td><td>Si'</td><td>No</td><td>Si'</td><td>No</td></tr>
+    </table>
+
+    <div class="warn">&#9888; La clausola <code>OPTIONAL</code> nel SELECT permette di aprire un file inesistente senza errore (FILE STATUS "05"): il runtime lo crea vuoto. Senza OPTIONAL, un OPEN INPUT su file inesistente genera FILE STATUS "35" (file not found).</div>
+  </div>
+</div>
+
+<!-- ─── I-O-CONTROL ──────────────────────────────────────────── -->
+<a class="anchor" id="s-iocontrol"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> I-O-CONTROL &mdash; CONTROLLO I/O AVANZATO</div>
+  <div class="section-body">
+    <p>Il paragrafo <code>I-O-CONTROL</code> nella INPUT-OUTPUT SECTION specifica informazioni sul buffering, la condivisione di aree di memoria tra file, e il checkpoint/restart. E' opzionale ma importante per le ottimizzazioni I/O nei batch mainframe.</p>
+
+    <div class="sub-title">Posizione nell'ENVIRONMENT DIVISION</div>
+    <pre><span class="hd">ENVIRONMENT DIVISION.</span>
+<span class="kw">INPUT-OUTPUT SECTION.</span>
+<span class="kw">FILE-CONTROL.</span>
+    <span class="kw">SELECT</span> FileA <span class="kw">ASSIGN TO</span> <span class="str">"filea.dat"</span>.
+    <span class="kw">SELECT</span> FileB <span class="kw">ASSIGN TO</span> <span class="str">"fileb.dat"</span>.
+<span class="kw">I-O-CONTROL.</span>
+    <span class="cmt">*> clausole di controllo I/O</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Clausole principali</div>
+    <table>
+      <tr><th>Clausola</th><th>Sintassi</th><th>Descrizione</th></tr>
+      <tr><td><code>SAME RECORD AREA</code></td><td><code>SAME RECORD AREA FOR file1, file2</code></td><td>I file condividono lo <b>stesso buffer di record</b> in memoria. Un READ su uno sovrascrive il buffer dell'altro. Ottimizza la memoria quando si elaborano file uno alla volta.</td></tr>
+      <tr><td><code>SAME AREA</code></td><td><code>SAME AREA FOR file1, file2</code></td><td>I file condividono <b>sia il buffer I/O che il record area</b>. Piu' restrittivo: i file non possono essere aperti contemporaneamente.</td></tr>
+      <tr><td><code>SAME SORT AREA</code></td><td><code>SAME SORT AREA FOR sort-file1, sort-file2</code></td><td>I file di lavoro SORT condividono la stessa area di lavoro. Utile quando i SORT sono eseguiti in sequenza, non in parallelo.</td></tr>
+      <tr><td><code>SAME SORT-MERGE AREA</code></td><td><code>SAME SORT-MERGE AREA FOR sm1, sm2</code></td><td>Analogo a SAME SORT AREA, per file di MERGE.</td></tr>
+      <tr><td><code>MULTIPLE FILE</code></td><td><code>MULTIPLE FILE TAPE CONTAINS file1, file2</code></td><td>Piu' file logici risiedono sulla stessa unita' nastro. Rilevante in ambito mainframe legacy.</td></tr>
+      <tr><td><code>APPLY WRITE-ONLY</code></td><td><code>APPLY WRITE-ONLY ON file1</code></td><td>Ottimizzazione: il buffer viene scritto su disco solo quando e' pieno (IBM). Riduce le operazioni I/O fisiche.</td></tr>
+      <tr><td><code>RERUN</code></td><td><code>RERUN ON file EVERY n RECORDS OF file2</code></td><td>Checkpoint/restart: salva lo stato ogni N record elaborati. Permette di riprendere un batch interrotto dal punto dell'ultimo checkpoint.</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Esempi pratici</div>
+    <pre><span class="kw">I-O-CONTROL.</span>
+    <span class="cmt">*> Condivisione buffer: File1 e File2 usano la stessa area record</span>
+    <span class="cmt">*> (non possono essere letti contemporaneamente)</span>
+    <span class="kw">SAME RECORD AREA FOR</span> File1, File2.
+
+    <span class="cmt">*> Checkpoint ogni 1000 record elaborati (mainframe)</span>
+    <span class="kw">RERUN ON</span> CheckFile <span class="kw">EVERY</span> <span class="num">1000</span> <span class="kw">RECORDS OF</span> InputFile.
+
+    <span class="cmt">*> Ottimizzazione scrittura (IBM)</span>
+    <span class="kw">APPLY WRITE-ONLY ON</span> OutputFile.</pre>
+
+    <div class="note"><b>In pratica:</b> I-O-CONTROL e' usato principalmente in ambiente mainframe IBM per ottimizzazione I/O e checkpoint/restart nei job batch di lunga durata. In GnuCOBOL, molte clausole sono accettate sintatticamente ma possono non avere effetto operativo. Le clausole legate ai nastri (MULTIPLE FILE TAPE) sono obsolete.</div>
   </div>
 </div>
 
@@ -1353,7 +1907,41 @@
 <span class="kw">WRITE</span> PrintLine <span class="kw">FROM</span> Separatore
     <span class="kw">BEFORE ADVANCING</span> <span class="num">2</span> <span class="kw">LINES</span>.</pre>
 
-    <div class="note">Il Report Writer automatizza ciò che altrimenti richiede gestione manuale di contatori pagina, intestazioni e subtotali. Non tutti i compilatori lo supportano pienamente: GnuCOBOL ha supporto parziale.</div>
+    <div class="sub-title" style="margin-top:10px">Clausole avanzate del Report Writer</div>
+    <table>
+      <tr><th>Clausola</th><th>Dove</th><th>Effetto</th></tr>
+      <tr><td><code>GROUP INDICATE</code></td><td>Campo in DETAIL</td><td>Il campo viene stampato solo alla <b>prima</b> riga del gruppo (poi viene soppresso). Utile per evitare ripetizioni del nome regione su ogni riga.</td></tr>
+      <tr><td><code>RESET ON</code></td><td>Campo con SUM</td><td>Specifica quando azzerare un accumulatore. Default: si azzera al cambio del controllo associato al footing. <code>RESET ON FINAL</code> mantiene il totale per l'intero report.</td></tr>
+      <tr><td><code>USE BEFORE REPORTING</code></td><td>DECLARATIVES</td><td>Procedura invocata <b>prima</b> della stampa di un gruppo RD. Permette logica personalizzata (calcoli, soppressione condizionale via <code>SUPPRESS PRINTING</code>).</td></tr>
+      <tr><td><code>SUPPRESS PRINTING</code></td><td>Dentro USE BEFORE REPORTING</td><td>Impedisce la stampa del gruppo corrente (soppressione condizionale di righe).</td></tr>
+    </table>
+    <pre><span class="cmt">*> GROUP INDICATE: stampa la regione solo sulla prima riga</span>
+<span class="num">01</span> RigaDettaglio <span class="kw">TYPE DETAIL</span>.
+   <span class="num">02</span> <span class="kw">LINE PLUS</span> <span class="num">1</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">1</span>  <span class="kw">PIC X(15)</span> <span class="kw">SOURCE</span> WS-Regione
+           <span class="kw">GROUP INDICATE</span>.           <span class="cmt">*> solo alla prima riga del gruppo</span>
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">20</span> <span class="kw">PIC X(15)</span> <span class="kw">SOURCE</span> WS-Prodotto.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">40</span> <span class="kw">PIC $$$,$$9.99</span> <span class="kw">SOURCE</span> WS-Importo.
+
+<span class="cmt">*> RESET ON: accumulatore che NON si azzera a ogni gruppo</span>
+<span class="num">01</span> <span class="kw">TYPE CONTROL FOOTING</span> WS-Regione.
+   <span class="num">02</span> <span class="kw">LINE PLUS</span> <span class="num">1</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">20</span> <span class="kw">PIC X(12)</span>     <span class="kw">VALUE</span> <span class="str">"Subtot:"</span>.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">40</span> <span class="kw">PIC $$$,$$9.99</span> <span class="kw">SUM</span> WS-Importo.
+       <span class="num">03</span> <span class="kw">COLUMN</span> <span class="num">55</span> <span class="kw">PIC $$$,$$9.99</span> <span class="kw">SUM</span> WS-Importo
+           <span class="kw">RESET ON FINAL</span>.            <span class="cmt">*> totale progressivo, mai azzerato</span></pre>
+
+    <pre><span class="cmt">*> USE BEFORE REPORTING: logica custom prima della stampa</span>
+<span class="kw">DECLARATIVES.</span>
+<span class="lbl">Controllo-Dettaglio SECTION.</span>
+    <span class="kw">USE BEFORE REPORTING</span> RigaDettaglio.
+<span class="lbl">Controllo-Dettaglio-Para.</span>
+    <span class="kw">IF</span> WS-Importo = <span class="num">0</span>
+        <span class="kw">SUPPRESS PRINTING</span>          <span class="cmt">*> non stampare righe con importo zero</span>
+    <span class="kw">END-IF</span>.
+<span class="kw">END DECLARATIVES.</span></pre>
+
+    <div class="note">Il Report Writer automatizza ciò che altrimenti richiede gestione manuale di contatori pagina, intestazioni e subtotali. Non tutti i compilatori lo supportano pienamente: GnuCOBOL ha supporto parziale. GROUP INDICATE e RESET ON sono supportati nella maggior parte delle implementazioni; USE BEFORE REPORTING richiede DECLARATIVES.</div>
   </div>
 </div>
 
@@ -1576,6 +2164,82 @@
 <span class="kw">INVOKE</span> WkTodo <span class="str">"finalize"</span>.</pre>
       </div>
     </div>
+
+    <div class="sub-title" style="margin-top:10px">Metodi di istanza (OBJECT)</div>
+    <pre><span class="hd">CLASS-ID.</span> Contatore.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">CLASS-STORAGE SECTION.</span>
+   <span class="num">01</span> Valore <span class="kw">PIC 9(5)</span> <span class="kw">VALUE ZERO</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+<span class="lbl">FACTORY.</span>
+   <span class="kw">METHOD-ID.</span> new.
+   <span class="hd">PROCEDURE DIVISION RETURNING SELF.</span>
+       <span class="kw">INVOKE SUPER</span> <span class="str">"new"</span> <span class="kw">RETURNING SELF</span>.
+   <span class="kw">END METHOD</span> new.
+<span class="lbl">END FACTORY.</span>
+
+<span class="lbl">OBJECT.</span>
+   <span class="cmt">*> Metodi di istanza (non FACTORY)</span>
+   <span class="kw">METHOD-ID.</span> Incrementa.
+   <span class="hd">PROCEDURE DIVISION.</span>
+       <span class="kw">ADD</span> <span class="num">1</span> <span class="kw">TO</span> Valore.
+   <span class="kw">END METHOD</span> Incrementa.
+
+   <span class="kw">METHOD-ID.</span> GetValore.
+   <span class="hd">DATA DIVISION.</span>
+   <span class="kw">LINKAGE SECTION.</span>
+       <span class="num">01</span> LVal <span class="kw">PIC 9(5)</span>.
+   <span class="hd">PROCEDURE DIVISION RETURNING</span> LVal.
+       <span class="kw">MOVE</span> Valore <span class="kw">TO</span> LVal.
+   <span class="kw">END METHOD</span> GetValore.
+<span class="lbl">END OBJECT.</span>
+<span class="kw">END CLASS</span> Contatore.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Ereditarietà (INHERITS)</div>
+    <pre><span class="cmt">*> Classe derivata che eredita da Contatore</span>
+<span class="hd">CLASS-ID.</span> ContatoreMax <span class="kw">INHERITS</span> Contatore.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">CLASS-STORAGE SECTION.</span>
+   <span class="num">01</span> MaxVal <span class="kw">PIC 9(5)</span> <span class="kw">VALUE</span> <span class="num">100</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+<span class="lbl">OBJECT.</span>
+   <span class="cmt">*> Override del metodo Incrementa</span>
+   <span class="kw">METHOD-ID.</span> Incrementa <span class="kw">OVERRIDE</span>.
+   <span class="hd">PROCEDURE DIVISION.</span>
+       <span class="kw">IF</span> Valore &lt; MaxVal
+           <span class="kw">INVOKE SUPER</span> <span class="str">"Incrementa"</span>
+       <span class="kw">END-IF</span>.
+   <span class="kw">END METHOD</span> Incrementa.
+<span class="lbl">END OBJECT.</span>
+<span class="kw">END CLASS</span> ContatoreMax.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Interfacce (COBOL 2002+)</div>
+    <pre><span class="cmt">*> Definizione di un'interfaccia</span>
+<span class="hd">INTERFACE-ID.</span> Stampabile.
+<span class="hd">PROCEDURE DIVISION.</span>
+   <span class="kw">METHOD-ID.</span> Stampa.
+   <span class="hd">PROCEDURE DIVISION.</span>
+   <span class="kw">END METHOD</span> Stampa.
+<span class="kw">END INTERFACE</span> Stampabile.
+
+<span class="cmt">*> Classe che implementa l'interfaccia</span>
+<span class="hd">CLASS-ID.</span> Documento <span class="kw">IMPLEMENTS</span> Stampabile.
+<span class="cmt">*> DEVE fornire implementazione di Stampa</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Riepilogo OO COBOL</div>
+    <table>
+      <tr><th>Concetto</th><th>Costrutto COBOL</th><th>Note</th></tr>
+      <tr><td>Classe</td><td><code>CLASS-ID</code></td><td>Contiene FACTORY (metodi di classe) e OBJECT (metodi di istanza)</td></tr>
+      <tr><td>Costruttore</td><td><code>METHOD-ID. new</code> in FACTORY</td><td>Deve chiamare <code>INVOKE SUPER "new"</code></td></tr>
+      <tr><td>Metodo istanza</td><td><code>METHOD-ID</code> in OBJECT</td><td>Accede a CLASS-STORAGE</td></tr>
+      <tr><td>Ereditarietà</td><td><code>INHERITS</code></td><td>Singola ereditarietà; override con <code>OVERRIDE</code></td></tr>
+      <tr><td>Interfaccia</td><td><code>INTERFACE-ID</code></td><td>Contratto puro; <code>IMPLEMENTS</code> nella classe</td></tr>
+      <tr><td>Polimorfismo</td><td><code>USAGE OBJECT REFERENCE</code></td><td>Riferimento generico: <code>USAGE OBJECT REFERENCE Stampabile</code></td></tr>
+      <tr><td>Distruttore</td><td><code>INVOKE obj "finalize"</code></td><td>Rilascio manuale dell'oggetto</td></tr>
+    </table>
+    <div class="warn">Il supporto OO varia molto tra compilatori. GnuCOBOL ha supporto limitato (CLASS-ID base, FACTORY). IBM Enterprise COBOL e Micro Focus hanno supporto più completo. Il codice OO COBOL è raro nel mainframe legacy.</div>
   </div>
 </div>
 
@@ -2128,27 +2792,80 @@ clean:
       <tr><td><code>9x</code></td><td>Impl. defined</td><td>Errori specifici del compilatore/sistema operativo</td></tr>
     </table>
 
-    <div class="sub-title" style="margin-top:10px">DECLARATIVES — Gestione errori centralizzata</div>
+    <div class="sub-title" style="margin-top:10px">DECLARATIVES &mdash; Gestione errori centralizzata</div>
+    <p>Le DECLARATIVES sono sezioni speciali nella PROCEDURE DIVISION che vengono invocate <b>automaticamente dal runtime</b> quando si verifica un errore I/O, una condizione di debug, o una label di report. Devono essere dichiarate <b>prima di qualsiasi altro codice</b> nella PROCEDURE DIVISION, racchiuse tra <code>DECLARATIVES.</code> e <code>END DECLARATIVES.</code></p>
+
+    <div class="sub-title" style="margin-top:8px">Forme della clausola USE</div>
+    <table>
+      <tr><th>Forma USE</th><th>Trigger</th><th>Scopo</th></tr>
+      <tr><td><code>USE AFTER STANDARD ERROR PROCEDURE ON file-name</code></td><td>Errore I/O su un file specifico</td><td>Gestione errori per singolo file</td></tr>
+      <tr><td><code>USE AFTER STANDARD ERROR PROCEDURE ON INPUT</code></td><td>Errore I/O su qualsiasi file aperto in INPUT</td><td>Gestore generico per categoria di apertura</td></tr>
+      <tr><td><code>USE AFTER STANDARD ERROR PROCEDURE ON OUTPUT</code></td><td>Errore I/O su qualsiasi file aperto in OUTPUT</td><td>Idem per OUTPUT</td></tr>
+      <tr><td><code>USE AFTER STANDARD ERROR PROCEDURE ON I-O</code></td><td>Errore I/O su qualsiasi file aperto in I-O</td><td>Idem per I-O</td></tr>
+      <tr><td><code>USE AFTER STANDARD ERROR PROCEDURE ON EXTEND</code></td><td>Errore I/O su qualsiasi file aperto in EXTEND</td><td>Idem per EXTEND</td></tr>
+      <tr><td><code>USE FOR DEBUGGING ON procedure-name</code></td><td>Ingresso nel paragrafo/sezione monitorata</td><td>Debug (richiede WITH DEBUGGING MODE)</td></tr>
+      <tr><td><code>USE BEFORE REPORTING identifier</code></td><td>Prima di stampare un gruppo nel Report Writer</td><td>Logica personalizzata nella stampa report</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:8px">Struttura ed esempio completo</div>
     <pre><span class="hd">PROCEDURE DIVISION.</span>
 <span class="kw">DECLARATIVES.</span>
-<span class="lbl">File-Error-Handler SECTION.</span>
+
+<span class="cmt">*> Handler per errori su un file specifico</span>
+<span class="lbl">Errore-Clienti SECTION.</span>
     <span class="kw">USE AFTER STANDARD ERROR PROCEDURE ON</span> ClienteFile.
-<span class="lbl">File-Error-Para.</span>
+<span class="lbl">Errore-Clienti-Para.</span>
     <span class="kw">DISPLAY</span> <span class="str">"Errore I/O su ClienteFile: "</span> WS-FS.
     <span class="kw">EVALUATE</span> WS-FS
         <span class="kw">WHEN</span> <span class="str">"35"</span> <span class="kw">DISPLAY</span> <span class="str">"File non trovato"</span>
         <span class="kw">WHEN</span> <span class="str">"30"</span> <span class="kw">DISPLAY</span> <span class="str">"Errore I/O permanente"</span>
-        <span class="kw">WHEN OTHER</span> <span class="kw">DISPLAY</span> <span class="str">"Errore sconosciuto"</span>
+        <span class="kw">WHEN</span> <span class="str">"41"</span> <span class="kw">DISPLAY</span> <span class="str">"File gia' aperto"</span>
+        <span class="kw">WHEN OTHER</span> <span class="kw">DISPLAY</span> <span class="str">"Errore non previsto"</span>
     <span class="kw">END-EVALUATE</span>.
     <span class="kw">STOP RUN</span>.
+
+<span class="cmt">*> Handler generico per TUTTI i file in INPUT</span>
+<span class="lbl">Errore-Input SECTION.</span>
+    <span class="kw">USE AFTER STANDARD ERROR PROCEDURE ON INPUT</span>.
+<span class="lbl">Errore-Input-Para.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Errore lettura generico: "</span> WS-FS.
+
+<span class="cmt">*> Handler per debug su un paragrafo (richiede DEBUGGING MODE)</span>
+<span class="lbl">Debug-Calcolo SECTION.</span>
+    <span class="kw">USE FOR DEBUGGING ON</span> CalcolaIVA.
+<span class="lbl">Debug-Calcolo-Para.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"[DEBUG] Entrato in CalcolaIVA"</span>
+    <span class="kw">DISPLAY</span> <span class="str">"  Riga:  "</span> DEBUG-LINE
+    <span class="kw">DISPLAY</span> <span class="str">"  Nome:  "</span> DEBUG-NAME.
+
 <span class="kw">END DECLARATIVES.</span>
 
-<span class="cmt">*> La sezione DECLARATIVES va PRIMA di qualsiasi altro codice</span>
-<span class="cmt">*> nella PROCEDURE DIVISION. Viene invocata automaticamente</span>
-<span class="cmt">*> quando si verifica un errore I/O sul file specificato.</span>
+<span class="cmt">*> ─── Dopo END DECLARATIVES: logica normale ───</span>
 <span class="lbl">Main-Logic SECTION.</span>
+<span class="lbl">Main-Para.</span>
     <span class="kw">OPEN INPUT</span> ClienteFile.
-    ...</pre>
+    <span class="cmt">*> Se OPEN fallisce, il runtime chiama</span>
+    <span class="cmt">*> automaticamente Errore-Clienti SECTION</span>
+    <span class="kw">PERFORM UNTIL</span> EOF-Reached
+        <span class="kw">READ</span> ClienteFile
+            <span class="kw">AT END SET</span> EOF-Reached <span class="kw">TO TRUE</span>
+        <span class="kw">END-READ</span>
+    <span class="kw">END-PERFORM</span>.
+    <span class="kw">CLOSE</span> ClienteFile.
+    <span class="kw">STOP RUN</span>.</pre>
+
+    <div class="sub-title" style="margin-top:8px">Regole e precedenze DECLARATIVES</div>
+    <table>
+      <tr><th>Regola</th><th>Dettaglio</th></tr>
+      <tr><td>Posizione obbligatoria</td><td>Subito dopo <code>PROCEDURE DIVISION</code>, <b>prima</b> di qualsiasi paragrafo o sezione non-declarativa</td></tr>
+      <tr><td>Ogni USE in una SECTION</td><td>Ogni clausola USE deve essere in una SECTION dedicata con almeno un paragrafo</td></tr>
+      <tr><td>Precedenza: specifico &gt; generico</td><td>Se esiste sia un handler per <code>ON ClienteFile</code> che per <code>ON INPUT</code>, viene invocato quello specifico per il file</td></tr>
+      <tr><td>Flusso dopo l'handler</td><td>Se l'handler non esegue STOP RUN o GOBACK, il controllo ritorna all'istruzione successiva a quella che ha causato l'errore</td></tr>
+      <tr><td>No PERFORM verso declarative</td><td>Non si puo' chiamare una sezione DECLARATIVE con PERFORM dal codice normale</td></tr>
+      <tr><td>Coesistenza con INVALID KEY</td><td>Se il verbo ha <code>INVALID KEY</code>, la DECLARATIVE <b>non</b> viene invocata per quell'operazione (INVALID KEY ha precedenza)</td></tr>
+    </table>
+
+    <div class="note"><b>Relazione con FILE STATUS:</b> Le DECLARATIVES vengono invocate <b>dopo</b> che il FILE STATUS e' stato aggiornato. All'interno dell'handler, il FILE STATUS contiene gia' il codice dell'errore e puo' essere ispezionato. Se sia FILE STATUS che DECLARATIVES sono attivi, vengono eseguiti entrambi; se anche INVALID KEY e' presente, INVALID KEY ha priorita' e la DECLARATIVE non scatta.</div>
 
     <div class="sub-title" style="margin-top:10px">INVALID KEY / AT END — Gestione inline</div>
     <pre><span class="kw">READ</span> ClienteFile
@@ -2189,13 +2906,44 @@ clean:
 
     <div class="sub-title" style="margin-top:10px">RAISE / RESUME (COBOL 2014+)</div>
     <pre><span class="cmt">*> Exception handling moderno (supporto limitato nei compilatori)</span>
+
+<span class="cmt">*> RAISE: solleva un'eccezione</span>
 <span class="kw">RAISE EXCEPTION</span> EC-DATA-INCOMPATIBLE.
 
-<span class="cmt">*> Categorie di eccezioni standard (EC-*):</span>
-<span class="cmt">*> EC-ALL, EC-ARGUMENT, EC-BOUND, EC-DATA,</span>
-<span class="cmt">*> EC-FLOW, EC-I-O, EC-IMP, EC-MLD,</span>
-<span class="cmt">*> EC-OO, EC-ORDER, EC-OVERFLOW, EC-PROGRAM,</span>
-<span class="cmt">*> EC-RANGE, EC-SIZE, EC-SORT-MERGE, EC-STORAGE</span></pre>
+<span class="cmt">*> >>TURN: attiva il monitoraggio di eccezioni specifiche</span>
+<span class="hd">&gt;&gt;TURN EC-SIZE CHECKING ON</span>
+<span class="hd">&gt;&gt;TURN EC-BOUND CHECKING ON</span>
+<span class="hd">&gt;&gt;TURN EC-DATA CHECKING ON</span>
+
+<span class="cmt">*> RESUME: dentro un handler, riprende l'esecuzione</span>
+<span class="cmt">*> RESUME AT NEXT STATEMENT — riprende dal punto successivo</span>
+<span class="cmt">*>                           all'istruzione che ha causato l'eccezione</span>
+
+<span class="cmt">*> Esempio: handler con RESUME</span>
+<span class="kw">DECLARATIVES.</span>
+<span class="lbl">Err-Bound SECTION.</span>
+    <span class="kw">USE AFTER EXCEPTION CONDITION</span> EC-BOUND.
+<span class="lbl">Err-Bound-Para.</span>
+    <span class="kw">DISPLAY</span> <span class="str">"Indice fuori range"</span>.
+    <span class="kw">RESUME AT NEXT STATEMENT</span>.  <span class="cmt">*> continua dopo l'errore</span>
+<span class="kw">END DECLARATIVES.</span></pre>
+
+    <div class="sub-title" style="margin-top:8px">Categorie eccezioni standard (EC-*)</div>
+    <table>
+      <tr><th>Categoria</th><th>Trigger</th></tr>
+      <tr><td><code>EC-ALL</code></td><td>Tutte le eccezioni (catch-all)</td></tr>
+      <tr><td><code>EC-ARGUMENT</code></td><td>Argomento non valido a funzione intrinseca</td></tr>
+      <tr><td><code>EC-BOUND</code></td><td>Subscript o indice fuori range</td></tr>
+      <tr><td><code>EC-DATA</code></td><td>Dato incompatibile o corrotto</td></tr>
+      <tr><td><code>EC-FLOW</code></td><td>Flusso irregolare (fall-through di paragrafo, ecc.)</td></tr>
+      <tr><td><code>EC-I-O</code></td><td>Errore I/O generico</td></tr>
+      <tr><td><code>EC-OVERFLOW</code></td><td>Overflow stringa (STRING/UNSTRING)</td></tr>
+      <tr><td><code>EC-PROGRAM</code></td><td>Errore nel caricamento programma (CALL)</td></tr>
+      <tr><td><code>EC-RANGE</code></td><td>Valore fuori range</td></tr>
+      <tr><td><code>EC-SIZE</code></td><td>Overflow aritmetico o divisione per zero</td></tr>
+      <tr><td><code>EC-SORT-MERGE</code></td><td>Errore durante SORT o MERGE</td></tr>
+      <tr><td><code>EC-STORAGE</code></td><td>Memoria insufficiente (ALLOCATE)</td></tr>
+    </table>
 
     <div class="warn">La gestione errori in COBOL è frammentata: FILE STATUS + INVALID KEY per I/O, ON SIZE ERROR per aritmetica, ON EXCEPTION per CALL. Non esiste un meccanismo try/catch unificato come in linguaggi moderni (RAISE/RESUME è poco supportato).</div>
   </div>
@@ -2396,6 +3144,97 @@ clean:
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- REFERENCE MODIFICATION                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-refmod"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> REFERENCE MODIFICATION — SUBSTRING</div>
+  <div class="section-body">
+    <p>Permette di accedere a una porzione di un campo alfanumerico senza definire sottocampi. Sintassi: <code>campo(posizione : lunghezza)</code>. Posizione parte da <b>1</b>.</p>
+    <pre><span class="num">01</span> Frase <span class="kw">PIC X(20)</span> <span class="kw">VALUE</span> <span class="str">"HELLO WORLD"</span>.
+
+<span class="cmt">*> Estrazione substring</span>
+<span class="kw">DISPLAY</span> Frase(<span class="num">1</span> : <span class="num">5</span>).        <span class="cmt">*> "HELLO"</span>
+<span class="kw">DISPLAY</span> Frase(<span class="num">7</span> : <span class="num">5</span>).        <span class="cmt">*> "WORLD"</span>
+
+<span class="cmt">*> Lunghezza opzionale: dal punto fino alla fine</span>
+<span class="kw">DISPLAY</span> Frase(<span class="num">7</span> :).           <span class="cmt">*> "WORLD         " (fino alla fine)</span>
+
+<span class="cmt">*> Modifica in-place</span>
+<span class="kw">MOVE</span> <span class="str">"CIAO"</span> <span class="kw">TO</span> Frase(<span class="num">1</span> : <span class="num">4</span>). <span class="cmt">*> "CIAOO WORLD"</span>
+
+<span class="cmt">*> Posizione e lunghezza possono essere variabili</span>
+<span class="num">01</span> Pos  <span class="kw">PIC 99</span> <span class="kw">VALUE</span> <span class="num">3</span>.
+<span class="num">01</span> Len  <span class="kw">PIC 99</span> <span class="kw">VALUE</span> <span class="num">4</span>.
+<span class="kw">DISPLAY</span> Frase(Pos : Len).     <span class="cmt">*> 4 caratteri dalla posizione 3</span>
+
+<span class="cmt">*> Su campi di gruppo (trattati come alfanumerici)</span>
+<span class="num">01</span> DataGrezza <span class="kw">PIC X(8)</span> <span class="kw">VALUE</span> <span class="str">"20241225"</span>.
+<span class="kw">DISPLAY</span> DataGrezza(<span class="num">1</span> : <span class="num">4</span>).   <span class="cmt">*> "2024" (anno)</span>
+<span class="kw">DISPLAY</span> DataGrezza(<span class="num">5</span> : <span class="num">2</span>).   <span class="cmt">*> "12"   (mese)</span>
+<span class="kw">DISPLAY</span> DataGrezza(<span class="num">7</span> : <span class="num">2</span>).   <span class="cmt">*> "25"   (giorno)</span>
+
+<span class="cmt">*> Con FUNCTION LENGTH per calcoli dinamici</span>
+<span class="kw">MOVE</span> <span class="str">"!"</span> <span class="kw">TO</span> Frase(<span class="kw">FUNCTION LENGTH</span>(Frase) : <span class="num">1</span>).
+<span class="cmt">*> Mette "!" nell'ultima posizione</span></pre>
+
+    <div class="warn">Se posizione + lunghezza - 1 supera la dimensione del campo, il risultato è <b>undefined behavior</b>. Con <code>-debug</code> in GnuCOBOL si ottiene un errore runtime. Verificare sempre i limiti quando posizione/lunghezza sono variabili.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OCCURS DYNAMIC / ALLOCATE / FREE                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-occurs-dyn"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> OCCURS DYNAMIC / ALLOCATE / FREE (COBOL 2014+)</div>
+  <div class="section-body">
+    <p>COBOL 2014 introduce la gestione dinamica della memoria, finora assente nel linguaggio. Queste feature hanno supporto limitato nei compilatori.</p>
+
+    <div class="sub-title">OCCURS DYNAMIC — Array a dimensione variabile runtime</div>
+    <pre><span class="cmt">*> Tabella con dimensione allocata a runtime</span>
+<span class="num">01</span> TabDinamica.
+   <span class="num">02</span> NumElementi <span class="kw">PIC 9(5)</span>.
+   <span class="num">02</span> Elemento <span class="kw">PIC X(20)</span>
+       <span class="kw">OCCURS DYNAMIC</span>
+       <span class="kw">CAPACITY IN</span> NumElementi.
+
+<span class="cmt">*> Ridimensiona a runtime</span>
+<span class="kw">ALLOCATE</span> <span class="num">100</span> <span class="kw">CHARACTERS RETURNING</span> Elemento.
+<span class="cmt">*> oppure</span>
+<span class="kw">ALLOCATE</span> Elemento.</pre>
+
+    <div class="sub-title" style="margin-top:10px">ALLOCATE / FREE — Gestione memoria esplicita</div>
+    <pre><span class="cmt">*> ALLOCATE: alloca memoria dinamica</span>
+<span class="num">01</span> Ptr <span class="kw">USAGE POINTER</span>.
+<span class="num">01</span> Buffer <span class="kw">PIC X(1024)</span> <span class="kw">BASED</span>.
+
+<span class="cmt">*> Alloca e associa a una variabile BASED</span>
+<span class="kw">ALLOCATE</span> Buffer <span class="kw">RETURNING</span> Ptr.
+
+<span class="cmt">*> Alloca N caratteri generici</span>
+<span class="kw">ALLOCATE</span> <span class="num">4096</span> <span class="kw">CHARACTERS RETURNING</span> Ptr
+    <span class="kw">ON EXCEPTION</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Memoria insufficiente"</span>.
+
+<span class="cmt">*> FREE: rilascia memoria allocata</span>
+<span class="kw">FREE</span> Ptr.
+<span class="cmt">*> Dopo FREE, Ptr è NULL e Buffer non è più accessibile</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Confronto allocazione statica vs dinamica</div>
+    <table>
+      <tr><th>Feature</th><th>OCCURS n TIMES</th><th>OCCURS ... TO ... DEPENDING ON</th><th>OCCURS DYNAMIC</th></tr>
+      <tr><td>Dimensione</td><td>Fissa a compile time</td><td>Variabile, con range fisso</td><td>Variabile, senza limite fisso</td></tr>
+      <tr><td>Memoria</td><td>Allocata staticamente</td><td>Allocata per il max</td><td>Allocata a runtime</td></tr>
+      <tr><td>Standard</td><td>COBOL-68+</td><td>COBOL-85+</td><td>COBOL 2014+</td></tr>
+      <tr><td>Supporto GnuCOBOL</td><td>Pieno</td><td>Pieno</td><td>Parziale (3.x+)</td></tr>
+    </table>
+
+    <div class="warn">ALLOCATE/FREE e OCCURS DYNAMIC sono feature recenti con supporto ancora incompleto. GnuCOBOL 3.x ha supporto sperimentale. IBM Enterprise COBOL V6.3+ supporta OCCURS DYNAMIC. Testare sempre la compatibilità del compilatore.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- COMPILAZIONE CONDIZIONALE                                       -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <a class="anchor" id="s-condcomp"></a>
@@ -2453,6 +3292,119 @@ clean:
     </table>
 
     <div class="note">In GnuCOBOL, le direttive <code>&gt;&gt;DEFINE</code> possono anche essere passate da riga di comando con <code>-D NOME=VALORE</code>. Utile per build differenziati (debug/produzione, piattaforme diverse).</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- COPY & REPLACING AVANZATO                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-copy-adv"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> COPY &amp; REPLACING — PATTERN AVANZATI</div>
+  <div class="section-body">
+    <p>La clausola COPY include testo da un copybook (.cpy) esterno. REPLACING permette sostituzioni testuali al momento dell'inclusione, fondamentale per il riuso delle strutture dati.</p>
+
+    <div class="sub-title">Sintassi completa</div>
+    <pre><span class="cmt">*> COPY base</span>
+<span class="kw">COPY</span> nome-copybook.
+<span class="kw">COPY</span> <span class="str">"path/to/copybook.cpy"</span>.
+
+<span class="cmt">*> COPY con REPLACING (pseudo-text delimiters ==...==)</span>
+<span class="kw">COPY</span> RECDEF <span class="kw">REPLACING</span>
+    ==:PREFIX:== <span class="kw">BY</span> ==WS-CLI==
+    ==:SIZE:==   <span class="kw">BY</span> ==<span class="num">100</span>==.
+
+<span class="cmt">*> REPLACING multipli sullo stesso COPY</span>
+<span class="kw">COPY</span> SQLTAB <span class="kw">REPLACING</span>
+    ==:TABLE:==  <span class="kw">BY</span> ==CLIENTI==
+    ==:KEY:==    <span class="kw">BY</span> ==ID-CLIENTE==
+    ==:REC:==    <span class="kw">BY</span> ==REC-CLI==.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Esempio: copybook parametrizzato</div>
+    <pre><span class="cmt">*> ─── File: RECDEF.cpy ───</span>
+<span class="num">01</span> :PREFIX:-Record.
+   <span class="num">02</span> :PREFIX:-ID    <span class="kw">PIC 9(5)</span>.
+   <span class="num">02</span> :PREFIX:-Nome  <span class="kw">PIC X(30)</span>.
+   <span class="num">02</span> :PREFIX:-Stato <span class="kw">PIC X</span>.
+
+<span class="cmt">*> ─── Nel programma: istanzia due volte ───</span>
+<span class="kw">COPY</span> RECDEF <span class="kw">REPLACING</span> ==:PREFIX:== <span class="kw">BY</span> ==WS-CLI==.
+<span class="cmt">*> Genera: 01 WS-CLI-Record. 02 WS-CLI-ID PIC 9(5). ...</span>
+
+<span class="kw">COPY</span> RECDEF <span class="kw">REPLACING</span> ==:PREFIX:== <span class="kw">BY</span> ==WS-FOR==.
+<span class="cmt">*> Genera: 01 WS-FOR-Record. 02 WS-FOR-ID PIC 9(5). ...</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">REPLACE — Sostituzione globale nel sorgente</div>
+    <pre><span class="cmt">*> REPLACE opera su TUTTO il sorgente (non solo COPY)</span>
+<span class="kw">REPLACE</span> ==VECCHIO-NOME== <span class="kw">BY</span> ==NUOVO-NOME==.
+<span class="cmt">*> Da qui in poi, ogni occorrenza viene sostituita</span>
+
+<span class="cmt">*> Disattivare REPLACE</span>
+<span class="kw">REPLACE OFF</span>.</pre>
+
+    <table>
+      <tr><th>Clausola</th><th>Scope</th><th>Uso tipico</th></tr>
+      <tr><td><code>COPY ... REPLACING</code></td><td>Solo il testo incluso dal COPY</td><td>Parametrizzare copybook (prefissi, nomi tabella)</td></tr>
+      <tr><td><code>REPLACE</code></td><td>Tutto il sorgente fino a REPLACE OFF</td><td>Refactoring, rename globale temporaneo</td></tr>
+    </table>
+
+    <div class="note"><b>Best practice:</b> Usare convenzione con prefisso (es. <code>:PREFIX:</code>) nei copybook per rendere chiaro dove avvengono le sostituzioni. I copybook sono cercati in: directory corrente, <code>COB_COPY_DIR</code>, directory specificate con <code>-I</code> in cobc.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- FILE LOCKING                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-filelock"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FILE LOCKING — ACCESSO CONCORRENTE</div>
+  <div class="section-body">
+    <p>Il file locking controlla l'accesso concorrente quando più programmi o thread accedono allo stesso file. Definito nella clausola SELECT e nei verbi I/O.</p>
+
+    <div class="sub-title">LOCK MODE nella SELECT</div>
+    <pre><span class="kw">SELECT</span> ClienteFile <span class="kw">ASSIGN TO</span> <span class="str">"clienti.dat"</span>
+    <span class="kw">ORGANIZATION IS INDEXED</span>
+    <span class="kw">ACCESS MODE IS DYNAMIC</span>
+    <span class="kw">LOCK MODE IS MANUAL</span>         <span class="cmt">*> lock esplicito per record</span>
+    <span class="kw">WITH LOCK ON MULTIPLE RECORDS</span>
+    <span class="kw">FILE STATUS IS</span> WS-FS.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Modalità di lock</div>
+    <table>
+      <tr><th>LOCK MODE</th><th>Comportamento</th><th>Uso tipico</th></tr>
+      <tr><td><code>AUTOMATIC</code></td><td>Lock acquisito automaticamente su READ, rilasciato su READ successiva o UNLOCK</td><td>Programmi semplici con accesso sequenziale</td></tr>
+      <tr><td><code>MANUAL</code></td><td>Lock acquisito solo con <code>READ WITH LOCK</code>, rilasciato con UNLOCK o CLOSE</td><td>Transazioni che richiedono controllo preciso</td></tr>
+      <tr><td><code>EXCLUSIVE</code></td><td>L'intero file è bloccato all'OPEN; nessun altro può accedervi</td><td>Batch esclusivi, riorganizzazione file</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Verbi con lock</div>
+    <pre><span class="cmt">*> READ con lock esplicito (LOCK MODE MANUAL)</span>
+<span class="kw">READ</span> ClienteFile
+    <span class="kw">WITH LOCK</span>                   <span class="cmt">*> blocca il record</span>
+    <span class="kw">KEY IS</span> IDCliente
+    <span class="kw">INVALID KEY DISPLAY</span> <span class="str">"Non trovato"</span>
+<span class="kw">END-READ</span>.
+
+<span class="cmt">*> READ senza lock (solo lettura)</span>
+<span class="kw">READ</span> ClienteFile
+    <span class="kw">WITH NO LOCK</span>                <span class="cmt">*> non blocca</span>
+    <span class="kw">KEY IS</span> IDCliente
+<span class="kw">END-READ</span>.
+
+<span class="cmt">*> UNLOCK: rilascia i lock sul file</span>
+<span class="kw">UNLOCK</span> ClienteFile <span class="kw">RECORDS</span>.   <span class="cmt">*> rilascia tutti i record lockati</span>
+<span class="kw">UNLOCK</span> ClienteFile <span class="kw">RECORD</span>.    <span class="cmt">*> rilascia solo il record corrente</span>
+
+<span class="cmt">*> OPEN con sharing (chi altro può aprire il file)</span>
+<span class="kw">OPEN I-O</span> ClienteFile <span class="kw">WITH LOCK</span>. <span class="cmt">*> lock esclusivo</span>
+<span class="kw">OPEN INPUT</span> ClienteFile
+    <span class="kw">SHARING WITH ALL OTHER</span>.      <span class="cmt">*> condiviso in lettura</span>
+<span class="kw">OPEN I-O</span> ClienteFile
+    <span class="kw">SHARING WITH NO OTHER</span>.       <span class="cmt">*> esclusivo</span>
+<span class="kw">OPEN I-O</span> ClienteFile
+    <span class="kw">SHARING WITH READ ONLY</span>.      <span class="cmt">*> altri possono solo leggere</span></pre>
+
+    <div class="note"><b>FILE STATUS e lock:</b> Un tentativo di READ WITH LOCK su un record già bloccato da un altro processo restituisce FILE STATUS <code>"68"</code> (record locked). Gestire sempre questo caso per evitare deadlock. In GnuCOBOL il locking è basato su <code>fcntl()</code> (POSIX).</div>
   </div>
 </div>
 
@@ -2543,6 +3495,246 @@ clean:
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- EMBEDDED SQL (DB2 / ESQL)                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-embedsql"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> EMBEDDED SQL (DB2 / ESQL)</div>
+  <div class="section-body">
+    <p>COBOL su mainframe IBM usa Embedded SQL per interagire con DB2. Le istruzioni SQL sono racchiuse tra <code>EXEC SQL</code> e <code>END-EXEC</code>. Il precompilatore DB2 le converte in chiamate al database prima della compilazione COBOL.</p>
+
+    <div class="sub-title">Struttura base</div>
+    <pre><span class="kw">WORKING-STORAGE SECTION.</span>
+
+<span class="cmt">*> SQLCA: area di comunicazione SQL (obbligatoria)</span>
+<span class="kw">EXEC SQL</span> <span class="kw">INCLUDE SQLCA</span> <span class="kw">END-EXEC</span>.
+
+<span class="cmt">*> Host variables: variabili COBOL usate nelle query</span>
+<span class="num">01</span> WS-ID      <span class="kw">PIC 9(5)</span>.
+<span class="num">01</span> WS-Nome    <span class="kw">PIC X(30)</span>.
+<span class="num">01</span> WS-Saldo   <span class="kw">PIC S9(9)V99</span> <span class="kw">COMP-3</span>.
+<span class="num">01</span> WS-Ind     <span class="kw">PIC S9(4) COMP</span>.  <span class="cmt">*> indicator variable (null check)</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Operazioni CRUD</div>
+    <pre><span class="cmt">*> SELECT singola riga (INTO host variables)</span>
+<span class="kw">EXEC SQL</span>
+    <span class="kw">SELECT</span> NOME, SALDO
+    <span class="kw">INTO</span> :WS-Nome, :WS-Saldo:WS-Ind
+    <span class="kw">FROM</span> CLIENTI
+    <span class="kw">WHERE</span> ID = :WS-ID
+<span class="kw">END-EXEC</span>.
+<span class="cmt">*> :WS-Ind = -1 se SALDO è NULL</span>
+
+<span class="cmt">*> INSERT</span>
+<span class="kw">EXEC SQL</span>
+    <span class="kw">INSERT INTO</span> CLIENTI (ID, NOME, SALDO)
+    <span class="kw">VALUES</span> (:WS-ID, :WS-Nome, :WS-Saldo)
+<span class="kw">END-EXEC</span>.
+
+<span class="cmt">*> UPDATE</span>
+<span class="kw">EXEC SQL</span>
+    <span class="kw">UPDATE</span> CLIENTI <span class="kw">SET</span> SALDO = :WS-Saldo
+    <span class="kw">WHERE</span> ID = :WS-ID
+<span class="kw">END-EXEC</span>.
+
+<span class="cmt">*> DELETE</span>
+<span class="kw">EXEC SQL</span>
+    <span class="kw">DELETE FROM</span> CLIENTI
+    <span class="kw">WHERE</span> ID = :WS-ID
+<span class="kw">END-EXEC</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Cursori (result set multi-riga)</div>
+    <pre><span class="cmt">*> Dichiarazione cursore</span>
+<span class="kw">EXEC SQL</span>
+    <span class="kw">DECLARE</span> CUR-CLIENTI <span class="kw">CURSOR FOR</span>
+    <span class="kw">SELECT</span> ID, NOME, SALDO <span class="kw">FROM</span> CLIENTI
+    <span class="kw">WHERE</span> SALDO > :WS-MinSaldo
+    <span class="kw">ORDER BY</span> NOME
+<span class="kw">END-EXEC</span>.
+
+<span class="cmt">*> Apertura, lettura, chiusura</span>
+<span class="kw">EXEC SQL OPEN</span> CUR-CLIENTI <span class="kw">END-EXEC</span>.
+
+<span class="kw">PERFORM UNTIL</span> SQLCODE <span class="kw">NOT</span> = <span class="num">0</span>
+    <span class="kw">EXEC SQL</span>
+        <span class="kw">FETCH</span> CUR-CLIENTI
+        <span class="kw">INTO</span> :WS-ID, :WS-Nome, :WS-Saldo
+    <span class="kw">END-EXEC</span>
+    <span class="kw">IF</span> SQLCODE = <span class="num">0</span>
+        <span class="kw">DISPLAY</span> WS-ID <span class="str">" "</span> WS-Nome <span class="str">" "</span> WS-Saldo
+    <span class="kw">END-IF</span>
+<span class="kw">END-PERFORM</span>.
+
+<span class="kw">EXEC SQL CLOSE</span> CUR-CLIENTI <span class="kw">END-EXEC</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">SQLCODE — Codici di ritorno</div>
+    <table>
+      <tr><th>SQLCODE</th><th>Significato</th></tr>
+      <tr><td><code>0</code></td><td>Successo</td></tr>
+      <tr><td><code>+100</code></td><td>Nessuna riga trovata (SELECT) o fine cursore (FETCH)</td></tr>
+      <tr><td><code>-803</code></td><td>Violazione chiave duplicata (INSERT)</td></tr>
+      <tr><td><code>-805</code></td><td>Package/plan non trovato</td></tr>
+      <tr><td><code>-811</code></td><td>SELECT INTO restituisce più di una riga</td></tr>
+      <tr><td><code>-911</code></td><td>Deadlock o timeout</td></tr>
+      <tr><td><code>-904</code></td><td>Risorsa non disponibile</td></tr>
+      <tr><td><code>&lt; 0</code></td><td>Errore generico (consultare SQLERRMC per dettagli)</td></tr>
+    </table>
+
+    <pre><span class="cmt">*> Gestione errori tipica</span>
+<span class="kw">EVALUATE</span> SQLCODE
+    <span class="kw">WHEN</span> <span class="num">0</span>    <span class="kw">CONTINUE</span>
+    <span class="kw">WHEN</span> <span class="num">100</span>  <span class="kw">DISPLAY</span> <span class="str">"Nessun dato trovato"</span>
+    <span class="kw">WHEN</span> -<span class="num">803</span> <span class="kw">DISPLAY</span> <span class="str">"Chiave duplicata"</span>
+    <span class="kw">WHEN OTHER</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Errore SQL: "</span> SQLCODE
+        <span class="kw">DISPLAY</span> <span class="str">"Messaggio: "</span> SQLERRMC
+<span class="kw">END-EVALUATE</span>.</pre>
+
+    <div class="note"><b>Compilazione:</b> Il sorgente con Embedded SQL va prima processato dal precompilatore DB2 (<code>DSNHPC</code> su z/OS) che genera COBOL puro con CALL al runtime DB2. In ambiente GnuCOBOL si può usare ESQL/OC (Open COBOL ESQL) o OCESQL per interfacciarsi con PostgreSQL/MySQL.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CICS                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-cics"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> CICS — PROGRAMMAZIONE TRANSAZIONALE</div>
+  <div class="section-body">
+    <p>CICS (Customer Information Control System) è il transaction monitor IBM per applicazioni online su mainframe. I programmi COBOL/CICS gestiscono transazioni interattive (schermate 3270, servizi web) tramite comandi <code>EXEC CICS</code>.</p>
+
+    <div class="sub-title">Struttura di un programma CICS</div>
+    <pre><span class="cmt">*> Differenze rispetto a COBOL batch:</span>
+<span class="cmt">*> - NON usare ACCEPT, DISPLAY, OPEN, READ, WRITE, CLOSE</span>
+<span class="cmt">*> - NON usare STOP RUN (usare EXEC CICS RETURN)</span>
+<span class="cmt">*> - I/O solo tramite EXEC CICS (SEND MAP, RECEIVE MAP, READ FILE, ecc.)</span>
+
+<span class="hd">IDENTIFICATION DIVISION.</span>
+<span class="kw">PROGRAM-ID.</span> CICSPGM.
+<span class="hd">DATA DIVISION.</span>
+<span class="kw">WORKING-STORAGE SECTION.</span>
+<span class="num">01</span> WS-Resp    <span class="kw">PIC S9(8) COMP</span>.
+<span class="num">01</span> WS-Resp2   <span class="kw">PIC S9(8) COMP</span>.
+<span class="num">01</span> WS-Data    <span class="kw">PIC X(100)</span>.
+
+<span class="hd">PROCEDURE DIVISION.</span>
+    <span class="kw">EXEC CICS</span> <span class="kw">HANDLE CONDITION</span>
+        ERROR(Errore-Para)
+    <span class="kw">END-EXEC</span>.
+    <span class="kw">PERFORM</span> Logica-Main.
+    <span class="kw">EXEC CICS RETURN END-EXEC</span>.
+
+<span class="lbl">Errore-Para.</span>
+    <span class="kw">EXEC CICS</span> <span class="kw">SEND TEXT FROM</span>(<span class="str">"Errore!"</span>)
+        <span class="kw">LENGTH</span>(<span class="num">7</span>) <span class="kw">ERASE END-EXEC</span>.
+    <span class="kw">EXEC CICS RETURN END-EXEC</span>.</pre>
+
+    <div class="sub-title" style="margin-top:10px">Comandi CICS principali</div>
+    <table>
+      <tr><th>Categoria</th><th>Comando</th><th>Descrizione</th></tr>
+      <tr><td>Terminale</td><td><code>SEND MAP / RECEIVE MAP</code></td><td>Invia/ricevi schermata BMS (3270)</td></tr>
+      <tr><td>Terminale</td><td><code>SEND TEXT</code></td><td>Invia testo libero al terminale</td></tr>
+      <tr><td>File</td><td><code>READ FILE / WRITE FILE</code></td><td>Leggi/scrivi record VSAM</td></tr>
+      <tr><td>File</td><td><code>REWRITE FILE / DELETE FILE</code></td><td>Aggiorna/cancella record</td></tr>
+      <tr><td>File</td><td><code>STARTBR / READNEXT / ENDBR</code></td><td>Browse sequenziale su file VSAM</td></tr>
+      <tr><td>Queue</td><td><code>WRITEQ TS / READQ TS</code></td><td>Temporary Storage queue (dati di sessione)</td></tr>
+      <tr><td>Queue</td><td><code>WRITEQ TD / READQ TD</code></td><td>Transient Data queue (log, trigger)</td></tr>
+      <tr><td>Programma</td><td><code>LINK / XCTL</code></td><td>Chiama sottoprogramma / trasferimento controllo</td></tr>
+      <tr><td>Programma</td><td><code>RETURN</code></td><td>Ritorna al CICS o al chiamante</td></tr>
+      <tr><td>Sync</td><td><code>SYNCPOINT</code></td><td>Commit delle modifiche</td></tr>
+      <tr><td>Sync</td><td><code>SYNCPOINT ROLLBACK</code></td><td>Rollback delle modifiche</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">Esempio: lettura file VSAM</div>
+    <pre><span class="kw">EXEC CICS READ FILE</span>(<span class="str">'CUSTFILE'</span>)
+    <span class="kw">INTO</span>(WS-Data)
+    <span class="kw">RIDFLD</span>(WS-Key)
+    <span class="kw">LENGTH</span>(WS-Len)
+    <span class="kw">RESP</span>(WS-Resp)
+    <span class="kw">RESP2</span>(WS-Resp2)
+<span class="kw">END-EXEC</span>.
+
+<span class="kw">EVALUATE</span> WS-Resp
+    <span class="kw">WHEN</span> DFHRESP(NORMAL)   <span class="kw">PERFORM</span> Processa
+    <span class="kw">WHEN</span> DFHRESP(NOTFND)   <span class="kw">DISPLAY</span> <span class="str">"Non trovato"</span>
+    <span class="kw">WHEN</span> DFHRESP(DISABLED) <span class="kw">DISPLAY</span> <span class="str">"File disabilitato"</span>
+    <span class="kw">WHEN OTHER</span>
+        <span class="kw">DISPLAY</span> <span class="str">"Errore CICS RESP="</span> WS-Resp
+<span class="kw">END-EVALUATE</span>.</pre>
+
+    <div class="warn">CICS è esclusivo dell'ambiente mainframe IBM (z/OS). Non esiste in GnuCOBOL. Per sviluppo/test locale si usano emulatori CICS come Micro Focus Enterprise Server o IBM CICS TX. Il precompilatore CICS (<code>DFHECP1$</code>) traduce i comandi EXEC CICS in CALL al runtime.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- JCL                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-jcl"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> JCL — INTEGRAZIONE CON JOB CONTROL LANGUAGE</div>
+  <div class="section-body">
+    <p>Su mainframe IBM (z/OS), i programmi COBOL batch vengono eseguiti tramite JCL (Job Control Language). Il JCL definisce l'ambiente di esecuzione: file fisici, librerie, parametri e risorse.</p>
+
+    <div class="sub-title">JCL base per un programma COBOL</div>
+    <pre><span class="cmt">//MYJOB   JOB (ACCT),'NOME',CLASS=A,MSGCLASS=X</span>
+<span class="cmt">//*</span>
+<span class="cmt">//STEP1   EXEC PGM=MIOPROG</span>
+<span class="cmt">//STEPLIB  DD  DSN=MY.LOAD.LIB,DISP=SHR</span>
+<span class="cmt">//*</span>
+<span class="cmt">// Associazione file logici COBOL → dataset fisici z/OS</span>
+<span class="cmt">//CLIENTI  DD  DSN=PROD.CLIENTI.VSAM,DISP=SHR</span>
+<span class="cmt">//REPORT   DD  DSN=PROD.REPORT.OUTPUT,</span>
+<span class="cmt">//             DISP=(NEW,CATLG,DELETE),</span>
+<span class="cmt">//             SPACE=(CYL,(5,2)),</span>
+<span class="cmt">//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)</span>
+<span class="cmt">//SYSOUT   DD  SYSOUT=*</span>
+<span class="cmt">//SYSPRINT DD  SYSOUT=*</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">Relazione SELECT ↔ DD</div>
+    <table>
+      <tr><th>COBOL (SELECT)</th><th>JCL (DD)</th><th>Collegamento</th></tr>
+      <tr><td><code>SELECT ClienteFile ASSIGN TO CLIENTI</code></td><td><code>//CLIENTI DD DSN=...</code></td><td>Il nome dopo ASSIGN TO corrisponde al DD name nel JCL</td></tr>
+      <tr><td><code>SELECT ReportFile ASSIGN TO REPORT</code></td><td><code>//REPORT DD DSN=...</code></td><td>Idem</td></tr>
+      <tr><td><code>DISPLAY ... UPON SYSOUT</code></td><td><code>//SYSOUT DD SYSOUT=*</code></td><td>Output standard (console/spool)</td></tr>
+    </table>
+
+    <div class="sub-title" style="margin-top:10px">JCL per compilazione + esecuzione</div>
+    <pre><span class="cmt">//COMPILE EXEC PGM=IGYCRCTL,PARM='RENT,OPT(2)'</span>
+<span class="cmt">//SYSIN    DD  DSN=MY.SOURCE.LIB(MIOPROG),DISP=SHR</span>
+<span class="cmt">//SYSLIB   DD  DSN=MY.COPYBOOK.LIB,DISP=SHR</span>
+<span class="cmt">//SYSLIN   DD  DSN=&amp;&amp;OBJ,DISP=(NEW,PASS),SPACE=(CYL,1)</span>
+<span class="cmt">//SYSPRINT DD  SYSOUT=*</span>
+<span class="cmt">//*</span>
+<span class="cmt">//LKED    EXEC PGM=IEWL,PARM='RENT,LIST,MAP'</span>
+<span class="cmt">//SYSLIN   DD  DSN=&amp;&amp;OBJ,DISP=(OLD,DELETE)</span>
+<span class="cmt">//SYSLMOD  DD  DSN=MY.LOAD.LIB(MIOPROG),DISP=SHR</span>
+<span class="cmt">//SYSPRINT DD  SYSOUT=*</span>
+<span class="cmt">//*</span>
+<span class="cmt">//RUN     EXEC PGM=MIOPROG</span>
+<span class="cmt">//STEPLIB  DD  DSN=MY.LOAD.LIB,DISP=SHR</span></pre>
+
+    <div class="sub-title" style="margin-top:10px">RETURN-CODE e condizioni JCL</div>
+    <pre><span class="cmt">*> Nel programma COBOL: imposta il codice di ritorno</span>
+<span class="kw">MOVE</span> <span class="num">0</span> <span class="kw">TO RETURN-CODE</span>.   <span class="cmt">*> successo</span>
+<span class="kw">MOVE</span> <span class="num">4</span> <span class="kw">TO RETURN-CODE</span>.   <span class="cmt">*> warning</span>
+<span class="kw">MOVE</span> <span class="num">8</span> <span class="kw">TO RETURN-CODE</span>.   <span class="cmt">*> errore</span>
+<span class="kw">MOVE</span> <span class="num">16</span> <span class="kw">TO RETURN-CODE</span>.  <span class="cmt">*> errore grave</span></pre>
+    <pre><span class="cmt">// Nel JCL: condiziona i passi successivi</span>
+<span class="cmt">//STEP2   EXEC PGM=PROG2,COND=(4,LT,STEP1)</span>
+<span class="cmt">//* Esegue STEP2 solo se RETURN-CODE di STEP1 >= 4</span>
+<span class="cmt">//*</span>
+<span class="cmt">// Con IF/THEN/ELSE (JCL moderno):</span>
+<span class="cmt">//  IF (STEP1.RC = 0) THEN</span>
+<span class="cmt">//STEP2   EXEC PGM=PROG2</span>
+<span class="cmt">//  ELSE</span>
+<span class="cmt">//STEPERR EXEC PGM=ERRPGM</span>
+<span class="cmt">//  ENDIF</span></pre>
+
+    <div class="note"><b>JCL è specifico di z/OS.</b> In ambiente GnuCOBOL su Linux/macOS, i file sono associati tramite il path nell'ASSIGN TO o variabili d'ambiente. Non esiste JCL, ma si usano script shell per orchestrare i batch. La convenzione RETURN-CODE rimane valida: in GnuCOBOL il valore diventa l'exit code del processo.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- DEBUGGING                                                       -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <a class="anchor" id="s-debug"></a>
@@ -2628,7 +3820,44 @@ clean:
     <span class="kw">STOP RUN</span>
 <span class="kw">END-IF</span>.</pre>
 
-    <div class="note">Per debug interattivo in GnuCOBOL: compilare con <code>-g</code> e usare <code>gdb</code>. I nomi delle variabili COBOL sono convertiti in nomi C (es. <code>WS-Conta</code> → <code>b_WS_Conta</code>). Il prefisso <code>b_</code> indica variabili COBOL nel codice C generato.</div>
+    <div class="sub-title" style="margin-top:10px">Debug interattivo con GDB — Guida dettagliata</div>
+    <pre><span class="cmt"># 1. Compilare con simboli di debug</span>
+<span class="dim">cobc -x -g -debug -fsource-location prog.cob</span>
+
+<span class="cmt"># 2. Lanciare gdb</span>
+<span class="dim">gdb ./prog</span>
+
+<span class="cmt"># 3. Comandi gdb utili per COBOL</span></pre>
+    <table>
+      <tr><th>Comando gdb</th><th>Effetto</th></tr>
+      <tr><td><code>break cob_stop_run</code></td><td>Breakpoint prima dell'uscita dal programma</td></tr>
+      <tr><td><code>break prog.c:42</code></td><td>Breakpoint alla riga 42 del C generato (corrisponde a una riga COBOL)</td></tr>
+      <tr><td><code>print b_WS_Conta</code></td><td>Stampa la variabile COBOL WS-Conta (prefisso <code>b_</code>, trattini → underscore)</td></tr>
+      <tr><td><code>print b_1</code></td><td>Stampa la variabile COBOL definita a livello 01 (se non ha nome: usa il numero di riga)</td></tr>
+      <tr><td><code>display b_WS_FS</code></td><td>Mostra automaticamente WS-FS dopo ogni step</td></tr>
+      <tr><td><code>info locals</code></td><td>Elenca tutte le variabili locali (include le variabili COBOL convertite)</td></tr>
+      <tr><td><code>next</code></td><td>Esegue la prossima riga C (può corrispondere a più statement COBOL)</td></tr>
+      <tr><td><code>step</code></td><td>Entra nelle funzioni chiamate (es. CALL)</td></tr>
+      <tr><td><code>continue</code></td><td>Continua fino al prossimo breakpoint</td></tr>
+      <tr><td><code>backtrace</code></td><td>Mostra lo stack di chiamate (utile dopo un crash)</td></tr>
+      <tr><td><code>x/20cb b_RecordA</code></td><td>Dump esadecimale di 20 byte del record (utile per ispezionare campi packed)</td></tr>
+    </table>
+
+    <pre><span class="cmt"># Sessione di esempio</span>
+<span class="dim">$ gdb ./prog</span>
+<span class="dim">(gdb) break cob_stop_run</span>
+<span class="dim">(gdb) run</span>
+<span class="dim">(gdb) print b_WS_Totale</span>
+<span class="dim">$1 = "00012345"</span>
+<span class="dim">(gdb) print b_WS_FS</span>
+<span class="dim">$2 = "00"</span>
+<span class="dim">(gdb) x/10cb b_WS_Record</span>
+<span class="dim">0x...:  0x4d 0x61 0x72 0x69 0x6f 0x20 0x20 0x20 ...</span>
+<span class="dim">(gdb) backtrace</span>
+<span class="dim">#0  cob_stop_run (status=0) at libcob/common.c:...</span>
+<span class="dim">#1  prog_ () at prog.c:142</span></pre>
+
+    <div class="note"><b>Naming convention GnuCOBOL → C:</b> I nomi delle variabili COBOL sono convertiti in nomi C con prefisso <code>b_</code> e trattini sostituiti da underscore. Es: <code>WS-Conta</code> → <code>b_WS_Conta</code>, <code>IDCliente</code> → <code>b_IDCliente</code>. Per trovare il nome esatto: <code>cobc -x -g prog.cob</code> poi <code>grep "WS.Conta" prog.c</code>.</div>
   </div>
 </div>
 
