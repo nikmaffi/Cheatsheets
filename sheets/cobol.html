@@ -549,7 +549,7 @@
       <tr><td><code>COMP-1</code></td><td>—</td><td>Float a singola precisione (32-bit IEEE 754)</td><td>Equivalente a <code>float</code> C</td></tr>
       <tr><td><code>COMP-2</code></td><td>—</td><td>Float a doppia precisione (64-bit IEEE 754)</td><td>Equivalente a <code>double</code> C</td></tr>
       <tr><td><code>COMP-3</code></td><td><code>PACKED-DECIMAL</code></td><td>Decimale compresso (BCD): 2 cifre per byte</td><td>Comune nei mainframe IBM</td></tr>
-      <tr><td><code>COMP-4</code></td><td><code>BINARY</code></td><td>Binario intero puro</td><td>2 o 4 byte secondo PIC</td></tr>
+      <tr><td><code>COMP-4</code></td><td><code>BINARY</code></td><td>Binario intero puro</td><td>2, 4 o 8 byte secondo PIC</td></tr>
       <tr><td><code>COMP-5</code></td><td>—</td><td>Binario nativo (endianness host)</td><td>Usa tutti i bit, non solo quelli definiti in PIC</td></tr>
       <tr><td><code>COMP-6</code></td><td>—</td><td>Packed decimal senza segno</td><td>Come COMP-3 ma unsigned</td></tr>
       <tr><td><code>COMP-X</code></td><td>—</td><td>Dipendente dal compilatore/mainframe</td><td>Vedi sezione dedicata ↓</td></tr>
@@ -1581,7 +1581,7 @@
     <table>
       <tr><th>ORGANIZATION</th><th>Struttura</th><th>Accesso consentito</th><th>Uso tipico</th></tr>
       <tr><td><code>SEQUENTIAL</code></td><td>Record in sequenza binaria (record-length header)</td><td>Solo SEQUENTIAL</td><td>File batch, comunicazione inter-programma</td></tr>
-      <tr><td><code>LINE SEQUENTIAL</code></td><td>Righe di testo delimitale da newline (CR/LF)</td><td>Solo SEQUENTIAL</td><td>File di testo, log, CSV, interfaccia con Unix</td></tr>
+      <tr><td><code>LINE SEQUENTIAL</code></td><td>Righe di testo delimitate da newline (CR/LF)</td><td>Solo SEQUENTIAL</td><td>File di testo, log, CSV, interfaccia con Unix</td></tr>
       <tr><td><code>INDEXED</code></td><td>Record con indice B-tree su una o piu' chiavi</td><td>SEQUENTIAL, RANDOM, DYNAMIC</td><td>Anagrafe, archivi, tabelle di lookup</td></tr>
       <tr><td><code>RELATIVE</code></td><td>Record identificati da numero di posizione (slot)</td><td>SEQUENTIAL, RANDOM, DYNAMIC</td><td>Hash table su disco, buffer circolare</td></tr>
     </table>
