@@ -208,7 +208,7 @@
         <td><b>COBOL-68</b></td>
         <td>1968</td>
         <td>ANSI X3.23-1968</td>
-        <td>Primo standard ANSI ufficiale. Inter-program communication (CALL). INSPECT primitivo. Struttura definita in 3 livelli (nucleo, tabelle, I/O sequenziale).</td>
+        <td>Primo standard ANSI ufficiale. Inter-program communication (CALL). EXAMINE (predecessore di INSPECT). Struttura definita in 3 livelli (nucleo, tabelle, I/O sequenziale).</td>
       </tr>
       <tr>
         <td><b>COBOL-74</b></td>
@@ -550,7 +550,7 @@
       <tr><td><code>COMP-2</code></td><td>—</td><td>Float a doppia precisione (64-bit IEEE 754)</td><td>Equivalente a <code>double</code> C</td></tr>
       <tr><td><code>COMP-3</code></td><td><code>PACKED-DECIMAL</code></td><td>Decimale compresso (BCD): 2 cifre per byte</td><td>Comune nei mainframe IBM</td></tr>
       <tr><td><code>COMP-4</code></td><td><code>BINARY</code></td><td>Binario intero puro</td><td>2 o 4 byte secondo PIC</td></tr>
-      <tr><td><code>COMP-5</code></td><td><code>BINARY-C-LONG</code></td><td>Binario nativo (endianness host)</td><td>Usa tutti i bit, non solo quelli definiti in PIC</td></tr>
+      <tr><td><code>COMP-5</code></td><td>—</td><td>Binario nativo (endianness host)</td><td>Usa tutti i bit, non solo quelli definiti in PIC</td></tr>
       <tr><td><code>COMP-6</code></td><td>—</td><td>Packed decimal senza segno</td><td>Come COMP-3 ma unsigned</td></tr>
       <tr><td><code>COMP-X</code></td><td>—</td><td>Dipendente dal compilatore/mainframe</td><td>Vedi sezione dedicata ↓</td></tr>
       <tr><td><code>POINTER</code></td><td>—</td><td>Puntatore di memoria (4 o 8 byte)</td><td>Per interop C</td></tr>
@@ -573,7 +573,7 @@
 <div class="section">
   <div class="section-header"><span class="icon">◈</span> COMP-X — DETTAGLIO ESTESO</div>
   <div class="section-body">
-    <p>COMP-X è una clausola USAGE specifica di GnuCOBOL e alcuni dialetti (MF, IBM). Il comportamento dipende dal contesto:</p>
+    <p>COMP-X è una clausola USAGE specifica di GnuCOBOL e Micro Focus. Il comportamento dipende dal contesto:</p>
 
     <div class="sub-title">COMP-X con PIC X(n) — Intero unsigned n byte</div>
     <table>
@@ -1071,8 +1071,7 @@
 <span class="kw">INSPECT</span> Str <span class="kw">TALLYING</span>
     Count1 <span class="kw">FOR CHARACTERS</span>
     Count2 <span class="kw">FOR ALL</span> <span class="str">'e'</span>
-    Count3 <span class="kw">FOR LEADING</span> <span class="str">' '</span>
-    Count4 <span class="kw">FOR FIRST</span>   <span class="str">'A'</span>.
+    Count3 <span class="kw">FOR LEADING</span> <span class="str">' '</span>.
 
 <span class="cmt">*> Sostituisce caratteri</span>
 <span class="kw">INSPECT</span> Str <span class="kw">REPLACING</span>
