@@ -709,7 +709,7 @@
     <span class="ins">leaq</span>   <span class="lbl">str1</span>(<span class="reg">%rip</span>), <span class="reg">%rsi</span>
     <span class="ins">leaq</span>   <span class="lbl">str2</span>(<span class="reg">%rip</span>), <span class="reg">%rdi</span>
     <span class="ins">repe cmpsb</span>                <span class="cmt"># Confronta finch&eacute; uguali</span>
-    <span class="cmt"># ZF=1 se tutte uguali, altrimenti AL contiene la differenza</span></pre>
+    <span class="cmt"># ZF=1 se tutte uguali; se diversi, i byte differenti sono a -1(%rsi) e -1(%rdi)</span></pre>
     </div>
 
     <div class="sub">

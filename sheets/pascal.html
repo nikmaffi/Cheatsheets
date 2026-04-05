@@ -586,8 +586,12 @@ x <span class="kw">*=</span> <span class="num">2</span>;        <span class="cmt
 i := <span class="num">42</span>;
 d := i;                         <span class="cmt">{ d = 42.0 }</span>
 
-<span class="cmt">{ Cast esplicito (hard cast) }</span>
-i := <span class="type">Integer</span>(d);               <span class="cmt">{ tronca la parte decimale }</span>
+<span class="cmt">{ Da Double a Integer (cast diretto non valido: dimensioni diverse) }</span>
+i := <span class="fn">Trunc</span>(d);                  <span class="cmt">{ tronca la parte decimale }</span>
+i := <span class="fn">Round</span>(d);                  <span class="cmt">{ arrotonda (banker's rounding) }</span>
+
+<span class="cmt">{ Cast esplicito (hard cast) — valido solo tra tipi ordinali }</span>
+i := <span class="type">Integer</span>(<span class="str">'A'</span>);             <span class="cmt">{ Char -&gt; Integer: 65 }</span>
 
 <span class="cmt">{ Funzioni di conversione (unit SysUtils) }</span>
 s := <span class="fn">IntToStr</span>(i);              <span class="cmt">{ Integer -&gt; String }</span>

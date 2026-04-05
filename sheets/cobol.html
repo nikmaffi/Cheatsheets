@@ -81,11 +81,11 @@
     <div class="nav-section-title">Dati</div>
     <a href="#s-picture">PIC / PICTURE</a>
     <a href="#s-levels">Level Numbers</a>
-    <a href="#s-constants">Costanti & Figurative</a>
+    <a href="#s-constants">Costanti &amp; Figurative</a>
     <a href="#s-comp">COMP / USAGE Clause</a>
     <a href="#s-compx">COMP-X Dettaglio</a>
     <a href="#s-edited">Edited Pictures</a>
-    <a href="#s-redefines">REDEFINES & FILLER</a>
+    <a href="#s-redefines">REDEFINES &amp; FILLER</a>
     <a href="#s-level88">Level 88 / Condition Names</a>
     <a href="#s-local-storage">LOCAL-STORAGE Section</a>
   </div>
@@ -974,7 +974,7 @@
 <span class="cmt">*> Codice ignorato (non esiste in RecordB)</span>
 <span class="cmt">*> Indirizzo non toccato (non esiste in RecordA)</span>
 <span class="cmt">*> FILLER ignorato sempre da MOVE CORRESPONDING</span></pre>
-        <div class="warn">MOVE CORRESPONDING confronta solo i nomi al primo livello subordinato. Non funziona ricorsivamente su strutture annidate nello standard COBOL-85. COBOL 2002+ permette il confronto ricorsivo con stesse regole.</div>
+        <div class="warn">MOVE CORRESPONDING confronta i nomi degli item elementari subordinati a tutti i livelli della gerarchia (non solo al primo livello). I campi vengono matchati se hanno lo stesso nome e la stessa struttura di qualificatori. FILLER e campi con REDEFINES sono sempre ignorati.</div>
       </div>
     </div>
   </div>
