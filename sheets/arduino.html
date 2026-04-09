@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARDUINO CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #020a0f;
+    --bg2:       #061218;
+    --panel:     #081a24;
+    --panel2:    #0a1e2a;
+    --border:    #0e3048;
+    --border2:   #1a5070;
+    --glow:      #00979C;
+    --glow2:     #33cccc;
+    --dim:       #0a4a52;
+    --text:      #88b8c8;
+    --text2:     #a8d0e0;
+    --bright:    #aaeeff;
+    --accent:    #00979C;
+    --accent2:   #44cccc;
+    --key:       #007080;
+    --kw:        #55cccc;
+    --str:       #ddaa55;
+    --num:       #ff8866;
+    --cmt:       #2a5560;
+    --lbl:       #44cccc;
+    --head:      #aaeeff;
+    --hr:        #0a2838;
+    --scan:      rgba(0,151,156,0.035);
+    --hd:        #33bbcc;
+    --glow-dim:  #003b40;
+    --sidebar-w:         240px;
+    --vignette:          rgba(0,8,14,0.75);
+    --header-top:        #081c28;
+    --header-shadow:     rgba(0,151,156,0.5);
+    --sidebar-hover-bg:  rgba(0,151,156,0.12);
+    --section-shadow:    rgba(0,100,120,0.5);
+    --section-header-bg: var(--glow);
+    --th-bg:             rgba(0,80,100,0.45);
+    --tr-even-bg:        rgba(0,50,70,0.3);
+    --tr-hover-bg:       rgba(0,80,100,0.15);
+    --note-bg:           rgba(0,80,100,0.2);
+    --warn-bg:           rgba(120,60,0,0.25);
+    --warn-brd:          #cc6600;
+    --warn-txt:          #ffbb88;
+  }
+
+  .hd  { color: var(--hd); font-weight:bold; }
+  .bright { color: var(--bright); }
+  .acc { color: var(--accent); }
+
+  code {
+    background: rgba(0,60,80,0.4);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 1px;
+    font-size: 11.5px;
+    color: var(--accent2);
+  }
+
+  .reg { color: #ff8866; }
+  .bit { color: #ddaa55; }
+  .pin { color: #44cccc; }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─────────────────────────────────────────────────── -->
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; ARDUINO REFERENCE MANUAL <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>Arduino (AVR ATmega328P)</span> &mdash; v1.0</div>
+</div>
+
+<div id="layout">
+
+<!-- ─── SIDEBAR ────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-intro">Introduzione</a>
+    <a href="#s-structure">Struttura Sketch</a>
+    <a href="#s-types">Tipi di Dato</a>
+    <a href="#s-digital">Digital I/O</a>
+    <a href="#s-analog">Analog I/O</a>
+    <a href="#s-time">Temporizzazione</a>
+    <a href="#s-serial">Comunicazione Seriale</a>
+    <a href="#s-math">Matematica</a>
+    <a href="#s-random">Random</a>
+    <a href="#s-bits">Operazioni Bit</a>
+    <a href="#s-interrupts">Interrupt</a>
+    <a href="#s-eeprom">EEPROM</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Librerie Built-in</div>
+    <a href="#s-wire">Wire (I2C)</a>
+    <a href="#s-spi">SPI</a>
+    <a href="#s-servo">Servo</a>
+    <a href="#s-stepper">Stepper</a>
+    <a href="#s-lcd">LiquidCrystal</a>
+    <a href="#s-sd">SD / File</a>
+    <a href="#s-softserial">SoftwareSerial</a>
+    <a href="#s-ethernet">Ethernet</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Registri AVR</div>
+    <a href="#s-reg-intro">Intro Registri</a>
+    <a href="#s-reg-gpio">GPIO (DDRx/PORTx/PINx)</a>
+    <a href="#s-reg-timer">Timer/Counter</a>
+    <a href="#s-reg-pwm">PWM via Timer</a>
+    <a href="#s-reg-adc">ADC</a>
+    <a href="#s-reg-usart">USART</a>
+    <a href="#s-reg-int">Interrupt Esterni</a>
+    <a href="#s-reg-spi">SPI Registri</a>
+    <a href="#s-reg-twi">TWI (I2C) Registri</a>
+    <a href="#s-reg-eeprom">EEPROM Registri</a>
+    <a href="#s-reg-wdt">Watchdog Timer</a>
+    <a href="#s-reg-sleep">Sleep Modes</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Best Practice</div>
+    <a href="#s-bp-general">Generali</a>
+    <a href="#s-bp-memory">Memoria</a>
+    <a href="#s-bp-timing">Timing</a>
+    <a href="#s-bp-hw">Hardware</a>
+    <a href="#s-bp-debug">Debug</a>
+  </div>
+</nav>
+
+<!-- ─── MAIN ────────────────────────────────────────────────────── -->
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════════
+     INTRODUZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-intro"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INTRODUZIONE</div>
+  <div class="section-body">
+    <p>Arduino &egrave; una piattaforma open-source basata su microcontrollori AVR (principalmente ATmega328P per Arduino Uno).
+       Lo sviluppo avviene tramite l'IDE Arduino, che fornisce un ambiente C/C++ semplificato con
+       funzioni wrapper per I/O, comunicazioni e temporizzazione.</p>
+
+    <table>
+      <tr><th>Caratteristica</th><th>Arduino Uno (ATmega328P)</th></tr>
+      <tr><td>Clock</td><td>16 MHz</td></tr>
+      <tr><td>Flash</td><td>32 KB (0.5 KB bootloader)</td></tr>
+      <tr><td>SRAM</td><td>2 KB</td></tr>
+      <tr><td>EEPROM</td><td>1 KB</td></tr>
+      <tr><td>Digital I/O</td><td>14 pin (6 PWM)</td></tr>
+      <tr><td>Analog In</td><td>6 pin (ADC 10-bit)</td></tr>
+      <tr><td>Tensione operativa</td><td>5V</td></tr>
+      <tr><td>Corrente per pin I/O</td><td>20 mA (max 40 mA)</td></tr>
+    </table>
+
+    <div class="note">Il linguaggio Arduino &egrave; C/C++ con un preprocessore che aggiunge automaticamente <code>#include &lt;Arduino.h&gt;</code> e prototipi di funzione.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STRUTTURA SKETCH
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-structure"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> STRUTTURA SKETCH</div>
+  <div class="section-body">
+<pre>
+<span class="cmt">// Le variabili globali sono dichiarate qui</span>
+<span class="kw">int</span> led = <span class="num">13</span>;
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  <span class="cmt">// Eseguita UNA SOLA volta all'avvio</span>
+  pinMode(led, OUTPUT);
+  Serial.begin(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="cmt">// Eseguita in loop continuo</span>
+  digitalWrite(led, HIGH);
+  delay(<span class="num">1000</span>);
+  digitalWrite(led, LOW);
+  delay(<span class="num">1000</span>);
+}
+</pre>
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>setup()</code></td><td>Inizializzazione: eseguita una volta dopo power-on o reset</td></tr>
+      <tr><td><code>loop()</code></td><td>Ciclo principale: eseguita ripetutamente dopo <code>setup()</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TIPI DI DATO
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-types"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TIPI DI DATO</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Tipo</th><th>Dim.</th><th>Range</th></tr>
+      <tr><td><code>boolean</code></td><td>1 byte</td><td><code>true</code> / <code>false</code></td></tr>
+      <tr><td><code>byte</code></td><td>1 byte</td><td>0 &ndash; 255</td></tr>
+      <tr><td><code>char</code></td><td>1 byte</td><td>-128 &ndash; 127</td></tr>
+      <tr><td><code>unsigned char</code></td><td>1 byte</td><td>0 &ndash; 255</td></tr>
+      <tr><td><code>int</code></td><td>2 byte</td><td>-32768 &ndash; 32767</td></tr>
+      <tr><td><code>unsigned int</code></td><td>2 byte</td><td>0 &ndash; 65535</td></tr>
+      <tr><td><code>word</code></td><td>2 byte</td><td>0 &ndash; 65535</td></tr>
+      <tr><td><code>long</code></td><td>4 byte</td><td>-2.147.483.648 &ndash; 2.147.483.647</td></tr>
+      <tr><td><code>unsigned long</code></td><td>4 byte</td><td>0 &ndash; 4.294.967.295</td></tr>
+      <tr><td><code>float</code></td><td>4 byte</td><td>&plusmn;3.4028235E+38 (6-7 cifre decimali)</td></tr>
+      <tr><td><code>double</code></td><td>4 byte</td><td>Identico a <code>float</code> su AVR</td></tr>
+      <tr><td><code>String</code></td><td>variabile</td><td>Oggetto stringa (heap)</td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">Qualificatori</div>
+      <table>
+        <tr><th>Qualificatore</th><th>Descrizione</th></tr>
+        <tr><td><code>const</code></td><td>Valore costante (preferire a <code>#define</code>)</td></tr>
+        <tr><td><code>volatile</code></td><td>Variabile modificata in ISR &mdash; evita ottimizzazioni del compilatore</td></tr>
+        <tr><td><code>static</code></td><td>Variabile locale persistente fra chiamate</td></tr>
+        <tr><td><code>PROGMEM</code></td><td>Salva dati in Flash anziché in SRAM</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="cmt">// PROGMEM: dati costanti in Flash</span>
+<span class="kw">const char</span> msg[] <span class="kw">PROGMEM</span> = <span class="str">"Hello from Flash"</span>;
+<span class="kw">char</span> buf[<span class="num">20</span>];
+strcpy_P(buf, msg);  <span class="cmt">// Copia da Flash a SRAM</span>
+
+<span class="cmt">// F() macro: stringhe direttamente da Flash</span>
+Serial.println(<span class="kw">F</span>(<span class="str">"Salva SRAM!"</span>));
+</pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     DIGITAL I/O
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-digital"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DIGITAL I/O</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>pinMode(pin, mode)</code></td><td>Configura il pin: <code>INPUT</code>, <code>OUTPUT</code>, <code>INPUT_PULLUP</code></td></tr>
+      <tr><td><code>digitalWrite(pin, val)</code></td><td>Scrive <code>HIGH</code> o <code>LOW</code> su pin digitale</td></tr>
+      <tr><td><code>digitalRead(pin)</code></td><td>Legge stato pin: ritorna <code>HIGH</code> o <code>LOW</code></td></tr>
+    </table>
+
+<pre>
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(<span class="num">13</span>, OUTPUT);       <span class="cmt">// LED builtin</span>
+  pinMode(<span class="num">2</span>, INPUT_PULLUP);  <span class="cmt">// Pulsante con pull-up interno</span>
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">int</span> stato = digitalRead(<span class="num">2</span>);
+  digitalWrite(<span class="num">13</span>, !stato);   <span class="cmt">// INPUT_PULLUP: LOW = premuto</span>
+}
+</pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ANALOG I/O
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-analog"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ANALOG I/O</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>analogRead(pin)</code></td><td>Legge valore analogico (0&ndash;1023, ADC 10 bit)</td></tr>
+      <tr><td><code>analogWrite(pin, val)</code></td><td>PWM: valore 0&ndash;255 (solo pin PWM: 3, 5, 6, 9, 10, 11)</td></tr>
+      <tr><td><code>analogReference(type)</code></td><td>Imposta riferimento: <code>DEFAULT</code> (5V), <code>INTERNAL</code> (1.1V), <code>EXTERNAL</code></td></tr>
+    </table>
+
+<pre>
+<span class="kw">int</span> sensorValue = analogRead(A0);           <span class="cmt">// 0-1023</span>
+<span class="kw">float</span> voltage = sensorValue * (<span class="num">5.0</span> / <span class="num">1023.0</span>); <span class="cmt">// Conversione in Volt</span>
+
+analogWrite(<span class="num">9</span>, <span class="num">128</span>);  <span class="cmt">// PWM 50% duty cycle sul pin 9</span>
+</pre>
+
+    <div class="note">I pin analogici (A0&ndash;A5) possono essere usati anche come pin digitali (14&ndash;19).</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TEMPORIZZAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-time"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TEMPORIZZAZIONE</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>millis()</code></td><td>Millisecondi dall'avvio (overflow dopo ~49.7 giorni, <code>unsigned long</code>)</td></tr>
+      <tr><td><code>micros()</code></td><td>Microsecondi dall'avvio (overflow dopo ~70 minuti, risoluzione 4 &micro;s)</td></tr>
+      <tr><td><code>delay(ms)</code></td><td>Pausa bloccante in millisecondi</td></tr>
+      <tr><td><code>delayMicroseconds(us)</code></td><td>Pausa bloccante in microsecondi (max ~16383)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Pattern NON BLOCCANTE con millis()</span>
+<span class="kw">unsigned long</span> previousMillis = <span class="num">0</span>;
+<span class="kw">const long</span> interval = <span class="num">1000</span>;
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">unsigned long</span> currentMillis = millis();
+  <span class="kw">if</span> (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    <span class="cmt">// azione periodica ogni 1 secondo</span>
+    digitalWrite(<span class="num">13</span>, !digitalRead(<span class="num">13</span>));
+  }
+  <span class="cmt">// altro codice eseguito senza blocco</span>
+}
+</pre>
+
+    <div class="warn">Evitare <code>delay()</code> nel loop principale: blocca l'esecuzione e impedisce la gestione di eventi.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     COMUNICAZIONE SERIALE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-serial"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> COMUNICAZIONE SERIALE</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>Serial.begin(baud)</code></td><td>Inizializza UART (9600, 19200, 38400, 57600, 115200 ...)</td></tr>
+      <tr><td><code>Serial.print(val)</code></td><td>Stampa valore (testo, numero)</td></tr>
+      <tr><td><code>Serial.println(val)</code></td><td>Stampa con newline</td></tr>
+      <tr><td><code>Serial.print(val, fmt)</code></td><td>Formato: <code>BIN</code>, <code>OCT</code>, <code>DEC</code>, <code>HEX</code>, o cifre decimali</td></tr>
+      <tr><td><code>Serial.write(byte)</code></td><td>Invia un byte raw</td></tr>
+      <tr><td><code>Serial.write(buf, len)</code></td><td>Invia buffer di byte</td></tr>
+      <tr><td><code>Serial.available()</code></td><td>Byte disponibili nel buffer RX</td></tr>
+      <tr><td><code>Serial.read()</code></td><td>Legge un byte (-1 se vuoto)</td></tr>
+      <tr><td><code>Serial.peek()</code></td><td>Legge senza rimuovere dal buffer</td></tr>
+      <tr><td><code>Serial.readString()</code></td><td>Legge fino a timeout come <code>String</code></td></tr>
+      <tr><td><code>Serial.readStringUntil(ch)</code></td><td>Legge fino al carattere delimitatore</td></tr>
+      <tr><td><code>Serial.parseInt()</code></td><td>Legge e parsa un intero dal buffer</td></tr>
+      <tr><td><code>Serial.parseFloat()</code></td><td>Legge e parsa un float dal buffer</td></tr>
+      <tr><td><code>Serial.setTimeout(ms)</code></td><td>Imposta timeout per funzioni di lettura (default 1000 ms)</td></tr>
+      <tr><td><code>Serial.flush()</code></td><td>Attende completamento trasmissione TX</td></tr>
+      <tr><td><code>Serial.end()</code></td><td>Chiude la comunicazione seriale</td></tr>
+    </table>
+
+<pre>
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  Serial.begin(<span class="num">9600</span>);
+  <span class="kw">while</span> (!Serial);  <span class="cmt">// Attendi connessione (solo Leonardo/Micro)</span>
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">if</span> (Serial.available() > <span class="num">0</span>) {
+    <span class="kw">char</span> c = Serial.read();
+    Serial.print(<span class="str">"Ricevuto: "</span>);
+    Serial.println(c);
+  }
+}
+</pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     MATEMATICA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-math"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> FUNZIONI MATEMATICHE</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>min(a, b)</code></td><td>Minimo tra due valori</td></tr>
+      <tr><td><code>max(a, b)</code></td><td>Massimo tra due valori</td></tr>
+      <tr><td><code>abs(x)</code></td><td>Valore assoluto</td></tr>
+      <tr><td><code>constrain(x, lo, hi)</code></td><td>Limita x nell'intervallo [lo, hi]</td></tr>
+      <tr><td><code>map(val, fromLo, fromHi, toLo, toHi)</code></td><td>Rimappa un valore da un range a un altro (intera)</td></tr>
+      <tr><td><code>pow(base, exp)</code></td><td>Potenza (float)</td></tr>
+      <tr><td><code>sqrt(x)</code></td><td>Radice quadrata (float)</td></tr>
+      <tr><td><code>sq(x)</code></td><td>Quadrato: x*x</td></tr>
+      <tr><td><code>sin(rad)</code> / <code>cos(rad)</code> / <code>tan(rad)</code></td><td>Funzioni trigonometriche (float, radianti)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// map(): rimappare lettura ADC a range PWM</span>
+<span class="kw">int</span> sensor = analogRead(A0);                      <span class="cmt">// 0-1023</span>
+<span class="kw">int</span> pwmVal = map(sensor, <span class="num">0</span>, <span class="num">1023</span>, <span class="num">0</span>, <span class="num">255</span>);       <span class="cmt">// 0-255</span>
+<span class="kw">int</span> clamped = constrain(pwmVal, <span class="num">10</span>, <span class="num">245</span>);          <span class="cmt">// Limita range</span>
+analogWrite(<span class="num">9</span>, clamped);
+</pre>
+
+    <div class="warn"><code>map()</code> usa aritmetica intera: <code>map(1, 0, 10, 0, 3)</code> restituisce 0, non 0.3. Per mappatura float, usare calcolo manuale.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     RANDOM
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-random"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RANDOM</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>randomSeed(seed)</code></td><td>Inizializza il generatore pseudo-random</td></tr>
+      <tr><td><code>random(max)</code></td><td>Ritorna long casuale in [0, max)</td></tr>
+      <tr><td><code>random(min, max)</code></td><td>Ritorna long casuale in [min, max)</td></tr>
+    </table>
+
+<pre>
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  randomSeed(analogRead(<span class="num">0</span>));  <span class="cmt">// Seed da pin flottante (rumore)</span>
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">long</span> r = random(<span class="num">1</span>, <span class="num">7</span>);  <span class="cmt">// Simula dado: 1-6</span>
+}
+</pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     OPERAZIONI BIT
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bits"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> OPERAZIONI BIT</div>
+  <div class="section-body">
+    <div class="sub">
+      <div class="sub-title">Operatori Bitwise</div>
+      <table>
+        <tr><th>Operatore</th><th>Descrizione</th><th>Esempio</th></tr>
+        <tr><td><code>&amp;</code></td><td>AND</td><td><code>0b1100 &amp; 0b1010 = 0b1000</code></td></tr>
+        <tr><td><code>|</code></td><td>OR</td><td><code>0b1100 | 0b1010 = 0b1110</code></td></tr>
+        <tr><td><code>^</code></td><td>XOR</td><td><code>0b1100 ^ 0b1010 = 0b0110</code></td></tr>
+        <tr><td><code>~</code></td><td>NOT</td><td><code>~0b1100 = 0b0011</code> (su 4 bit)</td></tr>
+        <tr><td><code>&lt;&lt;</code></td><td>Shift Left</td><td><code>1 &lt;&lt; 3 = 0b1000 = 8</code></td></tr>
+        <tr><td><code>&gt;&gt;</code></td><td>Shift Right</td><td><code>8 &gt;&gt; 2 = 0b0010 = 2</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Funzioni Bit Arduino</div>
+      <table>
+        <tr><th>Funzione</th><th>Descrizione</th></tr>
+        <tr><td><code>bitRead(val, bit)</code></td><td>Legge il bit n-esimo</td></tr>
+        <tr><td><code>bitWrite(val, bit, bval)</code></td><td>Scrive 0/1 nel bit n-esimo</td></tr>
+        <tr><td><code>bitSet(val, bit)</code></td><td>Imposta bit a 1</td></tr>
+        <tr><td><code>bitClear(val, bit)</code></td><td>Imposta bit a 0</td></tr>
+        <tr><td><code>bit(n)</code></td><td>Equivale a <code>1 &lt;&lt; n</code></td></tr>
+        <tr><td><code>lowByte(val)</code></td><td>Byte basso di una word</td></tr>
+        <tr><td><code>highByte(val)</code></td><td>Byte alto di una word</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     INTERRUPT
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-interrupts"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INTERRUPT</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>attachInterrupt(digitalPinToInterrupt(pin), ISR, mode)</code></td><td>Collega interrupt a funzione</td></tr>
+      <tr><td><code>detachInterrupt(digitalPinToInterrupt(pin))</code></td><td>Scollega interrupt</td></tr>
+      <tr><td><code>interrupts()</code></td><td>Riabilita interrupt globali (<code>sei()</code>)</td></tr>
+      <tr><td><code>noInterrupts()</code></td><td>Disabilita interrupt globali (<code>cli()</code>)</td></tr>
+    </table>
+
+    <table>
+      <tr><th>Mode</th><th>Trigger</th></tr>
+      <tr><td><code>LOW</code></td><td>Quando il pin &egrave; LOW</td></tr>
+      <tr><td><code>CHANGE</code></td><td>Cambio di stato</td></tr>
+      <tr><td><code>RISING</code></td><td>Fronte di salita (LOW &rarr; HIGH)</td></tr>
+      <tr><td><code>FALLING</code></td><td>Fronte di discesa (HIGH &rarr; LOW)</td></tr>
+    </table>
+
+    <div class="note">Arduino Uno: interrupt esterni solo su pin 2 (INT0) e pin 3 (INT1).</div>
+
+<pre>
+<span class="kw">volatile bool</span> pressed = <span class="kw">false</span>;
+
+<span class="kw">void</span> <span class="hd">buttonISR</span>() {
+  pressed = <span class="kw">true</span>;  <span class="cmt">// ISR: breve e veloce!</span>
+}
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(<span class="num">2</span>, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(<span class="num">2</span>), buttonISR, FALLING);
+  Serial.begin(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">if</span> (pressed) {
+    pressed = <span class="kw">false</span>;
+    Serial.println(<span class="str">"Premuto!"</span>);
+  }
+}
+</pre>
+
+    <div class="warn">Nelle ISR: non usare <code>delay()</code>, <code>millis()</code> non avanza, <code>Serial</code> inaffidabile. Le variabili condivise devono essere <code>volatile</code>.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     EEPROM
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-eeprom"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> EEPROM</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;EEPROM.h&gt;</span>
+</pre>
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>EEPROM.read(addr)</code></td><td>Legge un byte dall'indirizzo</td></tr>
+      <tr><td><code>EEPROM.write(addr, val)</code></td><td>Scrive un byte (consuma un ciclo di scrittura)</td></tr>
+      <tr><td><code>EEPROM.update(addr, val)</code></td><td>Scrive solo se diverso (risparmia cicli)</td></tr>
+      <tr><td><code>EEPROM.get(addr, var)</code></td><td>Legge qualsiasi tipo (struct, float, ecc.)</td></tr>
+      <tr><td><code>EEPROM.put(addr, var)</code></td><td>Scrive qualsiasi tipo (con update interno)</td></tr>
+      <tr><td><code>EEPROM.length()</code></td><td>Dimensione EEPROM in byte (1024 su Uno)</td></tr>
+      <tr><td><code>EEPROM[addr]</code></td><td>Accesso con operatore [] (lettura/scrittura)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Salvare e leggere una struct</span>
+<span class="kw">struct</span> Config {
+  <span class="kw">int</span> threshold;
+  <span class="kw">float</span> calibration;
+  <span class="kw">byte</span> mode;
+};
+
+Config cfg = {<span class="num">512</span>, <span class="num">1.05</span>, <span class="num">2</span>};
+EEPROM.put(<span class="num">0</span>, cfg);        <span class="cmt">// Salva in EEPROM</span>
+
+Config loaded;
+EEPROM.get(<span class="num">0</span>, loaded);     <span class="cmt">// Rileggi da EEPROM</span>
+</pre>
+
+    <div class="warn">EEPROM: ~100.000 cicli di scrittura per cella. Usare <code>update()</code>/<code>put()</code> invece di <code>write()</code> per preservare la durata.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     LIBRERIE BUILT-IN
+     ════════════════════════════════════════════════════════════════ -->
+
+<!-- ─── WIRE (I2C) ────────────────────────────────────────────── -->
+<a class="anchor" id="s-wire"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> WIRE (I2C)</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+</pre>
+    <p>Bus I2C (TWI): SDA = pin A4, SCL = pin A5 su Arduino Uno. Velocit&agrave; standard: 100 kHz.</p>
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>Wire.begin()</code></td><td>Inizializza come master</td></tr>
+      <tr><td><code>Wire.begin(addr)</code></td><td>Inizializza come slave con indirizzo 7-bit</td></tr>
+      <tr><td><code>Wire.setClock(freq)</code></td><td>Imposta frequenza clock (100000 o 400000)</td></tr>
+      <tr><td><code>Wire.beginTransmission(addr)</code></td><td>Inizia trasmissione verso slave</td></tr>
+      <tr><td><code>Wire.write(val)</code></td><td>Accoda byte/dati nel buffer TX</td></tr>
+      <tr><td><code>Wire.write(buf, len)</code></td><td>Accoda buffer di byte</td></tr>
+      <tr><td><code>Wire.endTransmission()</code></td><td>Invia dati e rilascia bus (ritorna stato errore)</td></tr>
+      <tr><td><code>Wire.requestFrom(addr, qty)</code></td><td>Richiede byte da slave</td></tr>
+      <tr><td><code>Wire.available()</code></td><td>Byte disponibili nel buffer RX</td></tr>
+      <tr><td><code>Wire.read()</code></td><td>Legge un byte dal buffer RX</td></tr>
+      <tr><td><code>Wire.onReceive(handler)</code></td><td>Callback slave: dati ricevuti</td></tr>
+      <tr><td><code>Wire.onRequest(handler)</code></td><td>Callback slave: master richiede dati</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Master: scrive e legge da dispositivo I2C</span>
+Wire.begin();
+Wire.beginTransmission(<span class="num">0x68</span>);  <span class="cmt">// Indirizzo MPU-6050</span>
+Wire.write(<span class="num">0x3B</span>);              <span class="cmt">// Registro ACCEL_XOUT_H</span>
+Wire.endTransmission(<span class="kw">false</span>);   <span class="cmt">// Repeated start</span>
+Wire.requestFrom(<span class="num">0x68</span>, <span class="num">6</span>);     <span class="cmt">// Leggi 6 byte</span>
+<span class="kw">while</span> (Wire.available()) {
+  <span class="kw">byte</span> b = Wire.read();
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── SPI ───────────────────────────────────────────────────── -->
+<a class="anchor" id="s-spi"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SPI</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;SPI.h&gt;</span>
+</pre>
+    <p>SPI su Uno: MOSI = pin 11, MISO = pin 12, SCK = pin 13, SS = pin 10.</p>
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>SPI.begin()</code></td><td>Inizializza SPI come master</td></tr>
+      <tr><td><code>SPI.end()</code></td><td>Disabilita SPI</td></tr>
+      <tr><td><code>SPI.beginTransaction(settings)</code></td><td>Configura e avvia transazione</td></tr>
+      <tr><td><code>SPI.endTransaction()</code></td><td>Termina transazione</td></tr>
+      <tr><td><code>SPI.transfer(val)</code></td><td>Invia e riceve un byte</td></tr>
+      <tr><td><code>SPI.transfer(buf, len)</code></td><td>Trasferisce buffer in-place</td></tr>
+      <tr><td><code>SPISettings(clock, order, mode)</code></td><td>Parametri: clock Hz, MSBFIRST/LSBFIRST, SPI_MODE0-3</td></tr>
+    </table>
+
+<pre>
+SPI.begin();
+pinMode(<span class="num">10</span>, OUTPUT);  <span class="cmt">// Chip Select</span>
+
+SPI.beginTransaction(SPISettings(<span class="num">1000000</span>, MSBFIRST, SPI_MODE0));
+digitalWrite(<span class="num">10</span>, LOW);         <span class="cmt">// Seleziona slave</span>
+<span class="kw">byte</span> result = SPI.transfer(<span class="num">0x42</span>);
+digitalWrite(<span class="num">10</span>, HIGH);        <span class="cmt">// Deseleziona slave</span>
+SPI.endTransaction();
+</pre>
+
+    <table>
+      <tr><th>Modo SPI</th><th>CPOL</th><th>CPHA</th><th>Descrizione</th></tr>
+      <tr><td><code>SPI_MODE0</code></td><td>0</td><td>0</td><td>Clock idle LOW, campionamento fronte salita</td></tr>
+      <tr><td><code>SPI_MODE1</code></td><td>0</td><td>1</td><td>Clock idle LOW, campionamento fronte discesa</td></tr>
+      <tr><td><code>SPI_MODE2</code></td><td>1</td><td>0</td><td>Clock idle HIGH, campionamento fronte discesa</td></tr>
+      <tr><td><code>SPI_MODE3</code></td><td>1</td><td>1</td><td>Clock idle HIGH, campionamento fronte salita</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ─── SERVO ─────────────────────────────────────────────────── -->
+<a class="anchor" id="s-servo"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SERVO</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;Servo.h&gt;</span>
+</pre>
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>Servo myservo</code></td><td>Crea oggetto servo</td></tr>
+      <tr><td><code>myservo.attach(pin)</code></td><td>Collega servo al pin</td></tr>
+      <tr><td><code>myservo.attach(pin, min, max)</code></td><td>Collega con pulse min/max in &micro;s (default 544, 2400)</td></tr>
+      <tr><td><code>myservo.write(angle)</code></td><td>Imposta angolo (0&ndash;180&deg;)</td></tr>
+      <tr><td><code>myservo.writeMicroseconds(us)</code></td><td>Imposta pulse diretto in &micro;s</td></tr>
+      <tr><td><code>myservo.read()</code></td><td>Ultimo angolo impostato</td></tr>
+      <tr><td><code>myservo.attached()</code></td><td>Verifica se collegato</td></tr>
+      <tr><td><code>myservo.detach()</code></td><td>Scollega (libera il pin)</td></tr>
+    </table>
+
+    <div class="note">La libreria Servo disabilita PWM su pin 9 e 10 (usa Timer1). Supporta fino a 12 servo su Uno.</div>
+
+<pre>
+Servo myservo;
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  myservo.attach(<span class="num">9</span>);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">for</span> (<span class="kw">int</span> pos = <span class="num">0</span>; pos <= <span class="num">180</span>; pos++) {
+    myservo.write(pos);
+    delay(<span class="num">15</span>);
+  }
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── STEPPER ────────────────────────────────────────────────── -->
+<a class="anchor" id="s-stepper"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> STEPPER</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;Stepper.h&gt;</span>
+</pre>
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>Stepper stepper(steps, p1, p2)</code></td><td>2 pin (driver con step/dir)</td></tr>
+      <tr><td><code>Stepper stepper(steps, p1, p2, p3, p4)</code></td><td>4 pin (motore unipolare/bipolare diretto)</td></tr>
+      <tr><td><code>stepper.setSpeed(rpm)</code></td><td>Imposta velocit&agrave; in RPM</td></tr>
+      <tr><td><code>stepper.step(steps)</code></td><td>Ruota di N step (bloccante, negativo = inverso)</td></tr>
+    </table>
+
+<pre>
+Stepper myStepper(<span class="num">200</span>, <span class="num">8</span>, <span class="num">9</span>, <span class="num">10</span>, <span class="num">11</span>);  <span class="cmt">// 200 step/giro, 4 pin</span>
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  myStepper.setSpeed(<span class="num">60</span>);  <span class="cmt">// 60 RPM</span>
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  myStepper.step(<span class="num">200</span>);     <span class="cmt">// 1 giro completo</span>
+  delay(<span class="num">500</span>);
+  myStepper.step(-<span class="num">200</span>);   <span class="cmt">// 1 giro inverso</span>
+  delay(<span class="num">500</span>);
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── LIQUIDCRYSTAL ─────────────────────────────────────────── -->
+<a class="anchor" id="s-lcd"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LIQUIDCRYSTAL (LCD)</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;LiquidCrystal.h&gt;</span>
+</pre>
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>LiquidCrystal lcd(rs, en, d4, d5, d6, d7)</code></td><td>Costruttore (modalit&agrave; 4-bit)</td></tr>
+      <tr><td><code>lcd.begin(cols, rows)</code></td><td>Inizializza display (es. 16, 2)</td></tr>
+      <tr><td><code>lcd.print(val)</code></td><td>Stampa testo/numero</td></tr>
+      <tr><td><code>lcd.setCursor(col, row)</code></td><td>Posiziona cursore (0-indexed)</td></tr>
+      <tr><td><code>lcd.clear()</code></td><td>Cancella display e cursore a (0,0)</td></tr>
+      <tr><td><code>lcd.home()</code></td><td>Cursore a (0,0) senza cancellare</td></tr>
+      <tr><td><code>lcd.display()</code> / <code>noDisplay()</code></td><td>Accende/spegne display</td></tr>
+      <tr><td><code>lcd.cursor()</code> / <code>noCursor()</code></td><td>Mostra/nasconde cursore</td></tr>
+      <tr><td><code>lcd.blink()</code> / <code>noBlink()</code></td><td>Abilita/disabilita lampeggio cursore</td></tr>
+      <tr><td><code>lcd.scrollDisplayLeft()</code></td><td>Scorre display a sinistra</td></tr>
+      <tr><td><code>lcd.scrollDisplayRight()</code></td><td>Scorre display a destra</td></tr>
+      <tr><td><code>lcd.autoscroll()</code> / <code>noAutoscroll()</code></td><td>Abilita/disabilita scroll automatico</td></tr>
+      <tr><td><code>lcd.createChar(num, data)</code></td><td>Crea carattere custom (num: 0&ndash;7, data: array 8 byte)</td></tr>
+      <tr><td><code>lcd.write(byte)</code></td><td>Scrive carattere (incluso custom)</td></tr>
+    </table>
+
+<pre>
+LiquidCrystal lcd(<span class="num">12</span>, <span class="num">11</span>, <span class="num">5</span>, <span class="num">4</span>, <span class="num">3</span>, <span class="num">2</span>);
+
+<span class="kw">byte</span> heart[<span class="num">8</span>] = {
+  <span class="num">0b00000</span>, <span class="num">0b01010</span>, <span class="num">0b11111</span>, <span class="num">0b11111</span>,
+  <span class="num">0b11111</span>, <span class="num">0b01110</span>, <span class="num">0b00100</span>, <span class="num">0b00000</span>
+};
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  lcd.begin(<span class="num">16</span>, <span class="num">2</span>);
+  lcd.createChar(<span class="num">0</span>, heart);
+  lcd.print(<span class="str">"Hello!"</span>);
+  lcd.setCursor(<span class="num">0</span>, <span class="num">1</span>);
+  lcd.write((<span class="kw">byte</span>)<span class="num">0</span>);  <span class="cmt">// Stampa cuore custom</span>
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── SD ────────────────────────────────────────────────────── -->
+<a class="anchor" id="s-sd"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SD / FILE</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;SD.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;SPI.h&gt;</span>
+</pre>
+    <p>Usa SPI. CS tipicamente su pin 4 (Ethernet Shield) o pin 10.</p>
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>SD.begin(csPin)</code></td><td>Inizializza scheda SD</td></tr>
+      <tr><td><code>SD.exists(filename)</code></td><td>Verifica esistenza file/dir</td></tr>
+      <tr><td><code>SD.mkdir(dirname)</code></td><td>Crea directory</td></tr>
+      <tr><td><code>SD.rmdir(dirname)</code></td><td>Rimuove directory vuota</td></tr>
+      <tr><td><code>SD.remove(filename)</code></td><td>Cancella file</td></tr>
+      <tr><td><code>SD.open(filename, mode)</code></td><td>Apre file: <code>FILE_READ</code> o <code>FILE_WRITE</code></td></tr>
+    </table>
+
+    <table>
+      <tr><th>Metodo File</th><th>Descrizione</th></tr>
+      <tr><td><code>file.print(val)</code> / <code>println(val)</code></td><td>Scrive su file</td></tr>
+      <tr><td><code>file.write(byte)</code></td><td>Scrive byte raw</td></tr>
+      <tr><td><code>file.read()</code></td><td>Legge un byte</td></tr>
+      <tr><td><code>file.available()</code></td><td>Byte disponibili</td></tr>
+      <tr><td><code>file.seek(pos)</code></td><td>Posiziona cursore</td></tr>
+      <tr><td><code>file.position()</code></td><td>Posizione corrente</td></tr>
+      <tr><td><code>file.size()</code></td><td>Dimensione file</td></tr>
+      <tr><td><code>file.close()</code></td><td>Chiude file (flush)</td></tr>
+      <tr><td><code>file.flush()</code></td><td>Forza scrittura su SD</td></tr>
+      <tr><td><code>file.isDirectory()</code></td><td>Verifica se directory</td></tr>
+      <tr><td><code>file.openNextFile()</code></td><td>Prossimo file nella directory</td></tr>
+    </table>
+
+<pre>
+File dataFile = SD.open(<span class="str">"log.txt"</span>, FILE_WRITE);
+<span class="kw">if</span> (dataFile) {
+  dataFile.println(<span class="str">"Temperatura: 23.5"</span>);
+  dataFile.close();
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── SOFTWARESERIAL ────────────────────────────────────────── -->
+<a class="anchor" id="s-softserial"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SOFTWARE SERIAL</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;SoftwareSerial.h&gt;</span>
+</pre>
+    <p>Emula una porta seriale su pin digitali qualsiasi. Utile per moduli GPS, Bluetooth, ecc.</p>
+
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>SoftwareSerial ss(rxPin, txPin)</code></td><td>Crea porta seriale software</td></tr>
+      <tr><td><code>ss.begin(baud)</code></td><td>Inizializza con baud rate</td></tr>
+      <tr><td><code>ss.available()</code></td><td>Byte disponibili nel buffer</td></tr>
+      <tr><td><code>ss.read()</code></td><td>Legge un byte</td></tr>
+      <tr><td><code>ss.print(val)</code> / <code>println(val)</code></td><td>Invia dati</td></tr>
+      <tr><td><code>ss.listen()</code></td><td>Attiva ricezione (una sola SoftwareSerial alla volta)</td></tr>
+      <tr><td><code>ss.isListening()</code></td><td>Verifica se attiva</td></tr>
+    </table>
+
+<pre>
+SoftwareSerial bluetooth(<span class="num">2</span>, <span class="num">3</span>);  <span class="cmt">// RX=2, TX=3</span>
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  Serial.begin(<span class="num">9600</span>);
+  bluetooth.begin(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">if</span> (bluetooth.available())
+    Serial.write(bluetooth.read());
+  <span class="kw">if</span> (Serial.available())
+    bluetooth.write(Serial.read());
+}
+</pre>
+
+    <div class="warn">Limitazioni: max ~57600 baud, un solo RX attivo alla volta, non funziona su tutti i pin (RX richiede pin con PCINT).</div>
+  </div>
+</div>
+
+<!-- ─── ETHERNET ──────────────────────────────────────────────── -->
+<a class="anchor" id="s-ethernet"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ETHERNET</div>
+  <div class="section-body">
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;Ethernet.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;SPI.h&gt;</span>
+</pre>
+    <table>
+      <tr><th>Funzione</th><th>Descrizione</th></tr>
+      <tr><td><code>Ethernet.begin(mac)</code></td><td>Inizializza con DHCP</td></tr>
+      <tr><td><code>Ethernet.begin(mac, ip)</code></td><td>Inizializza con IP statico</td></tr>
+      <tr><td><code>Ethernet.localIP()</code></td><td>Ritorna IP assegnato</td></tr>
+      <tr><td><code>Ethernet.maintain()</code></td><td>Rinnova lease DHCP</td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">EthernetServer (TCP)</div>
+      <table>
+        <tr><th>Funzione</th><th>Descrizione</th></tr>
+        <tr><td><code>EthernetServer server(port)</code></td><td>Crea server sulla porta</td></tr>
+        <tr><td><code>server.begin()</code></td><td>Avvia ascolto</td></tr>
+        <tr><td><code>server.available()</code></td><td>Ritorna client connesso con dati disponibili</td></tr>
+        <tr><td><code>server.print(val)</code></td><td>Invia a tutti i client</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">EthernetClient (TCP)</div>
+      <table>
+        <tr><th>Funzione</th><th>Descrizione</th></tr>
+        <tr><td><code>EthernetClient client</code></td><td>Crea oggetto client</td></tr>
+        <tr><td><code>client.connect(server, port)</code></td><td>Connetti a server</td></tr>
+        <tr><td><code>client.connected()</code></td><td>Verifica connessione</td></tr>
+        <tr><td><code>client.available()</code></td><td>Byte disponibili</td></tr>
+        <tr><td><code>client.read()</code></td><td>Legge un byte</td></tr>
+        <tr><td><code>client.print(val)</code></td><td>Invia dati</td></tr>
+        <tr><td><code>client.stop()</code></td><td>Chiude connessione</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PROGRAMMAZIONE REGISTRI AVR
+     ════════════════════════════════════════════════════════════════ -->
+
+<!-- ─── INTRO REGISTRI ────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-intro"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> REGISTRI AVR &mdash; INTRODUZIONE</div>
+  <div class="section-body">
+    <p>L'ATmega328P espone tutte le periferiche tramite registri I/O mappati in memoria (SFR &mdash; Special Function Registers).
+       Manipolare direttamente i registri &egrave; pi&ugrave; veloce e compatto rispetto alle funzioni Arduino, ma richiede
+       conoscenza dell'hardware.</p>
+
+    <div class="sub">
+      <div class="sub-title">Operazioni Base sui Registri</div>
+      <table>
+        <tr><th>Operazione</th><th>Codice</th><th>Descrizione</th></tr>
+        <tr><td>Set bit</td><td><code>REG |= (1 &lt;&lt; BIT)</code></td><td>Imposta bit a 1</td></tr>
+        <tr><td>Clear bit</td><td><code>REG &amp;= ~(1 &lt;&lt; BIT)</code></td><td>Imposta bit a 0</td></tr>
+        <tr><td>Toggle bit</td><td><code>REG ^= (1 &lt;&lt; BIT)</code></td><td>Inverte il bit</td></tr>
+        <tr><td>Check bit</td><td><code>(REG &gt;&gt; BIT) &amp; 1</code></td><td>Legge valore del bit</td></tr>
+        <tr><td>Set pi&ugrave; bit</td><td><code>REG |= (1&lt;&lt;B1) | (1&lt;&lt;B2)</code></td><td>Imposta pi&ugrave; bit contemporaneamente</td></tr>
+        <tr><td>Clear pi&ugrave; bit</td><td><code>REG &amp;= ~((1&lt;&lt;B1) | (1&lt;&lt;B2))</code></td><td>Azzera pi&ugrave; bit contemporaneamente</td></tr>
+        <tr><td>Macro AVR set</td><td><code>_BV(BIT)</code></td><td>Equivale a <code>(1 &lt;&lt; BIT)</code></td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="cmt">// Equivalenza: digitalWrite(13, HIGH)</span>
+PORTB |= (<span class="num">1</span> &lt;&lt; PB5);   <span class="cmt">// Pin 13 = PB5, circa 2 cicli di clock</span>
+
+<span class="cmt">// Equivalenza: digitalWrite(13, LOW)</span>
+PORTB &amp;= ~(<span class="num">1</span> &lt;&lt; PB5);  <span class="cmt">// ~125ns vs ~6&micro;s di digitalWrite()</span>
+
+<span class="cmt">// Equivalenza: digitalRead(2)</span>
+<span class="kw">if</span> (PIND &amp; (<span class="num">1</span> &lt;&lt; PD2)) { <span class="cmt">/* pin 2 HIGH */</span> }
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Mappa Pin &rarr; Registri (Arduino Uno)</div>
+      <table>
+        <tr><th>Pin Arduino</th><th>Porta</th><th>Bit</th><th>Funzioni Speciali</th></tr>
+        <tr><td>0</td><td>PD0</td><td>PORTD bit 0</td><td>RXD (USART)</td></tr>
+        <tr><td>1</td><td>PD1</td><td>PORTD bit 1</td><td>TXD (USART)</td></tr>
+        <tr><td>2</td><td>PD2</td><td>PORTD bit 2</td><td>INT0 (interrupt esterno)</td></tr>
+        <tr><td>3</td><td>PD3</td><td>PORTD bit 3</td><td>INT1, OC2B (PWM Timer2)</td></tr>
+        <tr><td>4</td><td>PD4</td><td>PORTD bit 4</td><td>T0 (clock esterno Timer0)</td></tr>
+        <tr><td>5</td><td>PD5</td><td>PORTD bit 5</td><td>OC0B (PWM Timer0), T1</td></tr>
+        <tr><td>6</td><td>PD6</td><td>PORTD bit 6</td><td>OC0A (PWM Timer0)</td></tr>
+        <tr><td>7</td><td>PD7</td><td>PORTD bit 7</td><td>&mdash;</td></tr>
+        <tr><td>8</td><td>PB0</td><td>PORTB bit 0</td><td>ICP1 (Input Capture Timer1)</td></tr>
+        <tr><td>9</td><td>PB1</td><td>PORTB bit 1</td><td>OC1A (PWM Timer1)</td></tr>
+        <tr><td>10</td><td>PB2</td><td>PORTB bit 2</td><td>OC1B (PWM Timer1), SS (SPI)</td></tr>
+        <tr><td>11</td><td>PB3</td><td>PORTB bit 3</td><td>OC2A (PWM Timer2), MOSI</td></tr>
+        <tr><td>12</td><td>PB4</td><td>PORTB bit 4</td><td>MISO (SPI)</td></tr>
+        <tr><td>13</td><td>PB5</td><td>PORTB bit 5</td><td>SCK (SPI), LED builtin</td></tr>
+        <tr><td>A0</td><td>PC0</td><td>PORTC bit 0</td><td>ADC0</td></tr>
+        <tr><td>A1</td><td>PC1</td><td>PORTC bit 1</td><td>ADC1</td></tr>
+        <tr><td>A2</td><td>PC2</td><td>PORTC bit 2</td><td>ADC2</td></tr>
+        <tr><td>A3</td><td>PC3</td><td>PORTC bit 3</td><td>ADC3</td></tr>
+        <tr><td>A4</td><td>PC4</td><td>PORTC bit 4</td><td>ADC4, SDA (I2C)</td></tr>
+        <tr><td>A5</td><td>PC5</td><td>PORTC bit 5</td><td>ADC5, SCL (I2C)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── GPIO REGISTRI ─────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-gpio"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> GPIO &mdash; DDRx / PORTx / PINx</div>
+  <div class="section-body">
+    <p>Ogni porta (B, C, D) ha tre registri a 8 bit:</p>
+
+    <table>
+      <tr><th>Registro</th><th>Funzione</th><th>Lettura/Scrittura</th></tr>
+      <tr><td><code>DDRx</code></td><td><b>Data Direction Register</b> &mdash; 0 = Input, 1 = Output</td><td>R/W</td></tr>
+      <tr><td><code>PORTx</code></td><td><b>Output/Pull-up</b> &mdash; se Output: valore pin; se Input: 1 = pull-up attivo</td><td>R/W</td></tr>
+      <tr><td><code>PINx</code></td><td><b>Input</b> &mdash; legge lo stato corrente dei pin; scrittura = toggle PORTx</td><td>R (W=toggle)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Configura TUTTI i pin di PORTD come output</span>
+DDRD = <span class="num">0xFF</span>;         <span class="cmt">// 0b11111111</span>
+
+<span class="cmt">// Pin 13 (PB5) come output</span>
+DDRB |= (<span class="num">1</span> &lt;&lt; DDB5);
+
+<span class="cmt">// Pin 2 (PD2) come input con pull-up</span>
+DDRD &amp;= ~(<span class="num">1</span> &lt;&lt; DDD2);   <span class="cmt">// Input</span>
+PORTD |= (<span class="num">1</span> &lt;&lt; PORTD2); <span class="cmt">// Pull-up attivo</span>
+
+<span class="cmt">// Leggere pin 2</span>
+<span class="kw">if</span> (PIND &amp; (<span class="num">1</span> &lt;&lt; PIND2)) { <span class="cmt">/* HIGH */</span> }
+
+<span class="cmt">// Toggle veloce pin 13 (scrivendo 1 su PINx)</span>
+PINB = (<span class="num">1</span> &lt;&lt; PINB5);  <span class="cmt">// Hardware toggle, 1 ciclo</span>
+
+<span class="cmt">// Scrivere un intero byte su PORTB (pin 8-13)</span>
+PORTB = <span class="num">0b00101100</span>;   <span class="cmt">// Pin 10,11,13 HIGH; altri LOW</span>
+</pre>
+
+    <div class="note">Scrivere un intero registro (es. <code>PORTD = 0xFF</code>) modifica tutti i pin della porta simultaneamente: ideale per LED multipli o bus dati paralleli.</div>
+  </div>
+</div>
+
+<!-- ─── TIMER/COUNTER ─────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-timer"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TIMER / COUNTER</div>
+  <div class="section-body">
+    <p>L'ATmega328P ha 3 timer hardware:</p>
+
+    <table>
+      <tr><th>Timer</th><th>Bit</th><th>Registri</th><th>Pin PWM</th><th>Usato da Arduino</th></tr>
+      <tr><td>Timer0</td><td>8-bit</td><td>TCCR0A/B, TCNT0, OCR0A/B</td><td>5 (OC0B), 6 (OC0A)</td><td><code>millis()</code>, <code>delay()</code>, <code>micros()</code></td></tr>
+      <tr><td>Timer1</td><td>16-bit</td><td>TCCR1A/B/C, TCNT1, OCR1A/B, ICR1</td><td>9 (OC1A), 10 (OC1B)</td><td>Servo library</td></tr>
+      <tr><td>Timer2</td><td>8-bit</td><td>TCCR2A/B, TCNT2, OCR2A/B</td><td>3 (OC2B), 11 (OC2A)</td><td><code>tone()</code></td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">Registri di Controllo TCCRnA / TCCRnB</div>
+      <table>
+        <tr><th>Bit (TCCRnA)</th><th>Nome</th><th>Funzione</th></tr>
+        <tr><td>7:6</td><td>COM0A1:COM0A0</td><td>Compare Match Output A mode</td></tr>
+        <tr><td>5:4</td><td>COM0B1:COM0B0</td><td>Compare Match Output B mode</td></tr>
+        <tr><td>1:0</td><td>WGM01:WGM00</td><td>Waveform Generation Mode (bit bassi)</td></tr>
+      </table>
+      <table>
+        <tr><th>Bit (TCCRnB)</th><th>Nome</th><th>Funzione</th></tr>
+        <tr><td>7</td><td>FOC0A</td><td>Force Output Compare A</td></tr>
+        <tr><td>6</td><td>FOC0B</td><td>Force Output Compare B</td></tr>
+        <tr><td>3</td><td>WGM02</td><td>Waveform Generation Mode (bit alto)</td></tr>
+        <tr><td>2:0</td><td>CS02:CS01:CS00</td><td>Clock Select (prescaler)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Prescaler (Clock Select)</div>
+      <table>
+        <tr><th>CS02:01:00</th><th>Timer0/1</th><th>Frequenza (16 MHz)</th></tr>
+        <tr><td>000</td><td>Fermo</td><td>&mdash;</td></tr>
+        <tr><td>001</td><td>clk/1</td><td>16 MHz</td></tr>
+        <tr><td>010</td><td>clk/8</td><td>2 MHz</td></tr>
+        <tr><td>011</td><td>clk/64</td><td>250 kHz</td></tr>
+        <tr><td>100</td><td>clk/256</td><td>62.5 kHz</td></tr>
+        <tr><td>101</td><td>clk/1024</td><td>15.625 kHz</td></tr>
+        <tr><td>110</td><td>Ext T0/T1 falling</td><td>&mdash;</td></tr>
+        <tr><td>111</td><td>Ext T0/T1 rising</td><td>&mdash;</td></tr>
+      </table>
+      <p>Timer2 usa prescaler diversi: 1, 8, 32, 64, 128, 256, 1024.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Waveform Generation Mode (Timer0/2, 8-bit)</div>
+      <table>
+        <tr><th>WGM2:1:0</th><th>Mode</th><th>TOP</th><th>Aggiornamento OCRx</th></tr>
+        <tr><td>000</td><td>Normal</td><td>0xFF</td><td>Immediato</td></tr>
+        <tr><td>001</td><td>Phase Correct PWM</td><td>0xFF</td><td>TOP</td></tr>
+        <tr><td>010</td><td>CTC</td><td>OCR0A</td><td>Immediato</td></tr>
+        <tr><td>011</td><td>Fast PWM</td><td>0xFF</td><td>BOTTOM</td></tr>
+        <tr><td>101</td><td>Phase Correct PWM</td><td>OCR0A</td><td>TOP</td></tr>
+        <tr><td>111</td><td>Fast PWM</td><td>OCR0A</td><td>BOTTOM</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Interrupt Timer</div>
+      <table>
+        <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+        <tr><td><code>TIMSK0</code></td><td>TOIE0</td><td>Overflow Interrupt Enable Timer0</td></tr>
+        <tr><td><code>TIMSK0</code></td><td>OCIE0A</td><td>Compare Match A Interrupt Enable Timer0</td></tr>
+        <tr><td><code>TIMSK0</code></td><td>OCIE0B</td><td>Compare Match B Interrupt Enable Timer0</td></tr>
+        <tr><td><code>TIMSK1</code></td><td>TOIE1</td><td>Overflow Interrupt Enable Timer1</td></tr>
+        <tr><td><code>TIMSK1</code></td><td>OCIE1A/B</td><td>Compare Match A/B Interrupt Timer1</td></tr>
+        <tr><td><code>TIMSK1</code></td><td>ICIE1</td><td>Input Capture Interrupt Timer1</td></tr>
+        <tr><td><code>TIMSK2</code></td><td>TOIE2, OCIE2A/B</td><td>Timer2 interrupt</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="cmt">// Timer1 CTC: interrupt ogni 1 secondo</span>
+<span class="cmt">// f = 16MHz / (prescaler * (1 + OCR1A))</span>
+<span class="cmt">// 1 Hz = 16000000 / (256 * (1 + 62499))</span>
+cli();                            <span class="cmt">// Disabilita interrupt</span>
+TCCR1A = <span class="num">0</span>;                      <span class="cmt">// Reset</span>
+TCCR1B = <span class="num">0</span>;
+TCNT1  = <span class="num">0</span>;                      <span class="cmt">// Azzera contatore</span>
+OCR1A  = <span class="num">62499</span>;                   <span class="cmt">// Compare match value</span>
+TCCR1B |= (<span class="num">1</span> &lt;&lt; WGM12);          <span class="cmt">// Modo CTC</span>
+TCCR1B |= (<span class="num">1</span> &lt;&lt; CS12);           <span class="cmt">// Prescaler 256</span>
+TIMSK1 |= (<span class="num">1</span> &lt;&lt; OCIE1A);         <span class="cmt">// Abilita Compare Match A</span>
+sei();                            <span class="cmt">// Riabilita interrupt</span>
+
+ISR(TIMER1_COMPA_vect) {
+  <span class="cmt">// Eseguito ogni 1 secondo</span>
+  PINB = (<span class="num">1</span> &lt;&lt; PB5);              <span class="cmt">// Toggle LED</span>
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── PWM VIA TIMER ─────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-pwm"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PWM VIA TIMER</div>
+  <div class="section-body">
+    <div class="sub">
+      <div class="sub-title">Compare Output Mode (COMnx1:COMnx0)</div>
+      <table>
+        <tr><th>COM</th><th>Fast PWM</th><th>Phase Correct</th></tr>
+        <tr><td>00</td><td>Pin disconnesso</td><td>Pin disconnesso</td></tr>
+        <tr><td>01</td><td>Toggle OC0A on Compare Match (WGM=111)</td><td>WGM dipendente</td></tr>
+        <tr><td>10</td><td>Non-inverting: clear on match, set at BOTTOM</td><td>Clear up-counting, set down-counting</td></tr>
+        <tr><td>11</td><td>Inverting: set on match, clear at BOTTOM</td><td>Set up-counting, clear down-counting</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="cmt">// Fast PWM su pin 6 (OC0A) con frequenza custom</span>
+<span class="cmt">// f_PWM = f_clk / (prescaler * 256)</span>
+<span class="cmt">// Con prescaler 64: 16MHz / (64 * 256) = 976.5 Hz (default Arduino)</span>
+DDRD |= (<span class="num">1</span> &lt;&lt; DDD6);             <span class="cmt">// Pin 6 output</span>
+TCCR0A = (<span class="num">1</span>&lt;&lt;COM0A1) | (<span class="num">1</span>&lt;&lt;WGM01) | (<span class="num">1</span>&lt;&lt;WGM00);  <span class="cmt">// Fast PWM, non-inv</span>
+TCCR0B = (<span class="num">1</span>&lt;&lt;CS01) | (<span class="num">1</span>&lt;&lt;CS00);  <span class="cmt">// Prescaler 64</span>
+OCR0A  = <span class="num">128</span>;                    <span class="cmt">// Duty cycle 50%  (128/256)</span>
+
+<span class="cmt">// Phase Correct PWM su pin 9 (OC1A) — Timer1 16-bit</span>
+<span class="cmt">// f = f_clk / (2 * prescaler * TOP)</span>
+DDRB |= (<span class="num">1</span> &lt;&lt; DDB1);             <span class="cmt">// Pin 9 output</span>
+TCCR1A = (<span class="num">1</span>&lt;&lt;COM1A1) | (<span class="num">1</span>&lt;&lt;WGM11);
+TCCR1B = (<span class="num">1</span>&lt;&lt;WGM13) | (<span class="num">1</span>&lt;&lt;CS11); <span class="cmt">// Phase Correct, prescaler 8, TOP=ICR1</span>
+ICR1   = <span class="num">20000</span>;                  <span class="cmt">// TOP: 50 Hz (per servo: 20ms periodo)</span>
+OCR1A  = <span class="num">1500</span>;                   <span class="cmt">// Pulse 1.5ms (servo centro)</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Formule Frequenza PWM</div>
+      <table>
+        <tr><th>Modo</th><th>Formula</th></tr>
+        <tr><td>Fast PWM (TOP=0xFF)</td><td><code>f = f_clk / (N * 256)</code></td></tr>
+        <tr><td>Fast PWM (TOP=OCRnA)</td><td><code>f = f_clk / (N * (1 + OCRnA))</code></td></tr>
+        <tr><td>Phase Correct (TOP=0xFF)</td><td><code>f = f_clk / (N * 510)</code></td></tr>
+        <tr><td>Phase Correct (TOP=OCRnA)</td><td><code>f = f_clk / (2 * N * OCRnA)</code></td></tr>
+        <tr><td>CTC</td><td><code>f = f_clk / (2 * N * (1 + OCRnA))</code></td></tr>
+      </table>
+      <p><code>N</code> = prescaler, <code>f_clk</code> = 16 MHz.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ADC REGISTRI ──────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-adc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ADC &mdash; REGISTRI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+      <tr><td rowspan="4"><code>ADMUX</code></td><td>REFS1:REFS0 (7:6)</td><td>Riferimento: 00=AREF, 01=AVCC, 11=Internal 1.1V</td></tr>
+      <tr><td>ADLAR (5)</td><td>Left Adjust Result (per lettura 8-bit da ADCH)</td></tr>
+      <tr><td>MUX3:0 (3:0)</td><td>Selezione canale: 0000=ADC0 ... 0101=ADC5, 1000=Temp, 1110=1.1V, 1111=GND</td></tr>
+      <tr><td></td><td></td></tr>
+      <tr><td rowspan="4"><code>ADCSRA</code></td><td>ADEN (7)</td><td>ADC Enable</td></tr>
+      <tr><td>ADSC (6)</td><td>Start Conversion</td></tr>
+      <tr><td>ADATE (5)</td><td>Auto Trigger Enable</td></tr>
+      <tr><td>ADPS2:0 (2:0)</td><td>Prescaler: 010=/4, 011=/8, 100=/16, 101=/32, 110=/64, 111=/128</td></tr>
+      <tr><td><code>ADCL/ADCH</code></td><td>&mdash;</td><td>Risultato conversione (10 bit). Leggere ADCL prima di ADCH</td></tr>
+      <tr><td><code>ADCSRB</code></td><td>ADTS2:0</td><td>Auto Trigger Source (Free Running, Timer, Comparatore, ecc.)</td></tr>
+      <tr><td><code>DIDR0</code></td><td>ADC5D:ADC0D</td><td>Digital Input Disable (risparmio energetico)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Lettura ADC manuale (equivale a analogRead(0))</span>
+ADMUX  = (<span class="num">1</span>&lt;&lt;REFS0);                 <span class="cmt">// AVCC come riferimento</span>
+ADMUX  = (ADMUX &amp; <span class="num">0xF0</span>) | (<span class="num">0</span> &amp; <span class="num">0x0F</span>); <span class="cmt">// Canale ADC0</span>
+ADCSRA = (<span class="num">1</span>&lt;&lt;ADEN) | (<span class="num">1</span>&lt;&lt;ADPS2) | (<span class="num">1</span>&lt;&lt;ADPS1) | (<span class="num">1</span>&lt;&lt;ADPS0); <span class="cmt">// Enable, prescaler 128</span>
+
+ADCSRA |= (<span class="num">1</span>&lt;&lt;ADSC);                 <span class="cmt">// Avvia conversione</span>
+<span class="kw">while</span> (ADCSRA &amp; (<span class="num">1</span>&lt;&lt;ADSC));           <span class="cmt">// Attendi completamento</span>
+<span class="kw">uint16_t</span> result = ADC;                <span class="cmt">// Leggi risultato (ADCL + ADCH)</span>
+
+<span class="cmt">// Free Running Mode: conversioni continue</span>
+ADCSRA |= (<span class="num">1</span>&lt;&lt;ADATE);                <span class="cmt">// Auto trigger</span>
+ADCSRB = <span class="num">0</span>;                           <span class="cmt">// Free running (ADTS = 000)</span>
+ADCSRA |= (<span class="num">1</span>&lt;&lt;ADSC);                 <span class="cmt">// Prima conversione</span>
+<span class="cmt">// Da ora ADC converte continuamente, leggibile da ADC</span>
+
+<span class="cmt">// Lettura rapida a 8 bit</span>
+ADMUX |= (<span class="num">1</span>&lt;&lt;ADLAR);                 <span class="cmt">// Left adjust</span>
+<span class="cmt">// ... avvia conversione ...</span>
+<span class="kw">uint8_t</span> fast = ADCH;                  <span class="cmt">// Solo 8 bit alti</span>
+</pre>
+  </div>
+</div>
+
+<!-- ─── USART REGISTRI ────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-usart"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> USART &mdash; REGISTRI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+      <tr><td rowspan="3"><code>UCSR0A</code></td><td>RXC0 (7)</td><td>Receive Complete (dato pronto)</td></tr>
+      <tr><td>UDRE0 (5)</td><td>Data Register Empty (pronto per TX)</td></tr>
+      <tr><td>U2X0 (1)</td><td>Double Speed Mode</td></tr>
+      <tr><td rowspan="3"><code>UCSR0B</code></td><td>RXCIE0 (7)</td><td>RX Complete Interrupt Enable</td></tr>
+      <tr><td>RXEN0 (4)</td><td>Receiver Enable</td></tr>
+      <tr><td>TXEN0 (3)</td><td>Transmitter Enable</td></tr>
+      <tr><td rowspan="2"><code>UCSR0C</code></td><td>UCSZ01:00 (2:1)</td><td>Character Size: 11 = 8 bit</td></tr>
+      <tr><td>USBS0 (3)</td><td>Stop Bits: 0 = 1 stop, 1 = 2 stop</td></tr>
+      <tr><td><code>UBRR0H/L</code></td><td>&mdash;</td><td>Baud Rate Register: <code>UBRR = (F_CPU / 16 / baud) - 1</code></td></tr>
+      <tr><td><code>UDR0</code></td><td>&mdash;</td><td>Data Register (TX e RX condividono l'indirizzo)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Inizializzazione USART a 9600 baud</span>
+<span class="kw">#define</span> BAUD <span class="num">9600</span>
+<span class="kw">#define</span> UBRR_VAL ((F_CPU / <span class="num">16</span> / BAUD) - <span class="num">1</span>)  <span class="cmt">// = 103 a 16MHz</span>
+
+<span class="kw">void</span> <span class="hd">uart_init</span>() {
+  UBRR0H = (UBRR_VAL >> <span class="num">8</span>);
+  UBRR0L = UBRR_VAL;
+  UCSR0B = (<span class="num">1</span>&lt;&lt;RXEN0) | (<span class="num">1</span>&lt;&lt;TXEN0);       <span class="cmt">// Abilita TX e RX</span>
+  UCSR0C = (<span class="num">1</span>&lt;&lt;UCSZ01) | (<span class="num">1</span>&lt;&lt;UCSZ00);    <span class="cmt">// 8 bit, 1 stop, no parity</span>
+}
+
+<span class="kw">void</span> <span class="hd">uart_tx</span>(<span class="kw">uint8_t</span> data) {
+  <span class="kw">while</span> (!(UCSR0A &amp; (<span class="num">1</span>&lt;&lt;UDRE0)));        <span class="cmt">// Attendi buffer vuoto</span>
+  UDR0 = data;
+}
+
+<span class="kw">uint8_t</span> <span class="hd">uart_rx</span>() {
+  <span class="kw">while</span> (!(UCSR0A &amp; (<span class="num">1</span>&lt;&lt;RXC0)));         <span class="cmt">// Attendi dato</span>
+  <span class="kw">return</span> UDR0;
+}
+
+<span class="kw">void</span> <span class="hd">uart_print</span>(<span class="kw">const char</span> *s) {
+  <span class="kw">while</span> (*s) uart_tx(*s++);
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── INTERRUPT ESTERNI REGISTRI ────────────────────────────── -->
+<a class="anchor" id="s-reg-int"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INTERRUPT ESTERNI &mdash; REGISTRI</div>
+  <div class="section-body">
+    <div class="sub">
+      <div class="sub-title">INT0 / INT1 (Pin 2, 3)</div>
+      <table>
+        <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+        <tr><td><code>EICRA</code></td><td>ISC11:ISC10 (3:2)</td><td>INT1 Sense Control</td></tr>
+        <tr><td><code>EICRA</code></td><td>ISC01:ISC00 (1:0)</td><td>INT0 Sense Control</td></tr>
+        <tr><td><code>EIMSK</code></td><td>INT1, INT0</td><td>External Interrupt Mask (enable)</td></tr>
+        <tr><td><code>EIFR</code></td><td>INTF1, INTF0</td><td>Interrupt Flag (scrivi 1 per clear)</td></tr>
+      </table>
+
+      <table>
+        <tr><th>ISCn1:ISCn0</th><th>Trigger</th></tr>
+        <tr><td>00</td><td>Livello LOW</td></tr>
+        <tr><td>01</td><td>Cambio logico (CHANGE)</td></tr>
+        <tr><td>10</td><td>Fronte discesa (FALLING)</td></tr>
+        <tr><td>11</td><td>Fronte salita (RISING)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pin Change Interrupt (PCINT) &mdash; tutti i pin</div>
+      <table>
+        <tr><th>Registro</th><th>Descrizione</th></tr>
+        <tr><td><code>PCICR</code></td><td>Pin Change Interrupt Control: PCIE2 (PORTD), PCIE1 (PORTC), PCIE0 (PORTB)</td></tr>
+        <tr><td><code>PCMSK0</code></td><td>Mask PORTB: PCINT7:0 (pin 8&ndash;13)</td></tr>
+        <tr><td><code>PCMSK1</code></td><td>Mask PORTC: PCINT14:8 (pin A0&ndash;A5)</td></tr>
+        <tr><td><code>PCMSK2</code></td><td>Mask PORTD: PCINT23:16 (pin 0&ndash;7)</td></tr>
+        <tr><td><code>PCIFR</code></td><td>Pin Change Interrupt Flag</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="cmt">// INT0 (pin 2) su fronte di discesa</span>
+EICRA |= (<span class="num">1</span>&lt;&lt;ISC01);                <span class="cmt">// ISC01=1, ISC00=0 = FALLING</span>
+EIMSK |= (<span class="num">1</span>&lt;&lt;INT0);                 <span class="cmt">// Abilita INT0</span>
+sei();
+
+ISR(INT0_vect) {
+  <span class="cmt">// Handler interrupt esterno 0</span>
+}
+
+<span class="cmt">// Pin Change Interrupt su pin 8 (PCINT0)</span>
+PCICR  |= (<span class="num">1</span>&lt;&lt;PCIE0);               <span class="cmt">// Abilita PCINT per PORTB</span>
+PCMSK0 |= (<span class="num">1</span>&lt;&lt;PCINT0);              <span class="cmt">// Abilita PCINT0 (pin 8)</span>
+sei();
+
+ISR(PCINT0_vect) {
+  <span class="cmt">// Scatta per QUALSIASI pin abilitato in PCMSK0</span>
+  <span class="cmt">// Determinare quale pin è cambiato confrontando con stato precedente</span>
+  <span class="kw">static uint8_t</span> lastB = <span class="num">0</span>;
+  <span class="kw">uint8_t</span> changed = PINB ^ lastB;
+  lastB = PINB;
+  <span class="kw">if</span> (changed &amp; (<span class="num">1</span>&lt;&lt;PB0)) { <span class="cmt">/* pin 8 cambiato */</span> }
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── SPI REGISTRI ──────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-spi"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SPI &mdash; REGISTRI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+      <tr><td rowspan="5"><code>SPCR</code></td><td>SPIE (7)</td><td>SPI Interrupt Enable</td></tr>
+      <tr><td>SPE (6)</td><td>SPI Enable</td></tr>
+      <tr><td>DORD (5)</td><td>Data Order: 0=MSB first, 1=LSB first</td></tr>
+      <tr><td>MSTR (4)</td><td>Master/Slave: 1=Master, 0=Slave</td></tr>
+      <tr><td>SPR1:SPR0 (1:0)</td><td>Clock Rate: 00=/4, 01=/16, 10=/64, 11=/128</td></tr>
+      <tr><td><code>SPSR</code></td><td>SPIF (7)</td><td>SPI Interrupt Flag (transfer complete)</td></tr>
+      <tr><td><code>SPSR</code></td><td>SPI2X (0)</td><td>Double Speed: raddoppia clock SPI</td></tr>
+      <tr><td><code>SPDR</code></td><td>&mdash;</td><td>SPI Data Register (R/W)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// SPI Master, modo 0, clock = F_CPU/16</span>
+DDRB |= (<span class="num">1</span>&lt;&lt;DDB3) | (<span class="num">1</span>&lt;&lt;DDB5) | (<span class="num">1</span>&lt;&lt;DDB2); <span class="cmt">// MOSI, SCK, SS output</span>
+SPCR  = (<span class="num">1</span>&lt;&lt;SPE) | (<span class="num">1</span>&lt;&lt;MSTR) | (<span class="num">1</span>&lt;&lt;SPR0);    <span class="cmt">// Enable, Master, /16</span>
+
+<span class="kw">uint8_t</span> <span class="hd">spi_transfer</span>(<span class="kw">uint8_t</span> data) {
+  SPDR = data;
+  <span class="kw">while</span> (!(SPSR &amp; (<span class="num">1</span>&lt;&lt;SPIF)));
+  <span class="kw">return</span> SPDR;
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── TWI (I2C) REGISTRI ────────────────────────────────────── -->
+<a class="anchor" id="s-reg-twi"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TWI (I2C) &mdash; REGISTRI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+      <tr><td><code>TWBR</code></td><td>&mdash;</td><td>Bit Rate Register: <code>f_SCL = F_CPU / (16 + 2*TWBR*prescaler)</code></td></tr>
+      <tr><td rowspan="4"><code>TWCR</code></td><td>TWINT (7)</td><td>Interrupt Flag: scrivi 1 per avviare operazione</td></tr>
+      <tr><td>TWEA (6)</td><td>Enable Acknowledge</td></tr>
+      <tr><td>TWSTA (5)</td><td>Start Condition</td></tr>
+      <tr><td>TWSTO (4)</td><td>Stop Condition</td></tr>
+      <tr><td><code>TWSR</code></td><td>TWS7:3 (7:3)</td><td>Status Code (tabella status nel datasheet)</td></tr>
+      <tr><td><code>TWSR</code></td><td>TWPS1:0 (1:0)</td><td>Prescaler: 00=1, 01=4, 10=16, 11=64</td></tr>
+      <tr><td><code>TWDR</code></td><td>&mdash;</td><td>Data Register</td></tr>
+      <tr><td><code>TWAR</code></td><td>&mdash;</td><td>Slave Address Register (7 bit + general call)</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// TWI Master init: 100 kHz con F_CPU=16MHz</span>
+<span class="cmt">// TWBR = ((F_CPU / f_SCL) - 16) / 2 = (160-16)/2 = 72</span>
+TWSR = <span class="num">0</span>;                           <span class="cmt">// Prescaler = 1</span>
+TWBR = <span class="num">72</span>;                          <span class="cmt">// 100 kHz</span>
+
+<span class="cmt">// Invia START</span>
+TWCR = (<span class="num">1</span>&lt;&lt;TWINT) | (<span class="num">1</span>&lt;&lt;TWSTA) | (<span class="num">1</span>&lt;&lt;TWEN);
+<span class="kw">while</span> (!(TWCR &amp; (<span class="num">1</span>&lt;&lt;TWINT)));       <span class="cmt">// Attendi completamento</span>
+
+<span class="cmt">// Invia SLA+W (indirizzo + write)</span>
+TWDR = (<span class="num">0x68</span> &lt;&lt; <span class="num">1</span>) | <span class="num">0</span>;            <span class="cmt">// Indirizzo 0x68, bit W=0</span>
+TWCR = (<span class="num">1</span>&lt;&lt;TWINT) | (<span class="num">1</span>&lt;&lt;TWEN);
+<span class="kw">while</span> (!(TWCR &amp; (<span class="num">1</span>&lt;&lt;TWINT)));
+
+<span class="cmt">// Invia dato</span>
+TWDR = <span class="num">0x42</span>;
+TWCR = (<span class="num">1</span>&lt;&lt;TWINT) | (<span class="num">1</span>&lt;&lt;TWEN);
+<span class="kw">while</span> (!(TWCR &amp; (<span class="num">1</span>&lt;&lt;TWINT)));
+
+<span class="cmt">// STOP</span>
+TWCR = (<span class="num">1</span>&lt;&lt;TWINT) | (<span class="num">1</span>&lt;&lt;TWSTO) | (<span class="num">1</span>&lt;&lt;TWEN);
+</pre>
+  </div>
+</div>
+
+<!-- ─── EEPROM REGISTRI ───────────────────────────────────────── -->
+<a class="anchor" id="s-reg-eeprom"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> EEPROM &mdash; REGISTRI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+      <tr><td><code>EEARH/EEARL</code></td><td>&mdash;</td><td>EEPROM Address Register (10 bit: 0&ndash;1023)</td></tr>
+      <tr><td><code>EEDR</code></td><td>&mdash;</td><td>EEPROM Data Register</td></tr>
+      <tr><td rowspan="4"><code>EECR</code></td><td>EEPM1:0 (5:4)</td><td>Programming Mode</td></tr>
+      <tr><td>EERIE (3)</td><td>Ready Interrupt Enable</td></tr>
+      <tr><td>EEMPE (2)</td><td>Master Program Enable (set prima di EEPE)</td></tr>
+      <tr><td>EEPE (1)</td><td>Program Enable (avvia scrittura)</td></tr>
+      <tr><td><code>EECR</code></td><td>EERE (0)</td><td>Read Enable</td></tr>
+    </table>
+
+<pre>
+<span class="kw">uint8_t</span> <span class="hd">eeprom_read</span>(<span class="kw">uint16_t</span> addr) {
+  <span class="kw">while</span> (EECR &amp; (<span class="num">1</span>&lt;&lt;EEPE));          <span class="cmt">// Attendi scrittura precedente</span>
+  EEAR = addr;
+  EECR |= (<span class="num">1</span>&lt;&lt;EERE);                <span class="cmt">// Avvia lettura</span>
+  <span class="kw">return</span> EEDR;
+}
+
+<span class="kw">void</span> <span class="hd">eeprom_write</span>(<span class="kw">uint16_t</span> addr, <span class="kw">uint8_t</span> data) {
+  <span class="kw">while</span> (EECR &amp; (<span class="num">1</span>&lt;&lt;EEPE));          <span class="cmt">// Attendi scrittura precedente</span>
+  EEAR = addr;
+  EEDR = data;
+  cli();                            <span class="cmt">// Sezione critica</span>
+  EECR |= (<span class="num">1</span>&lt;&lt;EEMPE);               <span class="cmt">// Master enable</span>
+  EECR |= (<span class="num">1</span>&lt;&lt;EEPE);                <span class="cmt">// Avvia scrittura (entro 4 cicli)</span>
+  sei();
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── WATCHDOG TIMER ────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-wdt"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> WATCHDOG TIMER</div>
+  <div class="section-body">
+    <p>Il Watchdog Timer (WDT) resetta il microcontrollore se non viene "alimentato" periodicamente.
+       Utile per recupero da blocchi software.</p>
+
+    <table>
+      <tr><th>Registro</th><th>Bit</th><th>Descrizione</th></tr>
+      <tr><td rowspan="4"><code>WDTCSR</code></td><td>WDIF (7)</td><td>Interrupt Flag</td></tr>
+      <tr><td>WDIE (6)</td><td>Interrupt Enable</td></tr>
+      <tr><td>WDE (3)</td><td>Watchdog Enable (reset mode)</td></tr>
+      <tr><td>WDP3:0 (5,2:0)</td><td>Prescaler (timeout)</td></tr>
+    </table>
+
+    <table>
+      <tr><th>WDP3:0</th><th>Timeout</th></tr>
+      <tr><td>0000</td><td>16 ms</td></tr>
+      <tr><td>0001</td><td>32 ms</td></tr>
+      <tr><td>0010</td><td>64 ms</td></tr>
+      <tr><td>0011</td><td>125 ms</td></tr>
+      <tr><td>0100</td><td>250 ms</td></tr>
+      <tr><td>0101</td><td>500 ms</td></tr>
+      <tr><td>0110</td><td>1 s</td></tr>
+      <tr><td>0111</td><td>2 s</td></tr>
+      <tr><td>1000</td><td>4 s</td></tr>
+      <tr><td>1001</td><td>8 s</td></tr>
+    </table>
+
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;avr/wdt.h&gt;</span>
+
+<span class="cmt">// Abilita WDT con timeout 2 secondi</span>
+wdt_enable(WDTO_2S);
+
+<span class="cmt">// Nel loop: resetta il timer prima del timeout</span>
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  wdt_reset();          <span class="cmt">// "Alimenta" il watchdog</span>
+  <span class="cmt">// ... codice ...</span>
+}
+
+<span class="cmt">// Disabilita WDT</span>
+wdt_disable();
+
+<span class="cmt">// WDT come interrupt (senza reset)</span>
+cli();
+WDTCSR |= (<span class="num">1</span>&lt;&lt;WDCE) | (<span class="num">1</span>&lt;&lt;WDE);      <span class="cmt">// Sblocca modifica</span>
+WDTCSR  = (<span class="num">1</span>&lt;&lt;WDIE) | (<span class="num">1</span>&lt;&lt;WDP2) | (<span class="num">1</span>&lt;&lt;WDP1); <span class="cmt">// Interrupt mode, 1s</span>
+sei();
+
+ISR(WDT_vect) {
+  <span class="cmt">// Eseguito ogni ~1s (wake da sleep o task periodico)</span>
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── SLEEP MODES ───────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-sleep"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SLEEP MODES</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Modo</th><th>SM2:0</th><th>Corrente</th><th>Periferiche Attive</th><th>Wake Source</th></tr>
+      <tr><td>Idle</td><td>000</td><td>~15 mA</td><td>Timer, USART, ADC, TWI, SPI</td><td>Qualsiasi interrupt</td></tr>
+      <tr><td>ADC Noise Reduction</td><td>001</td><td>~6.5 mA</td><td>ADC</td><td>ADC, INT, TWI, WDT</td></tr>
+      <tr><td>Power-down</td><td>010</td><td>~0.36 &micro;A</td><td>Nessuna (solo WDT opzionale)</td><td>INT, PCINT, TWI, WDT</td></tr>
+      <tr><td>Power-save</td><td>011</td><td>~0.9 &micro;A</td><td>Timer2 (asincrono)</td><td>Timer2, INT, PCINT, WDT</td></tr>
+      <tr><td>Standby</td><td>110</td><td>~0.2 mA</td><td>Oscillatore principale</td><td>Come Power-down + clock pronto</td></tr>
+    </table>
+
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;avr/sleep.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;avr/power.h&gt;</span>
+
+<span class="cmt">// Power-down con wake da INT0</span>
+<span class="kw">void</span> <span class="hd">enterSleep</span>() {
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_enable();
+
+  <span class="cmt">// Configura INT0 per wake</span>
+  EICRA |= (<span class="num">1</span>&lt;&lt;ISC01);              <span class="cmt">// FALLING edge</span>
+  EIMSK |= (<span class="num">1</span>&lt;&lt;INT0);
+
+  sei();
+  sleep_cpu();                      <span class="cmt">// ZZZ... (si ferma qui)</span>
+  sleep_disable();                  <span class="cmt">// Riprende dopo wake</span>
+}
+
+ISR(INT0_vect) {
+  <span class="cmt">// Wake-up handler (può essere vuoto)</span>
+}
+
+<span class="cmt">// Disabilitare periferiche non usate per risparmiare energia</span>
+power_adc_disable();
+power_spi_disable();
+power_twi_disable();
+power_timer1_disable();
+power_timer2_disable();
+</pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BEST PRACTICE
+     ════════════════════════════════════════════════════════════════ -->
+
+<!-- ─── BP GENERALI ───────────────────────────────────────────── -->
+<a class="anchor" id="s-bp-general"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BEST PRACTICE &mdash; GENERALI</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Pratica</th><th>Dettaglio</th></tr>
+      <tr><td>Evitare <code>delay()</code></td><td>Usare pattern non-bloccante con <code>millis()</code>. Permette multitasking cooperativo e reattivit&agrave; del sistema.</td></tr>
+      <tr><td>Usare <code>const</code> e <code>constexpr</code></td><td>Preferire a <code>#define</code> per costanti: type-safe, visibili nel debugger.</td></tr>
+      <tr><td>Pin con nomi simbolici</td><td><code>const byte LED_PIN = 13;</code> non numeri magici nel codice.</td></tr>
+      <tr><td>Macchine a stati</td><td>Per logica complessa, usare <code>enum</code> + <code>switch</code> invece di flag booleani annidati.</td></tr>
+      <tr><td>Evitare <code>String</code></td><td>L'oggetto <code>String</code> causa frammentazione heap su MCU con poca RAM. Preferire array <code>char[]</code> e funzioni C (<code>strcpy</code>, <code>snprintf</code>).</td></tr>
+      <tr><td>ISR brevi</td><td>Le ISR devono impostare flag e uscire. Elaborazione complessa nel <code>loop()</code>.</td></tr>
+      <tr><td>Variabili ISR <code>volatile</code></td><td>Ogni variabile condivisa tra ISR e codice principale deve essere <code>volatile</code>.</td></tr>
+      <tr><td>Sezioni critiche</td><td>Proteggere letture multi-byte di variabili volatile con <code>noInterrupts()</code>/<code>interrupts()</code>.</td></tr>
+      <tr><td>Usare <code>F()</code> per stringhe</td><td><code>Serial.println(F("testo"))</code> salva SRAM usando stringhe da Flash.</td></tr>
+      <tr><td>Debounce pulsanti</td><td>Sempre implementare debounce (software con <code>millis()</code> o hardware con RC).</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Pattern macchina a stati</span>
+<span class="kw">enum</span> State { IDLE, HEATING, COOLING, ERROR };
+State currentState = IDLE;
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">switch</span> (currentState) {
+    <span class="kw">case</span> IDLE:
+      <span class="kw">if</span> (temp < target) currentState = HEATING;
+      <span class="kw">break</span>;
+    <span class="kw">case</span> HEATING:
+      activateHeater();
+      <span class="kw">if</span> (temp >= target) currentState = COOLING;
+      <span class="kw">if</span> (temp > MAX_SAFE) currentState = ERROR;
+      <span class="kw">break</span>;
+    <span class="cmt">// ...</span>
+  }
+}
+
+<span class="cmt">// Debounce con millis()</span>
+<span class="kw">unsigned long</span> lastDebounce = <span class="num">0</span>;
+<span class="kw">const unsigned long</span> debounceDelay = <span class="num">50</span>;
+<span class="kw">int</span> lastState = HIGH, stableState = HIGH;
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">int</span> reading = digitalRead(<span class="num">2</span>);
+  <span class="kw">if</span> (reading != lastState) lastDebounce = millis();
+  <span class="kw">if</span> (millis() - lastDebounce > debounceDelay) {
+    <span class="kw">if</span> (reading != stableState) {
+      stableState = reading;
+      <span class="kw">if</span> (stableState == LOW) { <span class="cmt">/* pulsante premuto */</span> }
+    }
+  }
+  lastState = reading;
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── BP MEMORIA ────────────────────────────────────────────── -->
+<a class="anchor" id="s-bp-memory"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BEST PRACTICE &mdash; MEMORIA</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Pratica</th><th>Dettaglio</th></tr>
+      <tr><td>Monitorare SRAM</td><td>Controllare memoria libera con <code>freeMemory()</code> o calcolo manuale. Sotto 200 byte: instabilit&agrave;.</td></tr>
+      <tr><td><code>PROGMEM</code></td><td>Grandi array costanti (lookup table, stringhe menu) in Flash con <code>PROGMEM</code> e <code>pgm_read_*</code>.</td></tr>
+      <tr><td>Dimensionare buffer</td><td>Array e buffer al minimo necessario. Ogni byte conta su 2 KB SRAM.</td></tr>
+      <tr><td>Tipi minimi</td><td>Usare <code>uint8_t</code> (1 byte) invece di <code>int</code> (2 byte) quando il range lo permette.</td></tr>
+      <tr><td>No allocazione dinamica</td><td>Evitare <code>malloc</code>/<code>new</code>: frammentazione fatale su MCU. Allocare staticamente.</td></tr>
+      <tr><td>Attenzione allo stack</td><td>Ricorsione profonda e variabili locali grandi consumano stack (cresce verso l'heap).</td></tr>
+      <tr><td>Evitare <code>float</code></td><td>Operazioni float emulate via software su AVR: lente e pesanti. Usare aritmetica a punto fisso se possibile.</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Calcolo memoria libera</span>
+<span class="kw">int</span> <span class="hd">freeMemory</span>() {
+  <span class="kw">extern int</span> __heap_start, *__brkval;
+  <span class="kw">int</span> v;
+  <span class="kw">return</span> (<span class="kw">int</span>)&amp;v - (__brkval == <span class="num">0</span>
+    ? (<span class="kw">int</span>)&amp;__heap_start : (<span class="kw">int</span>)__brkval);
+}
+
+<span class="cmt">// Lookup table in PROGMEM</span>
+<span class="kw">const uint8_t</span> sineTable[] <span class="kw">PROGMEM</span> = {
+  <span class="num">128</span>, <span class="num">131</span>, <span class="num">134</span>, <span class="num">137</span>, <span class="cmt">/* ... 256 valori */</span>
+};
+<span class="kw">uint8_t</span> val = pgm_read_byte(&amp;sineTable[i]);
+
+<span class="cmt">// Aritmetica a punto fisso (8.8 fixed point)</span>
+<span class="kw">int16_t</span> temp_fixed = <span class="num">2350</span>;       <span class="cmt">// 23.50°C * 100</span>
+<span class="kw">int16_t</span> result = temp_fixed * <span class="num">9</span> / <span class="num">5</span> + <span class="num">3200</span>;  <span class="cmt">// Fahrenheit * 100</span>
+</pre>
+  </div>
+</div>
+
+<!-- ─── BP TIMING ─────────────────────────────────────────────── -->
+<a class="anchor" id="s-bp-timing"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BEST PRACTICE &mdash; TIMING</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Pratica</th><th>Dettaglio</th></tr>
+      <tr><td>Overflow di <code>millis()</code></td><td>Overflow dopo ~49.7 giorni. La sottrazione <code>current - previous</code> funziona correttamente con <code>unsigned long</code> grazie all'aritmetica modulare. Non usare <code>&gt;</code> ma <code>&gt;=</code>.</td></tr>
+      <tr><td>Scheduler cooperativo</td><td>Per task multipli con periodi diversi, usare struttura array di task con tempi indipendenti.</td></tr>
+      <tr><td>Timer hardware per precisione</td><td>Per timing critico usare timer/CTC con interrupt, non <code>millis()</code>.</td></tr>
+      <tr><td>Evitare <code>delayMicroseconds()</code> lunghi</td><td>Per ritardi &gt;16 ms usare <code>delay()</code> o <code>millis()</code>. <code>delayMicroseconds()</code> non gestisce overflow.</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Scheduler cooperativo multi-task</span>
+<span class="kw">struct</span> Task {
+  <span class="kw">unsigned long</span> interval;
+  <span class="kw">unsigned long</span> lastRun;
+  <span class="kw">void</span> (*callback)();
+};
+
+<span class="kw">void</span> readSensors() { <span class="cmt">/* ogni 100ms */</span> }
+<span class="kw">void</span> updateDisplay() { <span class="cmt">/* ogni 500ms */</span> }
+<span class="kw">void</span> logData() { <span class="cmt">/* ogni 5000ms */</span> }
+
+Task tasks[] = {
+  {<span class="num">100</span>,  <span class="num">0</span>, readSensors},
+  {<span class="num">500</span>,  <span class="num">0</span>, updateDisplay},
+  {<span class="num">5000</span>, <span class="num">0</span>, logData}
+};
+<span class="kw">const int</span> NUM_TASKS = <span class="kw">sizeof</span>(tasks) / <span class="kw">sizeof</span>(tasks[<span class="num">0</span>]);
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">unsigned long</span> now = millis();
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i < NUM_TASKS; i++) {
+    <span class="kw">if</span> (now - tasks[i].lastRun >= tasks[i].interval) {
+      tasks[i].lastRun = now;
+      tasks[i].callback();
+    }
+  }
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── BP HARDWARE ───────────────────────────────────────────── -->
+<a class="anchor" id="s-bp-hw"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BEST PRACTICE &mdash; HARDWARE</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Pratica</th><th>Dettaglio</th></tr>
+      <tr><td>Resistori di protezione</td><td>Sempre resistori in serie su LED (220&ndash;470&ohm;). Non superare 20 mA per pin, 200 mA totale per chip.</td></tr>
+      <tr><td>Pull-up/pull-down</td><td>Input non connessi (floating) producono letture casuali. Usare <code>INPUT_PULLUP</code> o resistori esterni.</td></tr>
+      <tr><td>Condensatori di bypass</td><td>100 nF vicino all'alimentazione di ogni IC. 10 &micro;F sul rail principale.</td></tr>
+      <tr><td>Non pilotare carichi dal pin</td><td>Per motori, rel&egrave;, LED ad alta potenza: usare transistor/MOSFET come switch.</td></tr>
+      <tr><td>Protezione ingressi</td><td>Clamping diodes o partitori di tensione per segnali &gt;5V sui pin analogici/digitali.</td></tr>
+      <tr><td>Separare alimentazioni</td><td>Alimentare motori/attuatori da alimentazione separata. Collegare solo il GND comune.</td></tr>
+      <tr><td>Diodo flyback</td><td>Sempre un diodo (1N4007) in antiparallelo su carichi induttivi (rel&egrave;, solenoidi, motori).</td></tr>
+      <tr><td>Pin inutilizzati</td><td>Configurarli come <code>OUTPUT LOW</code> o <code>INPUT_PULLUP</code> per ridurre consumo e rumore.</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ─── BP DEBUG ───────────────────────────────────────────────── -->
+<a class="anchor" id="s-bp-debug"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BEST PRACTICE &mdash; DEBUG</div>
+  <div class="section-body">
+    <table>
+      <tr><th>Tecnica</th><th>Dettaglio</th></tr>
+      <tr><td>Serial debug</td><td>Usare <code>Serial.print()</code> con <code>F()</code> macro. Rimuovere o disabilitare in produzione con <code>#ifdef DEBUG</code>.</td></tr>
+      <tr><td>LED diagnostico</td><td>Il LED builtin (pin 13) &egrave; il primo strumento di debug: lampeggi diversi = stati diversi.</td></tr>
+      <tr><td>Compilazione condizionale</td><td><code>#define DEBUG</code> + <code>#ifdef</code> per abilitare/disabilitare log senza rimuovere codice.</td></tr>
+      <tr><td>Assert semplice</td><td>Macro di verifica per catturare condizioni impossibili durante lo sviluppo.</td></tr>
+      <tr><td>Monitor seriale</td><td>Stampare valori sensori formattati per il Serial Plotter dell'IDE (valori separati da spazio/tab).</td></tr>
+      <tr><td>Watchdog per sicurezza</td><td>Abilitare WDT in produzione per recupero automatico da hang.</td></tr>
+    </table>
+
+<pre>
+<span class="cmt">// Compilazione condizionale per debug</span>
+<span class="kw">#define</span> DEBUG  <span class="cmt">// Commentare per produzione</span>
+
+<span class="kw">#ifdef</span> DEBUG
+  <span class="kw">#define</span> DBG(x)   Serial.print(F(x))
+  <span class="kw">#define</span> DBGLN(x) Serial.println(F(x))
+  <span class="kw">#define</span> DBGV(x)  Serial.println(x)
+<span class="kw">#else</span>
+  <span class="kw">#define</span> DBG(x)
+  <span class="kw">#define</span> DBGLN(x)
+  <span class="kw">#define</span> DBGV(x)
+<span class="kw">#endif</span>
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  <span class="kw">#ifdef</span> DEBUG
+    Serial.begin(<span class="num">115200</span>);
+    DBGLN(<span class="str">"Sistema avviato"</span>);
+  <span class="kw">#endif</span>
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">int</span> val = analogRead(A0);
+  DBG(<span class="str">"Sensore: "</span>);
+  DBGV(val);       <span class="cmt">// In produzione: zero overhead</span>
+}
+
+<span class="cmt">// Output per Serial Plotter (valori separati da tab)</span>
+Serial.print(temp);
+Serial.print(<span class="str">"\t"</span>);
+Serial.print(humidity);
+Serial.print(<span class="str">"\t"</span>);
+Serial.println(pressure);
+</pre>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ─── SCRIPTS ───────────────────────────────────────────────── -->
+<script>
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+<script src="../assets/js/mobile.js"></script>
+</body>
+</html>
