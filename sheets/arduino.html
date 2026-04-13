@@ -85,6 +85,7 @@
   <div class="nav-section">
     <div class="nav-section-title">Fondamenti</div>
     <a href="#s-intro">Introduzione</a>
+    <a href="#s-board-compare">Confronto Schede</a>
     <a href="#s-structure">Struttura Sketch</a>
     <a href="#s-types">Tipi di Dato</a>
     <a href="#s-digital">Digital I/O</a>
@@ -127,6 +128,20 @@
   </div>
 
   <div class="nav-section">
+    <div class="nav-section-title">Codici Standard</div>
+    <a href="#s-cs-servo">Servo (Best Practice)</a>
+    <a href="#s-cs-lcd">LCD (Parallelo + I2C)</a>
+    <a href="#s-cs-hcsr04">HC-SR04 Ultrasuoni</a>
+    <a href="#s-cs-buzzer">Buzzer / Tone</a>
+    <a href="#s-cs-pir">PIR (Sensore Movimento)</a>
+    <a href="#s-cs-ldr">LDR (Fotoresistore)</a>
+    <a href="#s-cs-ntc">Termistor NTC</a>
+    <a href="#s-cs-relay">Rel&egrave; / MOSFET</a>
+    <a href="#s-cs-rgb">LED RGB</a>
+    <a href="#s-cs-shift">Shift Register 74HC595</a>
+  </div>
+
+  <div class="nav-section">
     <div class="nav-section-title">Best Practice</div>
     <a href="#s-bp-general">Generali</a>
     <a href="#s-bp-memory">Memoria</a>
@@ -151,18 +166,216 @@
        funzioni wrapper per I/O, comunicazioni e temporizzazione.</p>
 
     <table>
-      <tr><th>Caratteristica</th><th>Arduino Uno (ATmega328P)</th></tr>
+      <tr><th>Caratteristica</th><th>Arduino Uno R3 (ATmega328P)</th></tr>
       <tr><td>Clock</td><td>16 MHz</td></tr>
       <tr><td>Flash</td><td>32 KB (0.5 KB bootloader)</td></tr>
       <tr><td>SRAM</td><td>2 KB</td></tr>
       <tr><td>EEPROM</td><td>1 KB</td></tr>
-      <tr><td>Digital I/O</td><td>14 pin (6 PWM)</td></tr>
-      <tr><td>Analog In</td><td>6 pin (ADC 10-bit)</td></tr>
+      <tr><td>Digital I/O</td><td>14 pin (6 PWM: pin 3, 5, 6, 9, 10, 11)</td></tr>
+      <tr><td>Analog In</td><td>6 pin (A0&ndash;A5, ADC 10-bit)</td></tr>
+      <tr><td>Interrupt esterni</td><td>2 (INT0 = pin 2, INT1 = pin 3)</td></tr>
       <tr><td>Tensione operativa</td><td>5V</td></tr>
-      <tr><td>Corrente per pin I/O</td><td>20 mA (max 40 mA)</td></tr>
+      <tr><td>Alimentazione (Vin / barrel jack)</td><td>7&ndash;12V raccomandata (limite assoluto 6&ndash;20V)</td></tr>
+      <tr><td>Uscita pin 5V</td><td>Max ~500 mA (limitata dal regolatore onboard)</td></tr>
+      <tr><td>Uscita pin 3.3V</td><td>Max 50 mA (fornita dal regolatore LP2985)</td></tr>
+      <tr><td>Corrente per pin I/O</td><td>20 mA consigliata (max assoluto 40 mA)</td></tr>
+      <tr><td>Corrente totale porte I/O</td><td>Max 200 mA cumulativi su tutti i pin</td></tr>
+      <tr><td>USB</td><td>USB-B (alimentazione + programmazione)</td></tr>
     </table>
 
+    <div class="warn"><b>Limiti di tensione/corrente &mdash; regole fondamentali:</b><br>
+      &bull; I pin digitali e analogici tollerano <b>solo 0&ndash;5V</b>. Tensioni superiori danneggiano il chip.<br>
+      &bull; Non superare mai <b>20 mA per singolo pin</b> in progetti reali (40 mA &egrave; il massimo assoluto del datasheet, non un valore operativo).<br>
+      &bull; La somma delle correnti di <b>tutti i pin</b> non deve superare <b>200 mA</b> totali.<br>
+      &bull; Il pin <b>5V</b> pu&ograve; erogare al massimo ~500 mA quando alimentato via USB (dipende dalla porta USB).<br>
+      &bull; Il pin <b>3.3V</b> pu&ograve; fornire max <b>50 mA</b>: non alimentare sensori esigenti da questo pin.<br>
+      &bull; Il regolatore di tensione onboard dissipa calore: con Vin alta (es. 12V) e carico elevato si surriscalda.
+    </div>
+
     <div class="note">Il linguaggio Arduino &egrave; C/C++ con un preprocessore che aggiunge automaticamente <code>#include &lt;Arduino.h&gt;</code> e prototipi di funzione.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     CONFRONTO SCHEDE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-board-compare"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CONFRONTO SCHEDE: UNO R3 vs UNO R4 WiFi vs MEGA 2560</div>
+  <div class="section-body">
+    <table>
+      <tr>
+        <th>Caratteristica</th>
+        <th>UNO R3</th>
+        <th>UNO R4 WiFi</th>
+        <th>Mega 2560</th>
+      </tr>
+      <tr>
+        <td>Microcontrollore</td>
+        <td>ATmega328P (AVR 8-bit)</td>
+        <td>Renesas RA4M1 (ARM Cortex-M4F 32-bit)</td>
+        <td>ATmega2560 (AVR 8-bit)</td>
+      </tr>
+      <tr>
+        <td>Clock</td>
+        <td>16 MHz</td>
+        <td>48 MHz</td>
+        <td>16 MHz</td>
+      </tr>
+      <tr>
+        <td>Flash</td>
+        <td>32 KB</td>
+        <td>256 KB</td>
+        <td>256 KB (8 KB bootloader)</td>
+      </tr>
+      <tr>
+        <td>SRAM</td>
+        <td>2 KB</td>
+        <td>32 KB</td>
+        <td>8 KB</td>
+      </tr>
+      <tr>
+        <td>EEPROM</td>
+        <td>1 KB</td>
+        <td>8 KB (emulata in Data Flash)</td>
+        <td>4 KB</td>
+      </tr>
+      <tr>
+        <td>Digital I/O</td>
+        <td>14</td>
+        <td>14</td>
+        <td><b>54</b></td>
+      </tr>
+      <tr>
+        <td>Pin PWM</td>
+        <td>6 (pin 3,5,6,9,10,11)</td>
+        <td>6 (pin 3,5,6,9,10,11)</td>
+        <td><b>15</b> (pin 2&ndash;13, 44&ndash;46)</td>
+      </tr>
+      <tr>
+        <td>Analog In</td>
+        <td>6 (10-bit)</td>
+        <td>6 (14-bit)</td>
+        <td><b>16</b> (10-bit)</td>
+      </tr>
+      <tr>
+        <td>DAC</td>
+        <td>No</td>
+        <td><b>1 (12-bit, pin A0)</b></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Interrupt esterni</td>
+        <td>2 (pin 2, 3)</td>
+        <td>2 (pin 2, 3)</td>
+        <td><b>6</b> (pin 2, 3, 18, 19, 20, 21)</td>
+      </tr>
+      <tr>
+        <td>Pin-change interrupt</td>
+        <td>20 (tutti i pin digitali + analogici)</td>
+        <td>Tutti i pin (via IRQ controller)</td>
+        <td>24 (pin 0&ndash;15 + A0&ndash;A7)</td>
+      </tr>
+      <tr>
+        <td>UART / Serial</td>
+        <td>1</td>
+        <td>1 (+ 1 USB)</td>
+        <td><b>4</b> (Serial, Serial1&ndash;Serial3)</td>
+      </tr>
+      <tr>
+        <td>I2C</td>
+        <td>1</td>
+        <td>1 (+ 1 aggiuntivo)</td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <td>SPI</td>
+        <td>1</td>
+        <td>1</td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <td>USB</td>
+        <td>USB-B</td>
+        <td>USB-C</td>
+        <td>USB-B</td>
+      </tr>
+      <tr>
+        <td>WiFi / Bluetooth</td>
+        <td>No</td>
+        <td><b>WiFi + BLE (modulo ESP32-S3)</b></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Matrice LED</td>
+        <td>No</td>
+        <td><b>12&times;8 LED matrix onboard</b></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>RTC</td>
+        <td>No</td>
+        <td><b>S&igrave; (integrato)</b></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>CAN bus</td>
+        <td>No</td>
+        <td><b>S&igrave; (integrato)</b></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Op Amp</td>
+        <td>No</td>
+        <td><b>S&igrave; (integrato)</b></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Tensione operativa</td>
+        <td>5V</td>
+        <td>5V</td>
+        <td>5V</td>
+      </tr>
+      <tr>
+        <td>Vin raccomandata</td>
+        <td>7&ndash;12V</td>
+        <td>6&ndash;24V</td>
+        <td>7&ndash;12V</td>
+      </tr>
+      <tr>
+        <td>Corrente per pin I/O</td>
+        <td>20 mA (max 40 mA)</td>
+        <td>8 mA (max 20 mA)</td>
+        <td>20 mA (max 40 mA)</td>
+      </tr>
+      <tr>
+        <td>Corrente totale I/O</td>
+        <td>200 mA</td>
+        <td>~100 mA</td>
+        <td>200 mA (per porta)</td>
+      </tr>
+      <tr>
+        <td>Dimensioni</td>
+        <td>68.6 &times; 53.4 mm</td>
+        <td>68.6 &times; 53.4 mm</td>
+        <td>101.5 &times; 53.3 mm</td>
+      </tr>
+      <tr>
+        <td>Compatibilit&agrave; shield</td>
+        <td>Standard UNO</td>
+        <td>Standard UNO</td>
+        <td>UNO-compatibile + pin extra</td>
+      </tr>
+    </table>
+
+    <div class="note"><b>Quando scegliere quale scheda:</b><br>
+      &bull; <b>UNO R3</b> &mdash; Progetti didattici, prototipazione semplice, massima compatibilit&agrave; con tutorial e librerie esistenti.<br>
+      &bull; <b>UNO R4 WiFi</b> &mdash; Progetti IoT, necessit&agrave; di WiFi/BLE, DAC, maggiore memoria, stessa forma dell'UNO.<br>
+      &bull; <b>Mega 2560</b> &mdash; Progetti con molti sensori/attuatori (54 pin digitali, 16 analogici), pi&ugrave; UART, stampanti 3D (Marlin).
+    </div>
+
+    <div class="warn"><b>Attenzione UNO R4 WiFi:</b> la corrente massima per pin &egrave; <b>8 mA</b> (consigliata), molto inferiore ai 20 mA dell'UNO R3.
+      Pilotare LED o carichi direttamente potrebbe richiedere transistor/MOSFET esterni. Inoltre, alcune librerie AVR non sono compatibili con l'architettura ARM (Renesas RA4M1).</div>
   </div>
 </div>
 
@@ -258,6 +471,13 @@ Serial.println(<span class="kw">F</span>(<span class="str">"Salva SRAM!"</span>)
       <tr><td><code>pinMode(pin, mode)</code></td><td>Configura il pin: <code>INPUT</code>, <code>OUTPUT</code>, <code>INPUT_PULLUP</code></td></tr>
       <tr><td><code>digitalWrite(pin, val)</code></td><td>Scrive <code>HIGH</code> o <code>LOW</code> su pin digitale</td></tr>
       <tr><td><code>digitalRead(pin)</code></td><td>Legge stato pin: ritorna <code>HIGH</code> o <code>LOW</code></td></tr>
+      <tr><td><code>tone(pin, freq)</code></td><td>Genera onda quadra alla frequenza Hz (usa Timer2)</td></tr>
+      <tr><td><code>tone(pin, freq, dur)</code></td><td>Genera tono per durata in ms, poi si ferma</td></tr>
+      <tr><td><code>noTone(pin)</code></td><td>Ferma il tono generato su quel pin</td></tr>
+      <tr><td><code>pulseIn(pin, val)</code></td><td>Misura durata impulso HIGH/LOW in &micro;s (timeout 1s)</td></tr>
+      <tr><td><code>pulseIn(pin, val, timeout)</code></td><td>Come sopra con timeout custom in &micro;s</td></tr>
+      <tr><td><code>shiftOut(data, clock, order, val)</code></td><td>Invia byte bit a bit: <code>MSBFIRST</code> o <code>LSBFIRST</code></td></tr>
+      <tr><td><code>shiftIn(data, clock, order)</code></td><td>Riceve byte bit a bit</td></tr>
     </table>
 
 <pre>
@@ -1514,6 +1734,677 @@ power_spi_disable();
 power_twi_disable();
 power_timer1_disable();
 power_timer2_disable();
+</pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     CODICI STANDARD SENSORI / ATTUATORI
+     ════════════════════════════════════════════════════════════════ -->
+
+<!-- ─── SERVO BEST PRACTICE ─────────────────────────────────────── -->
+<a class="anchor" id="s-cs-servo"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SERVO &mdash; CODICI BEST PRACTICE</div>
+  <div class="section-body">
+    <p>Un servomotore standard richiede un impulso PWM ogni 20 ms (50 Hz).
+       Larghezza impulso: ~544 &micro;s = 0&deg;, ~1500 &micro;s = 90&deg;, ~2400 &micro;s = 180&deg;.
+       La libreria <code>Servo.h</code> (built-in) gestisce tutto via Timer1.</p>
+
+    <div class="sub">
+      <div class="sub-title">Movimento fluido (non-bloccante)</div>
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;Servo.h&gt;</span>
+
+Servo myServo;
+
+<span class="kw">int</span> currentAngle = <span class="num">90</span>;
+<span class="kw">int</span> targetAngle  = <span class="num">90</span>;
+<span class="kw">unsigned long</span> lastMove = <span class="num">0</span>;
+<span class="kw">const int</span> STEP_DELAY = <span class="num">15</span>;  <span class="cmt">// ms tra ogni grado (velocit&agrave;)</span>
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  myServo.attach(<span class="num">9</span>, <span class="num">544</span>, <span class="num">2400</span>);  <span class="cmt">// Pin, min &micro;s, max &micro;s</span>
+  myServo.write(currentAngle);
+  Serial.begin(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="hd">smoothMove</span>() {
+  <span class="kw">if</span> (currentAngle == targetAngle) <span class="kw">return</span>;
+  <span class="kw">if</span> (millis() - lastMove &lt; STEP_DELAY) <span class="kw">return</span>;
+  lastMove = millis();
+  currentAngle += (targetAngle > currentAngle) ? <span class="num">1</span> : -<span class="num">1</span>;
+  myServo.write(currentAngle);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  smoothMove();
+  <span class="cmt">// Il resto del codice gira senza bloccarsi</span>
+
+  <span class="cmt">// Esempio: comando da seriale</span>
+  <span class="kw">if</span> (Serial.available()) {
+    <span class="kw">int</span> angle = Serial.parseInt();
+    targetAngle = constrain(angle, <span class="num">0</span>, <span class="num">180</span>);
+  }
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Controllo preciso con writeMicroseconds()</div>
+<pre>
+<span class="cmt">// writeMicroseconds() &egrave; pi&ugrave; preciso di write()</span>
+<span class="cmt">// write(90) internamente chiama writeMicroseconds(1472)</span>
+<span class="cmt">// ma la conversione gradi &rarr; &micro;s pu&ograve; perdere risoluzione</span>
+
+<span class="cmt">// Servo continuo: usare writeMicroseconds per velocit&agrave;</span>
+myServo.writeMicroseconds(<span class="num">1500</span>);  <span class="cmt">// Fermo</span>
+myServo.writeMicroseconds(<span class="num">1300</span>);  <span class="cmt">// Rotazione lenta oraria</span>
+myServo.writeMicroseconds(<span class="num">1000</span>);  <span class="cmt">// Rotazione veloce oraria</span>
+myServo.writeMicroseconds(<span class="num">1700</span>);  <span class="cmt">// Rotazione lenta antioraria</span>
+myServo.writeMicroseconds(<span class="num">2000</span>);  <span class="cmt">// Rotazione veloce antioraria</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Multi-servo con sweep indipendente</div>
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;Servo.h&gt;</span>
+
+<span class="kw">struct</span> ServoCtrl {
+  Servo servo;
+  <span class="kw">int</span> pos, target, step;
+  <span class="kw">unsigned long</span> lastUpdate, interval;
+};
+
+ServoCtrl servos[<span class="num">3</span>];
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  servos[<span class="num">0</span>].servo.attach(<span class="num">9</span>);  servos[<span class="num">0</span>].interval = <span class="num">15</span>;
+  servos[<span class="num">1</span>].servo.attach(<span class="num">10</span>); servos[<span class="num">1</span>].interval = <span class="num">25</span>;
+  servos[<span class="num">2</span>].servo.attach(<span class="num">11</span>); servos[<span class="num">2</span>].interval = <span class="num">10</span>;
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+    servos[i].pos = <span class="num">90</span>; servos[i].target = <span class="num">90</span>;
+    servos[i].servo.write(<span class="num">90</span>);
+  }
+}
+
+<span class="kw">void</span> <span class="hd">updateServos</span>() {
+  <span class="kw">unsigned long</span> now = millis();
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+    <span class="kw">if</span> (servos[i].pos == servos[i].target) <span class="kw">continue</span>;
+    <span class="kw">if</span> (now - servos[i].lastUpdate &lt; servos[i].interval) <span class="kw">continue</span>;
+    servos[i].lastUpdate = now;
+    servos[i].pos += (servos[i].target > servos[i].pos) ? <span class="num">1</span> : -<span class="num">1</span>;
+    servos[i].servo.write(servos[i].pos);
+  }
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  updateServos();
+  <span class="cmt">// Imposta target: servos[0].target = 45; ecc.</span>
+}
+</pre>
+    </div>
+
+    <div class="note">La libreria Servo disabilita <code>analogWrite()</code> su pin 9 e 10 (usa Timer1). Supporta fino a 12 servo su Uno.</div>
+    <div class="warn">Alimentare i servo da alimentazione esterna (5&ndash;6V), mai dal pin 5V di Arduino: i servo assorbono picchi di 500 mA+. Collegare solo il GND in comune.</div>
+  </div>
+</div>
+
+<!-- ─── LCD PARALLELO + I2C ───────────────────────────────────── -->
+<a class="anchor" id="s-cs-lcd"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LCD &mdash; PARALLELO + I2C (BEST PRACTICE)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">1. LCD Parallelo (LiquidCrystal.h built-in)</div>
+      <p>Connessione diretta 4-bit: usa 6 pin (RS, E, D4&ndash;D7). Il pin R/W si collega a GND.</p>
+      <table>
+        <tr><th>Pin LCD</th><th>Pin Arduino</th><th>Funzione</th></tr>
+        <tr><td>RS (4)</td><td>12</td><td>Register Select</td></tr>
+        <tr><td>E (6)</td><td>11</td><td>Enable</td></tr>
+        <tr><td>D4&ndash;D7</td><td>5, 4, 3, 2</td><td>Bus dati 4-bit</td></tr>
+        <tr><td>V0 (3)</td><td>Potenziometro 10k</td><td>Contrasto</td></tr>
+      </table>
+
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;LiquidCrystal.h&gt;</span>
+LiquidCrystal lcd(<span class="num">12</span>, <span class="num">11</span>, <span class="num">5</span>, <span class="num">4</span>, <span class="num">3</span>, <span class="num">2</span>);
+
+<span class="cmt">// Carattere custom: simbolo gradi</span>
+<span class="kw">byte</span> degreeChar[<span class="num">8</span>] = {
+  <span class="num">0b00110</span>, <span class="num">0b01001</span>, <span class="num">0b01001</span>, <span class="num">0b00110</span>,
+  <span class="num">0b00000</span>, <span class="num">0b00000</span>, <span class="num">0b00000</span>, <span class="num">0b00000</span>
+};
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  lcd.begin(<span class="num">16</span>, <span class="num">2</span>);
+  lcd.createChar(<span class="num">0</span>, degreeChar);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">float</span> temp = readSensor();
+
+  <span class="cmt">// Best practice: aggiornare solo le parti che cambiano</span>
+  <span class="cmt">// Evitare lcd.clear() nel loop (causa sfarfallio)</span>
+  lcd.setCursor(<span class="num">0</span>, <span class="num">0</span>);
+  lcd.print(<span class="kw">F</span>(<span class="str">"Temp: "</span>));         <span class="cmt">// F() per risparmiare SRAM</span>
+  lcd.print(temp, <span class="num">1</span>);
+  lcd.write((<span class="kw">byte</span>)<span class="num">0</span>);             <span class="cmt">// Carattere custom gradi</span>
+  lcd.print(<span class="kw">F</span>(<span class="str">"C   "</span>));           <span class="cmt">// Spazi per cancellare cifre residue</span>
+
+  lcd.setCursor(<span class="num">0</span>, <span class="num">1</span>);
+  lcd.print(<span class="kw">F</span>(<span class="str">"Stato: OK     "</span>));
+
+  delay(<span class="num">500</span>);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">2. LCD I2C (LiquidCrystal_I2C &mdash; libreria esterna)</div>
+      <p>Con il modulo I2C (PCF8574) bastano 2 pin (SDA=A4, SCL=A5). Indirizzo tipico: <code>0x27</code> o <code>0x3F</code>.
+         Installare: Sketch &rarr; Libreria &rarr; Gestione librerie &rarr; cercare "LiquidCrystal I2C" di Frank de Brabander.</p>
+
+<pre>
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;LiquidCrystal_I2C.h&gt;</span>
+
+<span class="cmt">// Indirizzo I2C, colonne, righe</span>
+LiquidCrystal_I2C lcd(<span class="num">0x27</span>, <span class="num">16</span>, <span class="num">2</span>);
+
+<span class="kw">byte</span> heart[<span class="num">8</span>] = {
+  <span class="num">0b00000</span>, <span class="num">0b01010</span>, <span class="num">0b11111</span>, <span class="num">0b11111</span>,
+  <span class="num">0b11111</span>, <span class="num">0b01110</span>, <span class="num">0b00100</span>, <span class="num">0b00000</span>
+};
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  lcd.init();                    <span class="cmt">// Inizializza (al posto di begin)</span>
+  lcd.backlight();               <span class="cmt">// Accendi retroilluminazione</span>
+  lcd.createChar(<span class="num">0</span>, heart);
+  lcd.setCursor(<span class="num">0</span>, <span class="num">0</span>);
+  lcd.print(<span class="kw">F</span>(<span class="str">"Hello I2C!"</span>));
+  lcd.setCursor(<span class="num">0</span>, <span class="num">1</span>);
+  lcd.write((<span class="kw">byte</span>)<span class="num">0</span>);
+}
+
+<span class="cmt">// Trovare l'indirizzo I2C con scanner</span>
+<span class="kw">void</span> <span class="hd">i2cScan</span>() {
+  Wire.begin();
+  Serial.begin(<span class="num">9600</span>);
+  <span class="kw">for</span> (<span class="kw">byte</span> addr = <span class="num">1</span>; addr &lt; <span class="num">127</span>; addr++) {
+    Wire.beginTransmission(addr);
+    <span class="kw">if</span> (Wire.endTransmission() == <span class="num">0</span>) {
+      Serial.print(<span class="kw">F</span>(<span class="str">"Trovato: 0x"</span>));
+      Serial.println(addr, HEX);
+    }
+  }
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Aggiornamento non-bloccante con millis()</div>
+<pre>
+<span class="kw">unsigned long</span> lastLcdUpdate = <span class="num">0</span>;
+<span class="kw">const unsigned long</span> LCD_INTERVAL = <span class="num">300</span>;  <span class="cmt">// Aggiorna ogni 300ms</span>
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">if</span> (millis() - lastLcdUpdate >= LCD_INTERVAL) {
+    lastLcdUpdate = millis();
+    updateLcd();  <span class="cmt">// Aggiorna solo quando serve</span>
+  }
+  <span class="cmt">// Altro codice non bloccato...</span>
+}
+
+<span class="kw">void</span> <span class="hd">updateLcd</span>() {
+  <span class="cmt">// Stampa con padding per evitare residui</span>
+  <span class="kw">char</span> buf[<span class="num">17</span>];  <span class="cmt">// 16 char + terminatore</span>
+  snprintf(buf, <span class="kw">sizeof</span>(buf), <span class="str">"T:%5.1fC H:%3d%%"</span>, temp, hum);
+  lcd.setCursor(<span class="num">0</span>, <span class="num">0</span>);
+  lcd.print(buf);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Best Practice LCD</div>
+      <table>
+        <tr><th>Pratica</th><th>Dettaglio</th></tr>
+        <tr><td>No <code>lcd.clear()</code> nel loop</td><td>Causa sfarfallio visibile. Sovrascrivere con spazi o usare <code>snprintf</code> con larghezza fissa.</td></tr>
+        <tr><td>Usare <code>F()</code> per stringhe</td><td><code>lcd.print(F("testo"))</code> risparmia SRAM preziosa.</td></tr>
+        <tr><td>Aggiornare a intervalli</td><td>Non riscrivere l'LCD ogni ciclo di loop &mdash; 200&ndash;500 ms sono sufficienti per l'occhio umano.</td></tr>
+        <tr><td>Buffer con <code>snprintf</code></td><td>Formattare in un <code>char[]</code> con larghezza fissa evita residui e semplifica l'allineamento.</td></tr>
+        <tr><td>LCD I2C: solo 2 pin</td><td>Preferire I2C quando i pin scarseggiano. Leggermente pi&ugrave; lento ma trascurabile per display.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HC-SR04 ULTRASUONI ────────────────────────────────────── -->
+<a class="anchor" id="s-cs-hcsr04"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> HC-SR04 &mdash; SENSORE ULTRASUONI</div>
+  <div class="section-body">
+    <p>Sensore di distanza a ultrasuoni. Emette un impulso a 40 kHz e misura il tempo di ritorno dell'eco.
+       Range: 2&ndash;400 cm. Non richiede librerie.</p>
+
+    <table>
+      <tr><th>Pin HC-SR04</th><th>Funzione</th></tr>
+      <tr><td>VCC</td><td>5V</td></tr>
+      <tr><td>Trig</td><td>Trigger: impulso HIGH &ge; 10 &micro;s per avviare misura</td></tr>
+      <tr><td>Echo</td><td>Echo: durata impulso HIGH proporzionale alla distanza</td></tr>
+      <tr><td>GND</td><td>Massa</td></tr>
+    </table>
+
+<pre>
+<span class="kw">const byte</span> TRIG = <span class="num">9</span>;
+<span class="kw">const byte</span> ECHO = <span class="num">10</span>;
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  Serial.begin(<span class="num">9600</span>);
+}
+
+<span class="kw">float</span> <span class="hd">readDistanceCm</span>() {
+  <span class="cmt">// Invia impulso trigger di 10&micro;s</span>
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(<span class="num">2</span>);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(<span class="num">10</span>);
+  digitalWrite(TRIG, LOW);
+
+  <span class="cmt">// Misura durata echo in &micro;s</span>
+  <span class="kw">unsigned long</span> duration = pulseIn(ECHO, HIGH, <span class="num">30000</span>);
+  <span class="cmt">// timeout 30ms &asymp; ~510 cm max</span>
+
+  <span class="kw">if</span> (duration == <span class="num">0</span>) <span class="kw">return</span> -<span class="num">1</span>;  <span class="cmt">// Nessun eco (fuori range)</span>
+
+  <span class="cmt">// Distanza = (tempo * velocit&agrave; suono) / 2</span>
+  <span class="cmt">// v_suono &asymp; 343 m/s = 0.0343 cm/&micro;s</span>
+  <span class="kw">return</span> duration * <span class="num">0.0343</span> / <span class="num">2.0</span>;
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">float</span> dist = readDistanceCm();
+  <span class="kw">if</span> (dist > <span class="num">0</span>) {
+    Serial.print(<span class="str">"Distanza: "</span>);
+    Serial.print(dist, <span class="num">1</span>);
+    Serial.println(<span class="str">" cm"</span>);
+  } <span class="kw">else</span> {
+    Serial.println(<span class="str">"Fuori range"</span>);
+  }
+  delay(<span class="num">100</span>);  <span class="cmt">// Min 60ms tra misure consecutive</span>
+}
+</pre>
+
+    <div class="note">Per misure pi&ugrave; accurate con temperatura: <code>v = 331.3 + 0.606 * T_celsius</code> m/s. A 20&deg;C: 343.5 m/s.</div>
+    <div class="warn">Il sensore funziona a 5V. Se si usa con schede a 3.3V (ESP32, ecc.), servono level shifter o partitore sul pin Echo.</div>
+  </div>
+</div>
+
+<!-- ─── BUZZER / TONE ─────────────────────────────────────────── -->
+<a class="anchor" id="s-cs-buzzer"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BUZZER / TONE</div>
+  <div class="section-body">
+    <p>Due tipi di buzzer: <b>attivo</b> (suona con solo 5V, no frequenza) e <b>passivo</b> (richiede onda quadra, pilotabile con <code>tone()</code>).
+       <code>tone()</code> usa Timer2, quindi disabilita PWM su pin 3 e 11.</p>
+
+    <div class="sub">
+      <div class="sub-title">Frequenze Note Musicali (Hz)</div>
+      <table>
+        <tr><th>Nota</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>A</th><th>B</th></tr>
+        <tr><td>Ottava 4</td><td>262</td><td>294</td><td>330</td><td>349</td><td>392</td><td>440</td><td>494</td></tr>
+        <tr><td>Ottava 5</td><td>523</td><td>587</td><td>659</td><td>698</td><td>784</td><td>880</td><td>988</td></tr>
+      </table>
+    </div>
+
+<pre>
+<span class="kw">const byte</span> BUZZER = <span class="num">8</span>;
+
+<span class="cmt">// Definizione note</span>
+<span class="kw">#define</span> NOTE_C4  <span class="num">262</span>
+<span class="kw">#define</span> NOTE_D4  <span class="num">294</span>
+<span class="kw">#define</span> NOTE_E4  <span class="num">330</span>
+<span class="kw">#define</span> NOTE_F4  <span class="num">349</span>
+<span class="kw">#define</span> NOTE_G4  <span class="num">392</span>
+<span class="kw">#define</span> NOTE_A4  <span class="num">440</span>
+<span class="kw">#define</span> NOTE_B4  <span class="num">494</span>
+<span class="kw">#define</span> NOTE_C5  <span class="num">523</span>
+<span class="kw">#define</span> PAUSE    <span class="num">0</span>
+
+<span class="cmt">// Melodia: array di coppie {nota, durata_ms}</span>
+<span class="kw">int</span> melody[] = {
+  NOTE_C4, <span class="num">400</span>, NOTE_D4, <span class="num">400</span>, NOTE_E4, <span class="num">400</span>, NOTE_F4, <span class="num">400</span>,
+  NOTE_G4, <span class="num">400</span>, NOTE_A4, <span class="num">400</span>, NOTE_B4, <span class="num">400</span>, NOTE_C5, <span class="num">800</span>
+};
+<span class="kw">int</span> melodyLen = <span class="kw">sizeof</span>(melody) / <span class="kw">sizeof</span>(melody[<span class="num">0</span>]) / <span class="num">2</span>;
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; melodyLen; i++) {
+    <span class="kw">int</span> nota = melody[i * <span class="num">2</span>];
+    <span class="kw">int</span> dur  = melody[i * <span class="num">2</span> + <span class="num">1</span>];
+    <span class="kw">if</span> (nota != PAUSE)
+      tone(BUZZER, nota, dur);
+    delay(dur * <span class="num">1.3</span>);          <span class="cmt">// Pausa tra note (30%)</span>
+    noTone(BUZZER);
+  }
+}
+
+<span class="cmt">// Beep di allarme senza tone() (bit-banging)</span>
+<span class="kw">void</span> <span class="hd">beepManual</span>(<span class="kw">int</span> freqHz, <span class="kw">int</span> durationMs) {
+  <span class="kw">long</span> period = <span class="num">1000000L</span> / freqHz;
+  <span class="kw">long</span> cycles  = (<span class="kw">long</span>)freqHz * durationMs / <span class="num">1000</span>;
+  <span class="kw">for</span> (<span class="kw">long</span> i = <span class="num">0</span>; i &lt; cycles; i++) {
+    digitalWrite(BUZZER, HIGH);
+    delayMicroseconds(period / <span class="num">2</span>);
+    digitalWrite(BUZZER, LOW);
+    delayMicroseconds(period / <span class="num">2</span>);
+  }
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── PIR SENSORE MOVIMENTO ─────────────────────────────────── -->
+<a class="anchor" id="s-cs-pir"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PIR &mdash; SENSORE DI MOVIMENTO</div>
+  <div class="section-body">
+    <p>Il sensore PIR (HC-SR501) rileva movimento tramite radiazione infrarossa. Output digitale: HIGH quando rileva movimento.
+       Ha due trimmer: sensibilit&agrave; e tempo di ritardo (2s&ndash;300s). Richiede ~60s di warm-up all'accensione.</p>
+
+<pre>
+<span class="kw">const byte</span> PIR_PIN = <span class="num">2</span>;
+<span class="kw">const byte</span> LED_PIN = <span class="num">13</span>;
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(PIR_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+  Serial.begin(<span class="num">9600</span>);
+  Serial.println(<span class="kw">F</span>(<span class="str">"Calibrazione PIR... attendere 60s"</span>));
+  delay(<span class="num">60000</span>);                    <span class="cmt">// Warm-up sensore</span>
+  Serial.println(<span class="kw">F</span>(<span class="str">"Pronto."</span>));
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">if</span> (digitalRead(PIR_PIN) == HIGH) {
+    digitalWrite(LED_PIN, HIGH);
+    Serial.println(<span class="kw">F</span>(<span class="str">"Movimento rilevato!"</span>));
+  } <span class="kw">else</span> {
+    digitalWrite(LED_PIN, LOW);
+  }
+  delay(<span class="num">200</span>);
+}
+
+<span class="cmt">// Versione con interrupt (non-bloccante)</span>
+<span class="kw">volatile bool</span> motionDetected = <span class="kw">false</span>;
+
+<span class="kw">void</span> <span class="hd">motionISR</span>() { motionDetected = <span class="kw">true</span>; }
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(PIR_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(PIR_PIN), motionISR, RISING);
+  Serial.begin(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">if</span> (motionDetected) {
+    motionDetected = <span class="kw">false</span>;
+    Serial.println(<span class="kw">F</span>(<span class="str">"Movimento!"</span>));
+    <span class="cmt">// azione: accendi luce, allarme, ecc.</span>
+  }
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── LDR FOTORESISTORE ─────────────────────────────────────── -->
+<a class="anchor" id="s-cs-ldr"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LDR &mdash; FOTORESISTORE</div>
+  <div class="section-body">
+    <p>Il fotoresistore (LDR) varia la sua resistenza con la luce: alta R al buio (~1 M&ohm;), bassa R in piena luce (~1 k&ohm;).
+       Si legge con un partitore di tensione collegato a un pin analogico.</p>
+
+    <p><b>Circuito:</b> 5V &rarr; LDR &rarr; nodo(A0) &rarr; R (10 k&ohm;) &rarr; GND.
+       Pi&ugrave; luce = pi&ugrave; tensione su A0 (valore analogico alto).</p>
+
+<pre>
+<span class="kw">const byte</span> LDR_PIN = A0;
+<span class="kw">const byte</span> LED_PIN = <span class="num">9</span>;  <span class="cmt">// Pin PWM</span>
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(LED_PIN, OUTPUT);
+  Serial.begin(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">int</span> lux = analogRead(LDR_PIN);           <span class="cmt">// 0-1023</span>
+
+  <span class="cmt">// Accendi LED proporzionalmente al buio</span>
+  <span class="kw">int</span> brightness = map(lux, <span class="num">0</span>, <span class="num">1023</span>, <span class="num">255</span>, <span class="num">0</span>);
+  analogWrite(LED_PIN, brightness);
+
+  <span class="cmt">// Calcolo tensione e resistenza LDR</span>
+  <span class="kw">float</span> voltage = lux * <span class="num">5.0</span> / <span class="num">1023.0</span>;
+  <span class="kw">float</span> rLdr = <span class="num">10000.0</span> * voltage / (<span class="num">5.0</span> - voltage);  <span class="cmt">// R partitore = 10k</span>
+
+  Serial.print(<span class="str">"ADC: "</span>); Serial.print(lux);
+  Serial.print(<span class="str">"  R_LDR: "</span>); Serial.print(rLdr, <span class="num">0</span>);
+  Serial.println(<span class="str">" ohm"</span>);
+  delay(<span class="num">200</span>);
+}
+</pre>
+
+    <div class="note">Per soglia giorno/notte, calibrare il valore ADC nel proprio ambiente e usare un confronto con isteresi.</div>
+  </div>
+</div>
+
+<!-- ─── TERMISTOR NTC ──────────────────────────────────────────── -->
+<a class="anchor" id="s-cs-ntc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TERMISTOR NTC &mdash; SENSORE TEMPERATURA</div>
+  <div class="section-body">
+    <p>Un termistor NTC (Negative Temperature Coefficient) diminuisce la resistenza con l'aumento della temperatura.
+       Tipico: 10 k&ohm; a 25&deg;C, B=3950. Si legge con partitore di tensione + equazione di Steinhart-Hart semplificata.</p>
+
+    <p><b>Circuito:</b> 5V &rarr; R (10 k&ohm;) &rarr; nodo(A0) &rarr; NTC &rarr; GND.</p>
+
+<pre>
+<span class="kw">const byte</span>  NTC_PIN   = A0;
+<span class="kw">const float</span> R_SERIES  = <span class="num">10000.0</span>;  <span class="cmt">// Resistenza partitore</span>
+<span class="kw">const float</span> R_NTC_25  = <span class="num">10000.0</span>;  <span class="cmt">// R del NTC a 25&deg;C</span>
+<span class="kw">const float</span> BETA      = <span class="num">3950.0</span>;   <span class="cmt">// Coefficiente B (datasheet)</span>
+<span class="kw">const float</span> T_REF     = <span class="num">298.15</span>;   <span class="cmt">// 25&deg;C in Kelvin</span>
+
+<span class="kw">float</span> <span class="hd">readTemperature</span>() {
+  <span class="kw">int</span> adc = analogRead(NTC_PIN);
+  <span class="kw">float</span> rNtc = R_SERIES * (<span class="num">1023.0</span> / adc - <span class="num">1.0</span>);
+
+  <span class="cmt">// Equazione B-parameter (Steinhart-Hart semplificata)</span>
+  <span class="cmt">// 1/T = 1/T0 + (1/B) * ln(R/R0)</span>
+  <span class="kw">float</span> tKelvin = <span class="num">1.0</span> / (<span class="num">1.0</span>/T_REF + (<span class="num">1.0</span>/BETA) * log(rNtc/R_NTC_25));
+  <span class="kw">return</span> tKelvin - <span class="num">273.15</span>;  <span class="cmt">// Converti in &deg;C</span>
+}
+
+<span class="kw">void</span> <span class="hd">setup</span>() { Serial.begin(<span class="num">9600</span>); }
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="kw">float</span> temp = readTemperature();
+  Serial.print(<span class="str">"Temperatura: "</span>);
+  Serial.print(temp, <span class="num">1</span>);
+  Serial.println(<span class="str">" C"</span>);
+  delay(<span class="num">500</span>);
+}
+</pre>
+
+    <div class="warn">Per maggiore precisione, eseguire media di pi&ugrave; letture ADC (oversampling) e verificare il valore B dal datasheet del termistor specifico.</div>
+  </div>
+</div>
+
+<!-- ─── RELÈ / MOSFET ─────────────────────────────────────────── -->
+<a class="anchor" id="s-cs-relay"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> REL&Egrave; / MOSFET &mdash; PILOTARE CARICHI</div>
+  <div class="section-body">
+    <p>Per comandare carichi ad alta potenza (motori, lampade, elettrovalvole) servono
+       rel&egrave; o MOSFET come switch. Il pin Arduino fornisce solo il segnale di controllo.</p>
+
+    <div class="sub">
+      <div class="sub-title">Modulo Rel&egrave; (con optoisolatore)</div>
+<pre>
+<span class="kw">const byte</span> RELAY_PIN = <span class="num">7</span>;
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, HIGH);  <span class="cmt">// Molti moduli sono ACTIVE LOW</span>
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  digitalWrite(RELAY_PIN, LOW);   <span class="cmt">// Accendi (ACTIVE LOW)</span>
+  delay(<span class="num">5000</span>);
+  digitalWrite(RELAY_PIN, HIGH);  <span class="cmt">// Spegni</span>
+  delay(<span class="num">5000</span>);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MOSFET N-Channel (IRLZ44N) per DC</div>
+<pre>
+<span class="cmt">// Circuito: Drain &rarr; carico &rarr; V+</span>
+<span class="cmt">//           Source &rarr; GND</span>
+<span class="cmt">//           Gate &rarr; pin Arduino (R 100&ohm; serie, R 10k pulldown)</span>
+<span class="kw">const byte</span> MOSFET_PIN = <span class="num">9</span>;  <span class="cmt">// Pin PWM per controllo velocit&agrave;</span>
+
+<span class="kw">void</span> <span class="hd">setup</span>() { pinMode(MOSFET_PIN, OUTPUT); }
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="cmt">// Controllo velocit&agrave; motore DC con PWM</span>
+  analogWrite(MOSFET_PIN, <span class="num">64</span>);   <span class="cmt">// 25%</span>
+  delay(<span class="num">2000</span>);
+  analogWrite(MOSFET_PIN, <span class="num">128</span>);  <span class="cmt">// 50%</span>
+  delay(<span class="num">2000</span>);
+  analogWrite(MOSFET_PIN, <span class="num">255</span>);  <span class="cmt">// 100%</span>
+  delay(<span class="num">2000</span>);
+  analogWrite(MOSFET_PIN, <span class="num">0</span>);    <span class="cmt">// OFF</span>
+  delay(<span class="num">2000</span>);
+}
+</pre>
+    </div>
+
+    <div class="warn">Scegliere MOSFET logic-level (es. IRLZ44N, IRL540N): si aprono completamente con gate a 5V.
+       I MOSFET standard (IRF540) richiedono 10V al gate e non funzionano direttamente con Arduino.</div>
+  </div>
+</div>
+
+<!-- ─── LED RGB ───────────────────────────────────────────────── -->
+<a class="anchor" id="s-cs-rgb"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LED RGB</div>
+  <div class="section-body">
+    <p>LED RGB: tre LED (Rosso, Verde, Blu) in un unico package. Due tipi: <b>anodo comune</b> (pin lungo = 5V)
+       e <b>catodo comune</b> (pin lungo = GND). Si controllano con PWM per miscelare colori.</p>
+
+<pre>
+<span class="cmt">// LED RGB Catodo Comune</span>
+<span class="cmt">// Pin lungo &rarr; GND; R/G/B &rarr; resistori 220&ohm; &rarr; pin PWM</span>
+<span class="kw">const byte</span> R_PIN = <span class="num">9</span>, G_PIN = <span class="num">10</span>, B_PIN = <span class="num">11</span>;
+
+<span class="kw">void</span> <span class="hd">setColor</span>(<span class="kw">byte</span> r, <span class="kw">byte</span> g, <span class="kw">byte</span> b) {
+  analogWrite(R_PIN, r);
+  analogWrite(G_PIN, g);
+  analogWrite(B_PIN, b);
+}
+
+<span class="cmt">// Per ANODO COMUNE: invertire i valori</span>
+<span class="cmt">// analogWrite(R_PIN, 255 - r); ecc.</span>
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(R_PIN, OUTPUT);
+  pinMode(G_PIN, OUTPUT);
+  pinMode(B_PIN, OUTPUT);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  setColor(<span class="num">255</span>, <span class="num">0</span>,   <span class="num">0</span>);    delay(<span class="num">1000</span>);  <span class="cmt">// Rosso</span>
+  setColor(<span class="num">0</span>,   <span class="num">255</span>, <span class="num">0</span>);    delay(<span class="num">1000</span>);  <span class="cmt">// Verde</span>
+  setColor(<span class="num">0</span>,   <span class="num">0</span>,   <span class="num">255</span>);  delay(<span class="num">1000</span>);  <span class="cmt">// Blu</span>
+  setColor(<span class="num">255</span>, <span class="num">255</span>, <span class="num">0</span>);    delay(<span class="num">1000</span>);  <span class="cmt">// Giallo</span>
+  setColor(<span class="num">0</span>,   <span class="num">255</span>, <span class="num">255</span>);  delay(<span class="num">1000</span>);  <span class="cmt">// Ciano</span>
+  setColor(<span class="num">255</span>, <span class="num">0</span>,   <span class="num">255</span>);  delay(<span class="num">1000</span>);  <span class="cmt">// Magenta</span>
+  setColor(<span class="num">255</span>, <span class="num">255</span>, <span class="num">255</span>);  delay(<span class="num">1000</span>);  <span class="cmt">// Bianco</span>
+
+  <span class="cmt">// Dissolvenza arcobaleno</span>
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">256</span>; i++) {
+    setColor(i, <span class="num">255</span> - i, <span class="num">0</span>);
+    delay(<span class="num">10</span>);
+  }
+}
+</pre>
+  </div>
+</div>
+
+<!-- ─── SHIFT REGISTER 74HC595 ────────────────────────────────── -->
+<a class="anchor" id="s-cs-shift"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> SHIFT REGISTER 74HC595</div>
+  <div class="section-body">
+    <p>Lo shift register 74HC595 espande le uscite: con 3 pin Arduino si controllano 8 output digitali.
+       Pi&ugrave; 595 si possono collegare in cascata (daisy-chain) per 16, 24, ... uscite.</p>
+
+    <table>
+      <tr><th>Pin 595</th><th>Nome</th><th>Pin Arduino</th><th>Funzione</th></tr>
+      <tr><td>14</td><td>DS (SER)</td><td>11 (data)</td><td>Ingresso dati seriale</td></tr>
+      <tr><td>11</td><td>SHCP (SRCLK)</td><td>12 (clock)</td><td>Clock shift register</td></tr>
+      <tr><td>12</td><td>STCP (RCLK)</td><td>8 (latch)</td><td>Latch: trasferisce dati alle uscite</td></tr>
+      <tr><td>13</td><td>OE</td><td>GND</td><td>Output Enable (attivo LOW)</td></tr>
+      <tr><td>10</td><td>MR (SRCLR)</td><td>5V</td><td>Master Reset (attivo LOW)</td></tr>
+      <tr><td>Q0&ndash;Q7</td><td>&mdash;</td><td>&mdash;</td><td>8 uscite parallele</td></tr>
+      <tr><td>9</td><td>Q7'</td><td>&mdash;</td><td>Uscita seriale (per cascata)</td></tr>
+    </table>
+
+<pre>
+<span class="kw">const byte</span> DATA_PIN  = <span class="num">11</span>;  <span class="cmt">// DS</span>
+<span class="kw">const byte</span> CLOCK_PIN = <span class="num">12</span>;  <span class="cmt">// SHCP</span>
+<span class="kw">const byte</span> LATCH_PIN = <span class="num">8</span>;   <span class="cmt">// STCP</span>
+
+<span class="kw">void</span> <span class="hd">updateShiftRegister</span>(<span class="kw">byte</span> data) {
+  digitalWrite(LATCH_PIN, LOW);
+  shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, data);
+  digitalWrite(LATCH_PIN, HIGH);
+}
+
+<span class="kw">void</span> <span class="hd">setup</span>() {
+  pinMode(DATA_PIN, OUTPUT);
+  pinMode(CLOCK_PIN, OUTPUT);
+  pinMode(LATCH_PIN, OUTPUT);
+}
+
+<span class="kw">void</span> <span class="hd">loop</span>() {
+  <span class="cmt">// Knight Rider: LED che scorre avanti e indietro</span>
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">8</span>; i++) {
+    updateShiftRegister(<span class="num">1</span> &lt;&lt; i);
+    delay(<span class="num">100</span>);
+  }
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">6</span>; i &gt; <span class="num">0</span>; i--) {
+    updateShiftRegister(<span class="num">1</span> &lt;&lt; i);
+    delay(<span class="num">100</span>);
+  }
+}
+
+<span class="cmt">// Due 595 in cascata (16 uscite)</span>
+<span class="kw">void</span> <span class="hd">update16bit</span>(<span class="kw">uint16_t</span> data) {
+  digitalWrite(LATCH_PIN, LOW);
+  shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, data &gt;&gt; <span class="num">8</span>);   <span class="cmt">// Byte alto (2&deg; chip)</span>
+  shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, data &amp; <span class="num">0xFF</span>); <span class="cmt">// Byte basso (1&deg; chip)</span>
+  digitalWrite(LATCH_PIN, HIGH);
+}
 </pre>
   </div>
 </div>
