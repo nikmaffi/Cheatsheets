@@ -107,6 +107,7 @@
     <a href="#s-vars">Variabili / Costanti</a>
     <a href="#s-operators">Operatori</a>
     <a href="#s-io">Input / Output</a>
+    <a href="#s-fileio">File I/O</a>
   </div>
 
   <div class="nav-section">
@@ -176,7 +177,7 @@
   <div class="nav-section">
     <div class="nav-section-title">Libreria Standard</div>
     <a href="#s-stdlib">Package Principali</a>
-    <a href="#s-unbounded">Stringhe / Unbounded</a>
+    <a href="#s-unbounded">Stringhe (tipi, operazioni)</a>
     <a href="#s-containers">Containers (Vectors, Maps)</a>
     <a href="#s-controlled">Controlled Types / RAII</a>
   </div>
@@ -524,6 +525,133 @@ Bin  : <span class="kw">Integer</span> := <span class="num">2#1010_0011#</span>;
         <tr><td><code>Ada.Direct_IO</code></td><td>File binari ad accesso diretto</td></tr>
         <tr><td><code>Ada.Streams.Stream_IO</code></td><td>I/O basato su stream</td></tr>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- FILE I/O                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-fileio"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FILE I/O — TESTUALE E BINARIO</div>
+  <div class="section-body">
+
+    <div class="grid2">
+      <div>
+        <div class="sub-title">FILE TESTUALE — SCRITTURA</div>
+<pre>
+<span class="kw">with</span> Ada.Text_IO; <span class="kw">use</span> Ada.Text_IO;
+
+<span class="kw">procedure</span> <span class="hd">Write_File</span> <span class="kw">is</span>
+   F : File_Type;
+<span class="kw">begin</span>
+   Create (F, Out_File, <span class="str">"output.txt"</span>);
+   Put_Line (F, <span class="str">"Prima riga"</span>);
+   Put_Line (F, <span class="str">"Seconda riga"</span>);
+   Close (F);
+<span class="kw">end</span> Write_File;
+</pre>
+      </div>
+      <div>
+        <div class="sub-title">FILE TESTUALE — LETTURA</div>
+<pre>
+<span class="kw">with</span> Ada.Text_IO; <span class="kw">use</span> Ada.Text_IO;
+
+<span class="kw">procedure</span> <span class="hd">Read_File</span> <span class="kw">is</span>
+   F    : File_Type;
+   Line : <span class="kw">String</span> (<span class="num">1</span>..<span class="num">256</span>);
+   Last : <span class="kw">Natural</span>;
+<span class="kw">begin</span>
+   Open (F, In_File, <span class="str">"input.txt"</span>);
+   <span class="kw">while not</span> End_Of_File (F) <span class="kw">loop</span>
+      Get_Line (F, Line, Last);
+      Put_Line (Line (<span class="num">1</span>..Last));
+   <span class="kw">end loop</span>;
+   Close (F);
+<span class="kw">end</span> Read_File;
+</pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">APPEND A FILE ESISTENTE</div>
+<pre>
+Open (F, Append_File, <span class="str">"log.txt"</span>);   <span class="cmt">-- apre in modalità append</span>
+Put_Line (F, <span class="str">"Nuova riga in coda"</span>);
+Close (F);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MODI DI APERTURA (File_Mode)</div>
+      <table>
+        <tr><th>Modo</th><th>Descrizione</th></tr>
+        <tr><td><code>In_File</code></td><td>Solo lettura</td></tr>
+        <tr><td><code>Out_File</code></td><td>Solo scrittura (sovrascrive)</td></tr>
+        <tr><td><code>Append_File</code></td><td>Scrittura in coda</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FILE BINARIO — SEQUENTIAL_IO</div>
+<pre>
+<span class="kw">with</span> Ada.Sequential_IO;
+
+<span class="kw">procedure</span> <span class="hd">Bin_Sequential</span> <span class="kw">is</span>
+   <span class="kw">package</span> <span class="hd">Int_IO</span> <span class="kw">is new</span> Ada.Sequential_IO (<span class="kw">Integer</span>);
+   <span class="kw">use</span> Int_IO;
+   F : Int_IO.File_Type;
+   V : <span class="kw">Integer</span>;
+<span class="kw">begin</span>
+   <span class="cmt">-- Scrittura</span>
+   Create (F, Out_File, <span class="str">"data.bin"</span>);
+   Write (F, <span class="num">42</span>);
+   Write (F, <span class="num">99</span>);
+   Close (F);
+
+   <span class="cmt">-- Lettura</span>
+   Open (F, In_File, <span class="str">"data.bin"</span>);
+   <span class="kw">while not</span> End_Of_File (F) <span class="kw">loop</span>
+      Read (F, V);    <span class="cmt">-- legge un Integer alla volta</span>
+   <span class="kw">end loop</span>;
+   Close (F);
+<span class="kw">end</span> Bin_Sequential;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FILE BINARIO — DIRECT_IO (ACCESSO DIRETTO)</div>
+<pre>
+<span class="kw">with</span> Ada.Direct_IO;
+
+<span class="kw">procedure</span> <span class="hd">Bin_Direct</span> <span class="kw">is</span>
+   <span class="kw">type</span> <span class="hd">Sensor</span> <span class="kw">is record</span>
+      Id    : <span class="kw">Integer</span>;
+      Value : <span class="kw">Float</span>;
+   <span class="kw">end record</span>;
+
+   <span class="kw">package</span> <span class="hd">Sensor_IO</span> <span class="kw">is new</span> Ada.Direct_IO (Sensor);
+   <span class="kw">use</span> Sensor_IO;
+   F : Sensor_IO.File_Type;
+   S : Sensor;
+<span class="kw">begin</span>
+   Create (F, Inout_File, <span class="str">"sensors.bin"</span>);
+   Write (F, (Id =&gt; <span class="num">1</span>, Value =&gt; <span class="num">23.5</span>));
+   Write (F, (Id =&gt; <span class="num">2</span>, Value =&gt; <span class="num">18.0</span>));
+
+   <span class="cmt">-- Lettura per posizione (indice parte da 1)</span>
+   Read (F, S, <span class="num">2</span>);   <span class="cmt">-- legge il secondo record</span>
+   Set_Index (F, <span class="num">1</span>); <span class="cmt">-- riposiziona all'inizio</span>
+   Close (F);
+<span class="kw">end</span> Bin_Direct;
+</pre>
+    </div>
+
+    <div class="note">
+      <strong>Gestione errori:</strong> Usare <code>Is_Open (F)</code> per verificare se il file è aperto.
+      Le operazioni su file possono sollevare <code>Name_Error</code> (file non trovato),
+      <code>Status_Error</code> (file già aperto/chiuso) e <code>Use_Error</code> (operazione non valida per il modo).
     </div>
   </div>
 </div>
@@ -1955,9 +2083,80 @@ To_Lower (<span class="str">"HELLO"</span>);    <span class="cmt">-- "hello"</sp
 </pre>
     </div>
 
+    <div class="sub">
+      <div class="sub-title">SLICING E CONCATENAZIONE</div>
+<pre>
+S : <span class="kw">String</span> := <span class="str">"Hello, World!"</span>;
+
+<span class="cmt">-- Slicing (gli indici seguono il range della stringa)</span>
+Sub : <span class="kw">String</span> := S (<span class="num">1</span>..<span class="num">5</span>);       <span class="cmt">-- "Hello"</span>
+End_Part : <span class="kw">String</span> := S (<span class="num">8</span>..<span class="num">13</span>); <span class="cmt">-- "World!"</span>
+
+<span class="cmt">-- Concatenazione con &amp;</span>
+Full : <span class="kw">String</span> := <span class="str">"Ada"</span> &amp; <span class="str">" "</span> &amp; <span class="str">"2022"</span>;  <span class="cmt">-- "Ada 2022"</span>
+WithChar : <span class="kw">String</span> := <span class="str">"X"</span> &amp; <span class="str">'!'</span>;          <span class="cmt">-- "X!" (String &amp; Character)</span>
+
+<span class="cmt">-- Confronto (case-sensitive, ordine lessicografico)</span>
+<span class="kw">if</span> S = <span class="str">"Hello, World!"</span> <span class="kw">then</span> ...   <span class="cmt">-- uguaglianza</span>
+<span class="kw">if</span> <span class="str">"abc"</span> &lt; <span class="str">"abd"</span> <span class="kw">then</span> ...       <span class="cmt">-- True</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CONVERSIONI STRING ↔ TIPI SCALARI</div>
+<pre>
+<span class="cmt">-- Numero → String</span>
+S1 : <span class="kw">String</span> := Integer'Image (<span class="num">42</span>);      <span class="cmt">-- " 42" (spazio iniziale per il segno)</span>
+S2 : <span class="kw">String</span> := Float'Image (<span class="num">3.14</span>);      <span class="cmt">-- " 3.14000E+00"</span>
+
+<span class="cmt">-- String → Numero</span>
+N : <span class="kw">Integer</span> := Integer'Value (<span class="str">"42"</span>);    <span class="cmt">-- 42</span>
+F : <span class="kw">Float</span>   := Float'Value (<span class="str">"3.14"</span>);   <span class="cmt">-- 3.14</span>
+
+<span class="cmt">-- Ada 2022: 'Image senza spazio iniziale per Integer</span>
+S3 : <span class="kw">String</span> := <span class="num">42</span>'Image;               <span class="cmt">-- "42" (Ada 2022+)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MAPS — TRADUZIONE CARATTERI</div>
+<pre>
+<span class="kw">with</span> Ada.Strings.Fixed; <span class="kw">use</span> Ada.Strings.Fixed;
+<span class="kw">with</span> Ada.Strings.Maps;  <span class="kw">use</span> Ada.Strings.Maps;
+
+<span class="cmt">-- Definire una mappa di traduzione</span>
+Vowel_Set : Character_Set := To_Set (<span class="str">"aeiouAEIOU"</span>);
+Pos : <span class="kw">Natural</span> := Index (Source =&gt; <span class="str">"Hello"</span>,
+                        Set    =&gt; Vowel_Set);  <span class="cmt">-- 2 ('e')</span>
+
+<span class="cmt">-- Translate: sostituisce caratteri</span>
+Map : Character_Mapping := To_Mapping
+   (From =&gt; <span class="str">"aeiou"</span>, To =&gt; <span class="str">"AEIOU"</span>);
+R : <span class="kw">String</span> := Translate (<span class="str">"ciao mondo"</span>, Map); <span class="cmt">-- "cIAO mOndO"</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BOUNDED_STRING — ESEMPIO</div>
+<pre>
+<span class="kw">with</span> Ada.Strings.Bounded;
+
+<span class="kw">package</span> <span class="hd">Name_Strings</span> <span class="kw">is new</span>
+   Ada.Strings.Bounded.Generic_Bounded_Length (Max =&gt; <span class="num">50</span>);
+<span class="kw">use</span> Name_Strings;
+
+S : Bounded_String := To_Bounded_String (<span class="str">"Ada"</span>);
+S := S &amp; <span class="str">" Lovelace"</span>;            <span class="cmt">-- "Ada Lovelace"</span>
+L : <span class="kw">Natural</span> := Length (S);         <span class="cmt">-- 12</span>
+F : <span class="kw">String</span>  := To_String (S);      <span class="cmt">-- conversione a String fissa</span>
+</pre>
+    </div>
+
     <div class="note">
-      <strong>Bounded_String:</strong> Per stringhe con lunghezza massima nota a compile-time senza allocazione heap,
-      usare <code>Ada.Strings.Bounded</code> — un buon compromesso tra <code>String</code> fissa e <code>Unbounded_String</code>.
+      <strong>Quale tipo scegliere?</strong>
+      <code>String</code> fissa per dimensioni note a compile-time;
+      <code>Bounded_String</code> per lunghezza variabile con tetto massimo (no heap);
+      <code>Unbounded_String</code> per lunghezza totalmente dinamica (usa heap).
     </div>
   </div>
 </div>
