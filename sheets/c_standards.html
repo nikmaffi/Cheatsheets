@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C Standards Differences CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #060810;
+    --bg2:       #080b14;
+    --panel:     #0c1018;
+    --panel2:    #10141c;
+    --border:    #141c2a;
+    --border2:   #203050;
+    --glow:      #4488ff;
+    --glow2:     #66aaff;
+    --glow-dim:  #0a1a3b;
+    --dim:       #203060;
+    --text:      #a0b0c8;
+    --text2:     #c0d0e8;
+    --bright:    #c0ddff;
+    --accent:    #3366cc;
+    --accent2:   #5599ff;
+    --key:       #5588cc;
+    --kw:        #4488ff;
+    --fn:        #66ccaa;
+    --str:       #88cc66;
+    --num:       #dd8844;
+    --cmt:       #445577;
+    --type:      #cc77dd;
+    --dir:       #ddaa44;
+    --lbl:       #88aadd;
+    --head:      #c0ddff;
+    --hr:        #141c2a;
+    --scan:      rgba(68,136,255,0.025);
+    --vignette:          rgba(0,2,10,0.7);
+    --header-top:        #0a1020;
+    --header-shadow:     rgba(68,136,255,0.15);
+    --sidebar-hover-bg:  rgba(68,136,255,0.08);
+    --section-shadow:    rgba(20,40,80,0.5);
+    --th-bg:             rgba(68,136,255,0.12);
+    --tr-even-bg:        rgba(10,20,50,0.3);
+    --tr-hover-bg:       rgba(68,136,255,0.06);
+    --note-bg:           rgba(68,136,255,0.08);
+  }
+
+  .fn   { color: var(--fn);  }
+  .type { color: var(--type); }
+  .dir  { color: var(--dir); }
+  .new  { color: #66cc88; }
+  .dep  { color: #cc6666; }
+  .chg  { color: #ddaa44; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; C STANDARDS DIFFERENCES <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>K&amp;R &rarr; C89 &rarr; C99 &rarr; C11 &rarr; C17 &rarr; C23</span> &mdash; v1.0</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Panoramica</div>
+    <a href="#s-timeline">Timeline degli Standard</a>
+    <a href="#s-flags">Flag Compilatore</a>
+    <a href="#s-detect">Rilevare lo Standard</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">K&amp;R &rarr; C89/C90</div>
+    <a href="#s-kr-c89">K&amp;R vs ANSI C89</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">C89 &rarr; C99</div>
+    <a href="#s-c99-types">Tipi &amp; Dichiarazioni</a>
+    <a href="#s-c99-syntax">Sintassi &amp; Costrutti</a>
+    <a href="#s-c99-preproc">Preprocessore</a>
+    <a href="#s-c99-lib">Libreria Standard</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">C99 &rarr; C11</div>
+    <a href="#s-c11-atomic">Atomics &amp; Threads</a>
+    <a href="#s-c11-generic">_Generic &amp; _Static_assert</a>
+    <a href="#s-c11-align">Allineamento</a>
+    <a href="#s-c11-unicode">Unicode &amp; Varie</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">C11 &rarr; C17</div>
+    <a href="#s-c17">C17 (Bug-Fix)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">C17 &rarr; C23</div>
+    <a href="#s-c23-types">Tipi &amp; Attributi</a>
+    <a href="#s-c23-syntax">Sintassi &amp; Costanti</a>
+    <a href="#s-c23-preproc">Preprocessore &amp; Lib</a>
+    <a href="#s-c23-remove">Rimozioni &amp; Deprecazioni</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Riferimenti</div>
+    <a href="#s-compat">Tabella Compatibilit&agrave;</a>
+    <a href="#s-migration">Guida alla Migrazione</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════════
+     TIMELINE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-timeline"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TIMELINE DEGLI STANDARD C</div>
+  <div class="section-body">
+
+    <table>
+      <tr><th>Anno</th><th>Standard</th><th>Nome Ufficiale</th><th>Note</th></tr>
+      <tr><td>1978</td><td><strong>K&amp;R C</strong></td><td>&mdash;</td><td>Definito dal libro Kernighan &amp; Ritchie, nessuno standard formale</td></tr>
+      <tr><td>1989</td><td><strong>C89</strong></td><td>ANSI X3.159-1989</td><td>Primo standard ANSI &mdash; aggiunge prototipi, <code>void</code>, <code>const</code>, <code>enum</code></td></tr>
+      <tr><td>1990</td><td><strong>C90</strong></td><td>ISO/IEC 9899:1990</td><td>Identico a C89, adottato ISO</td></tr>
+      <tr><td>1995</td><td><strong>C95</strong> (NA1)</td><td>ISO/IEC 9899/AMD1:1995</td><td>Amendment 1 &mdash; digraph, <code>wchar.h</code>, <code>iso646.h</code></td></tr>
+      <tr><td>1999</td><td><strong>C99</strong></td><td>ISO/IEC 9899:1999</td><td>Major: <code>long long</code>, VLA, <code>//</code> commenti, <code>_Bool</code>, <code>restrict</code></td></tr>
+      <tr><td>2011</td><td><strong>C11</strong></td><td>ISO/IEC 9899:2011</td><td>Atomics, threads, <code>_Generic</code>, <code>_Static_assert</code>, <code>_Alignas</code></td></tr>
+      <tr><td>2018</td><td><strong>C17</strong></td><td>ISO/IEC 9899:2018</td><td>Bug-fix release &mdash; nessuna feature nuova, solo chiarimenti</td></tr>
+      <tr><td>2024</td><td><strong>C23</strong></td><td>ISO/IEC 9899:2024</td><td>Major: <code>typeof</code>, <code>constexpr</code>, <code>nullptr</code>, attributi, <code>_BitInt</code></td></tr>
+    </table>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FLAG COMPILATORE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-flags"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> FLAG COMPILATORE PER STANDARD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">GCC / Clang</div>
+      <table>
+        <tr><th>Flag</th><th>Standard</th><th>Estensioni GNU</th></tr>
+        <tr><td><code>-std=c89</code> / <code>-std=c90</code></td><td>C89/C90</td><td>No</td></tr>
+        <tr><td><code>-std=gnu89</code></td><td>C89/C90</td><td>S&igrave;</td></tr>
+        <tr><td><code>-std=c99</code></td><td>C99</td><td>No</td></tr>
+        <tr><td><code>-std=gnu99</code></td><td>C99</td><td>S&igrave;</td></tr>
+        <tr><td><code>-std=c11</code></td><td>C11</td><td>No</td></tr>
+        <tr><td><code>-std=gnu11</code></td><td>C11</td><td>S&igrave;</td></tr>
+        <tr><td><code>-std=c17</code> / <code>-std=c18</code></td><td>C17</td><td>No</td></tr>
+        <tr><td><code>-std=gnu17</code></td><td>C17</td><td>S&igrave;</td></tr>
+        <tr><td><code>-std=c23</code> / <code>-std=c2x</code></td><td>C23</td><td>No</td></tr>
+        <tr><td><code>-std=gnu23</code></td><td>C23</td><td>S&igrave;</td></tr>
+      </table>
+      <div class="note">Il default di GCC &ge; 14 &egrave; <code>-std=gnu23</code>. Versioni precedenti usano <code>-std=gnu17</code> (GCC 11-13) o <code>-std=gnu11</code> (GCC 5-10).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MSVC</div>
+      <table>
+        <tr><th>Flag</th><th>Standard</th></tr>
+        <tr><td><code>/std:c11</code></td><td>C11</td></tr>
+        <tr><td><code>/std:c17</code></td><td>C17 (default da VS 2022)</td></tr>
+        <tr><td><code>/std:clatest</code></td><td>Ultima versione supportata</td></tr>
+      </table>
+      <div class="note">MSVC non ha mai supportato pienamente C99; il supporto parte da C11/C17.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     RILEVARE LO STANDARD
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-detect"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> RILEVARE LO STANDARD A COMPILE-TIME</div>
+  <div class="section-body">
+
+<pre>
+<span class="cmt">/* La macro __STDC_VERSION__ identifica lo standard */</span>
+<span class="dir">#if</span> <span class="lbl">__STDC_VERSION__</span> >= <span class="num">202311L</span>
+    <span class="cmt">/* C23 */</span>
+<span class="dir">#elif</span> <span class="lbl">__STDC_VERSION__</span> >= <span class="num">201710L</span>
+    <span class="cmt">/* C17 */</span>
+<span class="dir">#elif</span> <span class="lbl">__STDC_VERSION__</span> >= <span class="num">201112L</span>
+    <span class="cmt">/* C11 */</span>
+<span class="dir">#elif</span> <span class="lbl">__STDC_VERSION__</span> >= <span class="num">199901L</span>
+    <span class="cmt">/* C99 */</span>
+<span class="dir">#elif</span> defined(<span class="lbl">__STDC__</span>)
+    <span class="cmt">/* C89/C90 (__STDC_VERSION__ non esisteva ancora) */</span>
+<span class="dir">#else</span>
+    <span class="cmt">/* Pre-standard / K&amp;R */</span>
+<span class="dir">#endif</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">Valori di __STDC_VERSION__</div>
+      <table>
+        <tr><th>Standard</th><th>Valore</th></tr>
+        <tr><td>C89/C90</td><td>non definito (solo <code>__STDC__</code> = 1)</td></tr>
+        <tr><td>C95 (NA1)</td><td><code>199409L</code></td></tr>
+        <tr><td>C99</td><td><code>199901L</code></td></tr>
+        <tr><td>C11</td><td><code>201112L</code></td></tr>
+        <tr><td>C17</td><td><code>201710L</code></td></tr>
+        <tr><td>C23</td><td><code>202311L</code></td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     K&R vs C89
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-kr-c89"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> K&amp;R C &rarr; C89/C90 (ANSI C)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipi di Funzione</div>
+<pre>
+<span class="cmt">/* K&amp;R — nessun tipo nei parametri */</span>
+<span class="type">int</span> <span class="fn">somma</span>(a, b)
+    <span class="type">int</span> a;
+    <span class="type">int</span> b;
+{
+    <span class="kw">return</span> a + b;
+}
+
+<span class="cmt">/* C89 — prototipi ANSI */</span>
+<span class="type">int</span> <span class="fn">somma</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="kw">return</span> a + b;
+}
+</pre>
+      <div class="note">In K&amp;R il compilatore non verificava il numero e tipo degli argomenti. I prototipi C89 eliminano questa classe di bug.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Novit&agrave; Principali di C89</div>
+      <table>
+        <tr><th>Feature</th><th>Descrizione</th></tr>
+        <tr><td><span class="new">Prototipi funzione</span></td><td>Dichiarazioni con tipi dei parametri</td></tr>
+        <tr><td><span class="new"><code>void</code></span></td><td>Tipo vuoto per funzioni e puntatori generici</td></tr>
+        <tr><td><span class="new"><code>const</code></span></td><td>Qualificatore di sola lettura</td></tr>
+        <tr><td><span class="new"><code>volatile</code></span></td><td>Impedisce ottimizzazioni su variabili hardware/signal</td></tr>
+        <tr><td><span class="new"><code>enum</code></span></td><td>Enumerazioni nominate</td></tr>
+        <tr><td><span class="new"><code>signed</code></span></td><td>Keyword esplicita per tipi con segno</td></tr>
+        <tr><td><span class="new"><code>struct</code> assignment</span></td><td>Assegnamento diretto fra struct (non in K&amp;R originale)</td></tr>
+        <tr><td><span class="new">Stringhe adiacenti</span></td><td><code>"hello " "world"</code> &rarr; concatenazione automatica</td></tr>
+        <tr><td><span class="new"><code>#if defined()</code></span></td><td>Test condizionale per macro definite</td></tr>
+        <tr><td><span class="new"><code>#elif</code></span></td><td>Alternativa condizionale nel preprocessore</td></tr>
+        <tr><td><span class="new"><code>#pragma</code></span></td><td>Direttive implementation-defined</td></tr>
+        <tr><td><span class="new">Trigraph</span></td><td>Sequenze <code>??=</code>, <code>??/</code>, ecc. per tastiere senza <code>#</code>, <code>\</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Incompatibilit&agrave; K&amp;R &rarr; C89</div>
+      <table>
+        <tr><th>Costrutto K&amp;R</th><th>Stato in C89</th></tr>
+        <tr><td>Funzioni senza tipo di ritorno (implicito <code>int</code>)</td><td>Permesso ma deprecato</td></tr>
+        <tr><td>Definizioni parametri vecchio stile</td><td>Permesso ma sconsigliato</td></tr>
+        <tr><td><code>unsigned char</code> non standard</td><td>Standardizzato</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C99 — TIPI E DICHIARAZIONI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c99-types"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C89 &rarr; C99 &mdash; TIPI &amp; DICHIARAZIONI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Nuovi Tipi di Dato</div>
+      <table>
+        <tr><th>Tipo</th><th>Descrizione</th></tr>
+        <tr><td><code><span class="new">long long int</span></code></td><td>Intero &ge; 64 bit</td></tr>
+        <tr><td><code><span class="new">_Bool</span></code></td><td>Tipo booleano (0 o 1), con header <code>&lt;stdbool.h&gt;</code></td></tr>
+        <tr><td><code><span class="new">_Complex</span></code></td><td>Numeri complessi: <code>float _Complex</code>, <code>double _Complex</code></td></tr>
+        <tr><td><code><span class="new">_Imaginary</span></code></td><td>Parte immaginaria pura (opzionale)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Dichiarazioni Miste</div>
+<pre>
+<span class="cmt">/* C89 — dichiarazioni solo in cima al blocco */</span>
+<span class="type">void</span> <span class="fn">f</span>(<span class="type">void</span>) {
+    <span class="type">int</span> x = <span class="num">10</span>;
+    <span class="type">int</span> y = <span class="num">20</span>;
+    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, x + y);
+}
+
+<span class="cmt">/* C99 — dichiarazioni ovunque nel blocco */</span>
+<span class="type">void</span> <span class="fn">f</span>(<span class="type">void</span>) {
+    <span class="fn">printf</span>(<span class="str">"inizio\n"</span>);
+    <span class="type">int</span> x = <span class="num">10</span>;      <span class="cmt">// dichiarazione dopo statement</span>
+    <span class="type">int</span> y = <span class="num">20</span>;
+    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, x + y);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Variabile nel for</div>
+<pre>
+<span class="cmt">/* C89 */</span>
+<span class="type">int</span> i;
+<span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) { ... }
+
+<span class="cmt">/* C99 — dichiarazione nel for */</span>
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) { ... }
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">VLA &mdash; Variable-Length Array</div>
+<pre>
+<span class="type">void</span> <span class="fn">f</span>(<span class="type">int</span> n) {
+    <span class="type">int</span> arr[n];   <span class="cmt">// C99: dimensione determinata a runtime</span>
+    <span class="cmt">// Allocato sullo stack — attenzione a n grandi!</span>
+}
+</pre>
+      <div class="note">I VLA sono stati resi opzionali in C11 (feature test: <code>__STDC_NO_VLA__</code>). In C23 il tipo VLA rimane, ma gli oggetti VLA con allocazione automatica sono opzionali.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">restrict</div>
+<pre>
+<span class="cmt">/* Il compilatore può assumere che p e q non si sovrappongono */</span>
+<span class="type">void</span> <span class="fn">copia</span>(<span class="type">int</span> *<span class="kw">restrict</span> dest, <span class="type">const int</span> *<span class="kw">restrict</span> src, <span class="type">size_t</span> n) {
+    <span class="kw">for</span> (<span class="type">size_t</span> i = <span class="num">0</span>; i &lt; n; i++)
+        dest[i] = src[i];
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Header a Larghezza Fissa</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdint.h&gt;</span>     <span class="cmt">// int8_t, int16_t, int32_t, int64_t</span>
+<span class="dir">#include</span> <span class="str">&lt;inttypes.h&gt;</span>   <span class="cmt">// macro di formato: PRId32, PRIx64, ecc.</span>
+
+<span class="type">int32_t</span>  x = <span class="num">42</span>;
+<span class="type">uint64_t</span> y = <span class="num">0xDEADBEEF</span>;
+<span class="fn">printf</span>(<span class="str">"x = %"</span> <span class="lbl">PRId32</span> <span class="str">"\n"</span>, x);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C99 — SINTASSI E COSTRUTTI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c99-syntax"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C89 &rarr; C99 &mdash; SINTASSI &amp; COSTRUTTI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Commenti // in Linea</div>
+<pre>
+<span class="cmt">/* C89 — solo commenti blocco */</span>
+<span class="type">int</span> x = <span class="num">42</span>; <span class="cmt">/* commento */</span>
+
+<span class="cmt">// C99 — commenti stile C++</span>
+<span class="type">int</span> x = <span class="num">42</span>; <span class="cmt">// commento in linea</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Designated Initializers</div>
+<pre>
+<span class="cmt">/* C89 — ordine posizionale obbligatorio */</span>
+<span class="type">int</span> arr[<span class="num">5</span>] = {<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">7</span>, <span class="num">0</span>};
+
+<span class="cmt">/* C99 — designated initializers */</span>
+<span class="type">int</span> arr[<span class="num">5</span>] = { [<span class="num">3</span>] = <span class="num">7</span> };
+
+<span class="kw">struct</span> <span class="type">Point</span> p = { .x = <span class="num">10</span>, .y = <span class="num">20</span> };
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Compound Literals</div>
+<pre>
+<span class="cmt">/* Crea un oggetto temporaneo senza nome */</span>
+<span class="fn">draw_point</span>( (<span class="kw">struct</span> <span class="type">Point</span>){.x = <span class="num">3</span>, .y = <span class="num">4</span>} );
+
+<span class="cmt">/* Array temporaneo */</span>
+<span class="type">int</span> *p = (<span class="type">int</span>[]){<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Inline Functions</div>
+<pre>
+<span class="cmt">/* C99: suggerimento al compilatore per inlining */</span>
+<span class="kw">static inline</span> <span class="type">int</span> <span class="fn">max</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="kw">return</span> (a > b) ? a : b;
+}
+</pre>
+      <div class="note">La semantica di <code>inline</code> in C99 differisce da C++: senza <code>static</code>, serve una definizione esterna in un'altra unit&agrave; di traduzione.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flexible Array Member</div>
+<pre>
+<span class="kw">struct</span> <span class="type">Buffer</span> {
+    <span class="type">size_t</span> len;
+    <span class="type">char</span>   data[];  <span class="cmt">// C99: membro flessibile (ultimo campo)</span>
+};
+
+<span class="kw">struct</span> <span class="type">Buffer</span> *b = <span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="kw">struct</span> <span class="type">Buffer</span>) + <span class="num">1024</span>);
+b->len = <span class="num">1024</span>;
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C99 — PREPROCESSORE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c99-preproc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C89 &rarr; C99 &mdash; PREPROCESSORE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Macro Variadic</div>
+<pre>
+<span class="cmt">/* C99: macro con numero variabile di argomenti */</span>
+<span class="dir">#define</span> <span class="fn">LOG</span>(fmt, ...) \
+    <span class="fn">fprintf</span>(stderr, <span class="str">"[LOG] "</span> fmt <span class="str">"\n"</span>, __VA_ARGS__)
+
+<span class="fn">LOG</span>(<span class="str">"valore: %d"</span>, <span class="num">42</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">_Pragma</div>
+<pre>
+<span class="cmt">/* C89: #pragma non utilizzabile dentro macro */</span>
+
+<span class="cmt">/* C99: _Pragma come operatore */</span>
+<span class="dir">#define</span> <span class="fn">PACK_BEGIN</span>  <span class="fn">_Pragma</span>(<span class="str">"pack(push,1)"</span>)
+<span class="dir">#define</span> <span class="fn">PACK_END</span>    <span class="fn">_Pragma</span>(<span class="str">"pack(pop)"</span>)
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Nuove Macro Predefinite (C99)</div>
+      <table>
+        <tr><th>Macro</th><th>Descrizione</th></tr>
+        <tr><td><code>__func__</code></td><td>Nome della funzione corrente (come stringa)</td></tr>
+        <tr><td><code>__STDC_VERSION__</code></td><td>Versione dello standard (<code>199901L</code>)</td></tr>
+        <tr><td><code>__STDC_HOSTED__</code></td><td>1 se implementazione hosted, 0 se freestanding</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C99 — LIBRERIA STANDARD
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c99-lib"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C89 &rarr; C99 &mdash; LIBRERIA STANDARD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Nuovi Header C99</div>
+      <table>
+        <tr><th>Header</th><th>Descrizione</th></tr>
+        <tr><td><code>&lt;stdbool.h&gt;</code></td><td>Macro <code>bool</code>, <code>true</code>, <code>false</code></td></tr>
+        <tr><td><code>&lt;stdint.h&gt;</code></td><td>Tipi interi a larghezza fissa: <code>int8_t</code>, <code>int32_t</code>, ecc.</td></tr>
+        <tr><td><code>&lt;inttypes.h&gt;</code></td><td>Macro di formato per <code>printf</code>/<code>scanf</code> su tipi fissi</td></tr>
+        <tr><td><code>&lt;complex.h&gt;</code></td><td>Aritmetica complessa: <code>cabs</code>, <code>carg</code>, <code>cimag</code>, <code>creal</code></td></tr>
+        <tr><td><code>&lt;tgmath.h&gt;</code></td><td>Macro type-generic per funzioni matematiche</td></tr>
+        <tr><td><code>&lt;fenv.h&gt;</code></td><td>Controllo ambiente floating-point (rounding, eccezioni)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Funzioni Aggiunte</div>
+      <table>
+        <tr><th>Funzione</th><th>Header</th><th>Descrizione</th></tr>
+        <tr><td><code>snprintf</code></td><td><code>&lt;stdio.h&gt;</code></td><td>Printf con limite di buffer (sicura)</td></tr>
+        <tr><td><code>va_copy</code></td><td><code>&lt;stdarg.h&gt;</code></td><td>Copia una <code>va_list</code></td></tr>
+        <tr><td><code>llabs</code>, <code>lldiv</code></td><td><code>&lt;stdlib.h&gt;</code></td><td>Operazioni su <code>long long</code></td></tr>
+        <tr><td><code>round</code>, <code>trunc</code>, <code>remainder</code></td><td><code>&lt;math.h&gt;</code></td><td>Arrotondamento floating-point</td></tr>
+        <tr><td><code>isnan</code>, <code>isinf</code>, <code>isfinite</code></td><td><code>&lt;math.h&gt;</code></td><td>Classificazione valori speciali</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C11 — ATOMICS & THREADS
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c11-atomic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C99 &rarr; C11 &mdash; ATOMICS &amp; THREADS</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Operazioni Atomiche</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdatomic.h&gt;</span>
+
+<span class="type">_Atomic</span> <span class="type">int</span> counter = <span class="num">0</span>;
+
+<span class="cmt">/* Oppure con la macro */</span>
+<span class="type">atomic_int</span> counter = <span class="lbl">ATOMIC_VAR_INIT</span>(<span class="num">0</span>);
+
+<span class="fn">atomic_store</span>(&amp;counter, <span class="num">42</span>);
+<span class="type">int</span> val = <span class="fn">atomic_load</span>(&amp;counter);
+<span class="fn">atomic_fetch_add</span>(&amp;counter, <span class="num">1</span>);
+</pre>
+
+      <table>
+        <tr><th>Memory Order</th><th>Descrizione</th></tr>
+        <tr><td><code>memory_order_relaxed</code></td><td>Nessun ordinamento &mdash; solo atomicit&agrave;</td></tr>
+        <tr><td><code>memory_order_acquire</code></td><td>Letture successive non riordinate prima</td></tr>
+        <tr><td><code>memory_order_release</code></td><td>Scritture precedenti non riordinate dopo</td></tr>
+        <tr><td><code>memory_order_acq_rel</code></td><td>Acquire + Release</td></tr>
+        <tr><td><code>memory_order_seq_cst</code></td><td>Ordine totale (default)</td></tr>
+      </table>
+      <div class="note">Feature opzionale: verificare con <code>__STDC_NO_ATOMICS__</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Thread C11</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;threads.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">worker</span>(<span class="type">void</span> *arg) {
+    <span class="fn">printf</span>(<span class="str">"Thread %d\n"</span>, *(<span class="type">int</span>*)arg);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>) {
+    <span class="type">thrd_t</span> t;
+    <span class="type">int</span> id = <span class="num">1</span>;
+    <span class="fn">thrd_create</span>(&amp;t, worker, &amp;id);
+    <span class="fn">thrd_join</span>(t, <span class="lbl">NULL</span>);
+}
+</pre>
+
+      <table>
+        <tr><th>Tipo / Funzione</th><th>Descrizione</th></tr>
+        <tr><td><code>thrd_create</code>, <code>thrd_join</code></td><td>Creazione e join di thread</td></tr>
+        <tr><td><code>mtx_t</code>, <code>mtx_lock</code>, <code>mtx_unlock</code></td><td>Mutex</td></tr>
+        <tr><td><code>cnd_t</code>, <code>cnd_wait</code>, <code>cnd_signal</code></td><td>Condition variable</td></tr>
+        <tr><td><code>tss_t</code>, <code>tss_create</code></td><td>Thread-specific storage</td></tr>
+        <tr><td><code>call_once</code></td><td>Inizializzazione one-time thread-safe</td></tr>
+        <tr><td><code>_Thread_local</code></td><td>Storage duration thread-local</td></tr>
+      </table>
+      <div class="note">Feature opzionale: verificare con <code>__STDC_NO_THREADS__</code>. In pratica, molti usano POSIX Threads (pthread) per compatibilit&agrave;.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C11 — _Generic & _Static_assert
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c11-generic"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C99 &rarr; C11 &mdash; _Generic &amp; _Static_assert</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">_Generic &mdash; Selezione Type-Based</div>
+<pre>
+<span class="dir">#define</span> <span class="fn">type_name</span>(x) <span class="kw">_Generic</span>((x),           \
+    <span class="type">int</span>:         <span class="str">"int"</span>,                     \
+    <span class="type">float</span>:       <span class="str">"float"</span>,                   \
+    <span class="type">double</span>:      <span class="str">"double"</span>,                  \
+    <span class="type">char</span>*:       <span class="str">"char*"</span>,                   \
+    <span class="kw">default</span>:     <span class="str">"altro"</span>)
+
+<span class="fn">printf</span>(<span class="str">"%s\n"</span>, <span class="fn">type_name</span>(<span class="num">42</span>));       <span class="cmt">// "int"</span>
+<span class="fn">printf</span>(<span class="str">"%s\n"</span>, <span class="fn">type_name</span>(<span class="num">3.14</span>));     <span class="cmt">// "double"</span>
+</pre>
+
+<pre>
+<span class="cmt">/* Esempio pratico: abs() type-generic */</span>
+<span class="dir">#define</span> <span class="fn">generic_abs</span>(x) <span class="kw">_Generic</span>((x),   \
+    <span class="type">int</span>:     <span class="fn">abs</span>,                           \
+    <span class="type">long</span>:    <span class="fn">labs</span>,                          \
+    <span class="type">float</span>:   <span class="fn">fabsf</span>,                         \
+    <span class="type">double</span>:  <span class="fn">fabs</span>)(x)
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">_Static_assert &mdash; Asserzioni a Compile-Time</div>
+<pre>
+<span class="cmt">/* C11 — richiede messaggio stringa */</span>
+<span class="kw">_Static_assert</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) >= <span class="num">4</span>, <span class="str">"int deve essere almeno 32 bit"</span>);
+
+<span class="cmt">/* C23 — messaggio opzionale */</span>
+<span class="kw">static_assert</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) >= <span class="num">4</span>);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">_Noreturn</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdnoreturn.h&gt;</span>  <span class="cmt">// macro noreturn -&gt; _Noreturn</span>
+
+<span class="kw">_Noreturn</span> <span class="type">void</span> <span class="fn">fatal</span>(<span class="type">const char</span> *msg) {
+    <span class="fn">fprintf</span>(stderr, <span class="str">"FATAL: %s\n"</span>, msg);
+    <span class="fn">abort</span>();
+}
+</pre>
+      <div class="note">In C23, <code>_Noreturn</code> e <code>&lt;stdnoreturn.h&gt;</code> sono deprecati a favore dell'attributo <code>[[noreturn]]</code>.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C11 — ALLINEAMENTO
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c11-align"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C99 &rarr; C11 &mdash; ALLINEAMENTO</div>
+  <div class="section-body">
+
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdalign.h&gt;</span>   <span class="cmt">// macro alignas -&gt; _Alignas, alignof -&gt; _Alignof</span>
+
+<span class="cmt">/* Forzare allineamento */</span>
+<span class="kw">_Alignas</span>(<span class="num">16</span>) <span class="type">float</span> vec[<span class="num">4</span>];           <span class="cmt">// allineato a 16 byte</span>
+<span class="kw">_Alignas</span>(<span class="type">double</span>) <span class="type">char</span> buf[<span class="num">128</span>];      <span class="cmt">// allineato come double</span>
+
+<span class="cmt">/* Query allineamento */</span>
+<span class="type">size_t</span> a = <span class="kw">_Alignof</span>(<span class="type">double</span>);          <span class="cmt">// tipicamente 8</span>
+<span class="type">size_t</span> b = <span class="kw">_Alignof</span>(<span class="type">max_align_t</span>);    <span class="cmt">// allineamento massimo standard</span>
+</pre>
+
+    <div class="sub">
+      <div class="sub-title">aligned_alloc</div>
+<pre>
+<span class="cmt">/* Allocazione dinamica allineata (C11) */</span>
+<span class="type">void</span> *p = <span class="fn">aligned_alloc</span>(<span class="num">64</span>, <span class="num">256</span>);  <span class="cmt">// 256 byte allineati a 64</span>
+<span class="cmt">/* size deve essere multiplo di alignment */</span>
+<span class="fn">free</span>(p);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C11 — UNICODE & VARIE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c11-unicode"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C99 &rarr; C11 &mdash; UNICODE &amp; VARIE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Caratteri Unicode</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;uchar.h&gt;</span>
+
+<span class="type">char16_t</span> c16 = u<span class="str">'A'</span>;        <span class="cmt">// UTF-16</span>
+<span class="type">char32_t</span> c32 = U<span class="str">'A'</span>;        <span class="cmt">// UTF-32</span>
+<span class="type">const char16_t</span> *s16 = u<span class="str">"ciao"</span>;
+<span class="type">const char32_t</span> *s32 = U<span class="str">"ciao"</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Strutture e Union Anonime</div>
+<pre>
+<span class="kw">struct</span> <span class="type">Registro</span> {
+    <span class="type">int</span> tipo;
+    <span class="kw">union</span> {              <span class="cmt">// C11: union anonima</span>
+        <span class="type">int</span>    i_val;
+        <span class="type">float</span>  f_val;
+        <span class="type">char</span>  *s_val;
+    };                    <span class="cmt">// accesso diretto: r.i_val</span>
+};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Altre Novit&agrave; C11</div>
+      <table>
+        <tr><th>Feature</th><th>Descrizione</th></tr>
+        <tr><td><code>gets</code> <span class="dep">rimossa</span></td><td>Rimossa dallo standard (era in C89/C99) &mdash; sostituita da <code>gets_s</code> (Annex K)</td></tr>
+        <tr><td><span class="new">Annex K</span></td><td>Funzioni "sicure" (<code>_s</code> suffix): <code>strcpy_s</code>, <code>printf_s</code>, ecc. (opzionale)</td></tr>
+        <tr><td><span class="new"><code>quick_exit</code></span></td><td>Terminazione rapida senza pulizia completa</td></tr>
+        <tr><td><span class="new"><code>timespec_get</code></span></td><td>Tempo ad alta risoluzione</td></tr>
+        <tr><td><span class="new"><code>CMPLX</code> macro</span></td><td>Costruzione sicura numeri complessi</td></tr>
+        <tr><td><span class="new">Exclusive mode file</span></td><td>Flag <code>"x"</code> in <code>fopen</code> &mdash; fallisce se file esiste</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C17
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c17"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C11 &rarr; C17 &mdash; BUG-FIX RELEASE</div>
+  <div class="section-body">
+
+    <p>C17 (ISO/IEC 9899:2018) non introduce feature nuove. &Egrave; un <em>Defect Report</em> release che corregge ambiguit&agrave; e difetti nella specifica C11.</p>
+
+    <div class="sub">
+      <div class="sub-title">Chiarimenti Principali</div>
+      <table>
+        <tr><th>Area</th><th>Chiarimento</th></tr>
+        <tr><td><code>__STDC_VERSION__</code></td><td>Valore aggiornato a <code>201710L</code></td></tr>
+        <tr><td>Specifiche opzionali</td><td>Chiarito lo stato di Annex K (bounds-checking) e Annex L (analyzability)</td></tr>
+        <tr><td>Definizione di <code>aligned_alloc</code></td><td>Chiarito il requisito che size sia multiplo di alignment</td></tr>
+        <tr><td>Atomic init</td><td>Chiarita l'inizializzazione di oggetti atomici</td></tr>
+        <tr><td>Tipo di <code>u'x'</code></td><td>Chiarito che <code>char16_t</code> e <code>char32_t</code> sono tipi distinti</td></tr>
+        <tr><td>Sottogruppi opzionali</td><td>Lista formale di feature opzionali con macro di test</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Feature Test Macro (Opzionali)</div>
+      <table>
+        <tr><th>Macro</th><th>Significato se definita</th></tr>
+        <tr><td><code>__STDC_NO_ATOMICS__</code></td><td>Atomics non supportate</td></tr>
+        <tr><td><code>__STDC_NO_COMPLEX__</code></td><td>Numeri complessi non supportati</td></tr>
+        <tr><td><code>__STDC_NO_THREADS__</code></td><td>Threads C11 non supportati</td></tr>
+        <tr><td><code>__STDC_NO_VLA__</code></td><td>VLA non supportati</td></tr>
+        <tr><td><code>__STDC_LIB_EXT1__</code></td><td>Annex K (bounds-checking) disponibile</td></tr>
+        <tr><td><code>__STDC_ANALYZABLE__</code></td><td>Annex L (analyzability) disponibile</td></tr>
+      </table>
+    </div>
+
+    <div class="note">Per la maggior parte del codice, compilare con <code>-std=c17</code> vs <code>-std=c11</code> non produce differenze osservabili. Il passaggio &egrave; sempre retrocompatibile.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C23 — TIPI & ATTRIBUTI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c23-types"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C17 &rarr; C23 &mdash; TIPI &amp; ATTRIBUTI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">typeof</div>
+<pre>
+<span class="cmt">/* C23: typeof come keyword (era estensione GNU) */</span>
+<span class="type">int</span> x = <span class="num">42</span>;
+<span class="kw">typeof</span>(x) y = x;          <span class="cmt">// y è int</span>
+
+<span class="cmt">/* typeof_unqual — rimuove qualificatori */</span>
+<span class="kw">const</span> <span class="type">int</span> c = <span class="num">10</span>;
+<span class="kw">typeof_unqual</span>(c) m = c;   <span class="cmt">// m è int (non const int)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">nullptr e nullptr_t</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stddef.h&gt;</span>
+
+<span class="cmt">/* C89-C17: NULL è tipicamente (void*)0 o 0 */</span>
+<span class="type">int</span> *p = <span class="lbl">NULL</span>;
+
+<span class="cmt">/* C23: nullptr è un vero null pointer constant */</span>
+<span class="type">int</span> *q = <span class="kw">nullptr</span>;
+
+<span class="cmt">/* nullptr_t è il tipo di nullptr */</span>
+<span class="type">nullptr_t</span> n = <span class="kw">nullptr</span>;
+</pre>
+      <div class="note"><code>nullptr</code> non &egrave; convertibile a <code>int</code> (a differenza di <code>0</code> / <code>NULL</code>), eliminando bug comuni.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">_BitInt &mdash; Interi a Larghezza Arbitraria</div>
+<pre>
+<span class="cmt">/* C23: interi con esattamente N bit */</span>
+<span class="type">_BitInt</span>(<span class="num">128</span>) big  = <span class="num">0</span>;
+<span class="type">unsigned _BitInt</span>(<span class="num">256</span>) huge = <span class="num">0</span>;
+
+<span class="cmt">/* Utile per crittografia, hashing, ecc. */</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">bool, true, false come Keyword</div>
+<pre>
+<span class="cmt">/* C99-C17: bool è macro in &lt;stdbool.h&gt; */</span>
+<span class="dir">#include</span> <span class="str">&lt;stdbool.h&gt;</span>
+<span class="type">bool</span> flag = <span class="kw">true</span>;
+
+<span class="cmt">/* C23: bool, true, false sono keyword native */</span>
+<span class="type">bool</span> flag = <span class="kw">true</span>;  <span class="cmt">// nessun #include necessario</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Attributi Standard</div>
+<pre>
+<span class="cmt">/* C23: sintassi attributi [[...]] (come C++) */</span>
+[[<span class="kw">noreturn</span>]] <span class="type">void</span> <span class="fn">fatal</span>(<span class="type">const char</span> *msg);
+
+[[<span class="kw">deprecated</span>(<span class="str">"usa nuova_api()"</span>)]]
+<span class="type">void</span> <span class="fn">vecchia_api</span>(<span class="type">void</span>);
+
+[[<span class="kw">maybe_unused</span>]] <span class="type">int</span> debug_var;
+
+[[<span class="kw">nodiscard</span>]] <span class="type">int</span> <span class="fn">alloca_risorsa</span>(<span class="type">void</span>);
+
+[[<span class="kw">fallthrough</span>]];  <span class="cmt">// in un case senza break</span>
+</pre>
+
+      <table>
+        <tr><th>Attributo</th><th>Descrizione</th></tr>
+        <tr><td><code>[[noreturn]]</code></td><td>La funzione non ritorna mai (sostituisce <code>_Noreturn</code>)</td></tr>
+        <tr><td><code>[[deprecated]]</code></td><td>Genera warning se usato</td></tr>
+        <tr><td><code>[[maybe_unused]]</code></td><td>Sopprime warning per entit&agrave; non usate</td></tr>
+        <tr><td><code>[[nodiscard]]</code></td><td>Warning se il valore di ritorno &egrave; ignorato</td></tr>
+        <tr><td><code>[[fallthrough]]</code></td><td>Fall-through intenzionale in switch</td></tr>
+        <tr><td><code>[[unsequenced]]</code></td><td>La funzione non ha side-effect osservabili</td></tr>
+        <tr><td><code>[[reproducible]]</code></td><td>Chiamate ripetute con stessi arg danno stesso risultato</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C23 — SINTASSI & COSTANTI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c23-syntax"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C17 &rarr; C23 &mdash; SINTASSI &amp; COSTANTI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">constexpr</div>
+<pre>
+<span class="cmt">/* C23: oggetti constexpr — valutazione a compile-time */</span>
+<span class="kw">constexpr</span> <span class="type">int</span> MAX = <span class="num">100</span>;
+<span class="kw">constexpr</span> <span class="type">double</span> PI = <span class="num">3.14159265358979</span>;
+
+<span class="cmt">/* Utilizzabile dove serve un'espressione costante */</span>
+<span class="type">int</span> arr[MAX];
+
+<span class="cmt">/* NB: solo per oggetti, NON per funzioni (a differenza di C++) */</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Letterali Binari e Separatore Cifre</div>
+<pre>
+<span class="cmt">/* C23: prefisso 0b / 0B per binario */</span>
+<span class="type">int</span> mask = <span class="num">0b11001010</span>;
+
+<span class="cmt">/* C23: separatore ' per leggibilità */</span>
+<span class="type">long</span> pop  = <span class="num">60'000'000</span>;
+<span class="type">int</span>  hex  = <span class="num">0xFF'A0'00</span>;
+<span class="type">int</span>  bin  = <span class="num">0b1111'0000'1010'0101</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Label senza Statement e Dichiarazioni dopo Label</div>
+<pre>
+<span class="cmt">/* C89-C17: un label deve precedere uno statement */</span>
+<span class="lbl">end</span>: ;  <span class="cmt">// serviva uno statement vuoto</span>
+
+<span class="cmt">/* C23: label può precedere dichiarazioni o stare a fine blocco */</span>
+<span class="lbl">end</span>:
+    <span class="type">int</span> result = <span class="num">0</span>;  <span class="cmt">// OK in C23</span>
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Inizializzazione Vuota</div>
+<pre>
+<span class="cmt">/* C23: {} inizializza a zero qualsiasi tipo */</span>
+<span class="type">int</span> x = {};
+<span class="kw">struct</span> <span class="type">Point</span> p = {};   <span class="cmt">// equivalente a {0} ma più chiaro</span>
+<span class="type">int</span> arr[<span class="num">10</span>] = {};       <span class="cmt">// tutto zero</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">auto Type Inference</div>
+<pre>
+<span class="cmt">/* C23: auto con inizializzatore deduce il tipo */</span>
+<span class="kw">auto</span> x = <span class="num">42</span>;          <span class="cmt">// int</span>
+<span class="kw">auto</span> pi = <span class="num">3.14</span>;       <span class="cmt">// double</span>
+<span class="kw">auto</span> p = <span class="fn">malloc</span>(<span class="num">64</span>);  <span class="cmt">// void*</span>
+
+<span class="cmt">/* NB: non come C++ auto — solo per variabili con inizializzatore */</span>
+</pre>
+      <div class="note">In C89-C17, <code>auto</code> era uno storage class specifier (raramente usato). C23 gli d&agrave; un nuovo significato di type inference.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Stringhe UTF-8</div>
+<pre>
+<span class="cmt">/* C23: prefisso u8 per stringhe e char UTF-8 */</span>
+<span class="type">const char</span> *s = u8<span class="str">"Ciao mondo"</span>;    <span class="cmt">// char[] con encoding UTF-8</span>
+<span class="type">unsigned char</span> c = u8<span class="str">'A'</span>;           <span class="cmt">// char8_t in pratica</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C23 — PREPROCESSORE & LIBRERIA
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c23-preproc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C17 &rarr; C23 &mdash; PREPROCESSORE &amp; LIBRERIA</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Nuove Direttive Preprocessore</div>
+<pre>
+<span class="cmt">/* #elifdef / #elifndef — combinano #elif + defined */</span>
+<span class="dir">#ifdef</span> <span class="lbl">LINUX</span>
+    <span class="cmt">/* codice Linux */</span>
+<span class="dir">#elifdef</span> <span class="lbl">WINDOWS</span>
+    <span class="cmt">/* codice Windows */</span>
+<span class="dir">#elifndef</span> <span class="lbl">EMBEDDED</span>
+    <span class="cmt">/* codice non embedded */</span>
+<span class="dir">#endif</span>
+
+<span class="cmt">/* #warning — emette un warning (era estensione, ora standard) */</span>
+<span class="dir">#warning</span> <span class="str">"Questa feature è sperimentale"</span>
+
+<span class="cmt">/* #embed — include dati binari come array */</span>
+<span class="type">const unsigned char</span> icon[] = {
+    <span class="dir">#embed</span> <span class="str">"icon.png"</span>
+};
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">__VA_OPT__ &mdash; Macro Variadic Migliorate</div>
+<pre>
+<span class="cmt">/* Problema C99: virgola in eccesso senza argomenti variadic */</span>
+<span class="dir">#define</span> <span class="fn">LOG_OLD</span>(fmt, ...) <span class="fn">printf</span>(fmt, __VA_ARGS__)
+<span class="fn">LOG_OLD</span>(<span class="str">"test"</span>);  <span class="cmt">// errore: printf("test", ) ← virgola extra</span>
+
+<span class="cmt">/* C23: __VA_OPT__ gestisce il caso zero-argomenti */</span>
+<span class="dir">#define</span> <span class="fn">LOG</span>(fmt, ...) <span class="fn">printf</span>(fmt <span class="kw">__VA_OPT__</span>(,) __VA_ARGS__)
+<span class="fn">LOG</span>(<span class="str">"test"</span>);       <span class="cmt">// OK: printf("test")</span>
+<span class="fn">LOG</span>(<span class="str">"%d"</span>, <span class="num">42</span>);    <span class="cmt">// OK: printf("%d", 42)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Nuovi Header e Funzioni C23</div>
+      <table>
+        <tr><th>Header / Funzione</th><th>Descrizione</th></tr>
+        <tr><td><code>&lt;stdbit.h&gt;</code></td><td>Operazioni bit: <code>stdc_leading_zeros</code>, <code>stdc_count_ones</code>, <code>stdc_bit_width</code></td></tr>
+        <tr><td><code>&lt;stdckdint.h&gt;</code></td><td>Aritmetica checked: <code>ckd_add</code>, <code>ckd_sub</code>, <code>ckd_mul</code> (overflow detection)</td></tr>
+        <tr><td><code>memset_explicit</code></td><td>Come <code>memset</code> ma non ottimizzabile via (per sicurezza)</td></tr>
+        <tr><td><code>strdup</code>, <code>strndup</code></td><td>Finalmente nello standard (erano POSIX)</td></tr>
+        <tr><td><code>memalignment</code></td><td>Query allineamento di un puntatore a runtime</td></tr>
+        <tr><td><code>free_sized</code>, <code>free_aligned_sized</code></td><td>Deallocazione con dimensione nota (ottimizzazione)</td></tr>
+        <tr><td><code>timespec_getres</code></td><td>Risoluzione del timer</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     C23 — RIMOZIONI & DEPRECAZIONI
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-c23-remove"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> C17 &rarr; C23 &mdash; RIMOZIONI &amp; DEPRECAZIONI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Rimossi in C23</div>
+      <table>
+        <tr><th>Feature</th><th>Alternativa</th></tr>
+        <tr><td><span class="dep">Trigraph</span></td><td>Rimossi completamente (erano gi&agrave; poco usati)</td></tr>
+        <tr><td><span class="dep">Definizioni K&amp;R (old-style)</span></td><td>Usare prototipi ANSI</td></tr>
+        <tr><td><span class="dep"><code>_Noreturn</code> keyword</span></td><td><code>[[noreturn]]</code> attributo</td></tr>
+        <tr><td><span class="dep"><code>&lt;stdnoreturn.h&gt;</code></span></td><td><code>[[noreturn]]</code></td></tr>
+        <tr><td><span class="dep"><code>&lt;stdalign.h&gt;</code></span></td><td><code>alignas</code> / <code>alignof</code> sono keyword native</td></tr>
+        <tr><td><span class="dep"><code>&lt;stdbool.h&gt;</code></span></td><td><code>bool</code>, <code>true</code>, <code>false</code> sono keyword native</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Cambiamenti Semantici</div>
+      <table>
+        <tr><th>Cambiamento</th><th>Dettaglio</th></tr>
+        <tr><td><span class="chg"><code>auto</code></span></td><td>Da storage class specifier a type inference (con inizializzatore)</td></tr>
+        <tr><td><span class="chg">Funzioni senza parametri</span></td><td><code>int f()</code> ora equivale a <code>int f(void)</code> (non pi&ugrave; "parametri sconosciuti")</td></tr>
+        <tr><td><span class="chg">Rappresentazione interi</span></td><td>C23 richiede complemento a 2 (prima era implementation-defined)</td></tr>
+        <tr><td><span class="chg">Unsigned in <code>&lt;limits.h&gt;</code></span></td><td>I tipi unsigned usano modulo 2<sup>N</sup> (sempre vero in pratica, ora standard)</td></tr>
+        <tr><td><span class="chg">Unreachable</span></td><td><code>unreachable()</code> macro in <code>&lt;stddef.h&gt;</code> per codice irraggiungibile</td></tr>
+      </table>
+    </div>
+
+    <div class="note">Il cambiamento pi&ugrave; impattante &egrave; la rimozione delle definizioni K&amp;R: codice molto vecchio con <code>int f(a, b) int a; int b; {...}</code> non compila pi&ugrave; in <code>-std=c23</code>.</div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     TABELLA COMPATIBILITÀ
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-compat"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> TABELLA COMPATIBILIT&Agrave; FEATURE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Feature per Standard</div>
+      <table>
+        <tr><th>Feature</th><th>C89</th><th>C99</th><th>C11</th><th>C17</th><th>C23</th></tr>
+        <tr><td>Prototipi funzione</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>//</code> commenti</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>long long</code></td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>Dichiarazioni miste</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>VLA</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>opz.</td><td>opz.</td><td>opz.</td></tr>
+        <tr><td><code>restrict</code></td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>Designated init</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>Compound literals</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>inline</code></td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>_Generic</code></td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>_Static_assert</code></td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>_Atomic</code></td><td>&#10007;</td><td>&#10007;</td><td><span class="new">opz.</span></td><td>opz.</td><td>opz.</td></tr>
+        <tr><td><code>&lt;threads.h&gt;</code></td><td>&#10007;</td><td>&#10007;</td><td><span class="new">opz.</span></td><td>opz.</td><td>opz.</td></tr>
+        <tr><td>Struct/union anonimi</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>_Alignas</code> / <code>_Alignof</code></td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td><code>typeof</code></td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td><code>nullptr</code></td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td><code>constexpr</code></td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td><code>_BitInt</code></td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td>Attributi <code>[[...]]</code></td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td><code>#embed</code></td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td>Letterali binari <code>0b</code></td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td><code>bool</code> keyword</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td>&#10007;</td><td><span class="new">&#10003;</span></td></tr>
+        <tr><td>Trigraph</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td><span class="dep">&#10007;</span></td></tr>
+        <tr><td>K&amp;R definitions</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td><span class="dep">&#10007;</span></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Supporto Compilatori (indicativo)</div>
+      <table>
+        <tr><th>Standard</th><th>GCC</th><th>Clang</th><th>MSVC</th></tr>
+        <tr><td>C89/C90</td><td>Completo</td><td>Completo</td><td>Completo</td></tr>
+        <tr><td>C99</td><td>Completo (4.5+)</td><td>Completo</td><td>Parziale</td></tr>
+        <tr><td>C11</td><td>Completo (4.9+)</td><td>Completo (3.6+)</td><td>Parziale (VS 2019+)</td></tr>
+        <tr><td>C17</td><td>Completo (8+)</td><td>Completo (6+)</td><td>Completo (VS 2019 16.8+)</td></tr>
+        <tr><td>C23</td><td>In corso (14+)</td><td>In corso (18+)</td><td>Parziale</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     GUIDA ALLA MIGRAZIONE
+     ════════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-migration"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">◈</span> GUIDA ALLA MIGRAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">C89 &rarr; C99: Azioni Consigliate</div>
+      <table>
+        <tr><th>Azione</th><th>Dettaglio</th></tr>
+        <tr><td>Aggiungere <code>-std=c99</code></td><td>Abilitare lo standard e verificare warning</td></tr>
+        <tr><td>Sostituire <code>/* */</code> con <code>//</code></td><td>Dove appropriato per commenti in linea</td></tr>
+        <tr><td>Usare <code>&lt;stdint.h&gt;</code></td><td>Sostituire tipi platform-specific con <code>int32_t</code>, ecc.</td></tr>
+        <tr><td>Usare <code>&lt;stdbool.h&gt;</code></td><td>Sostituire <code>int</code> flag con <code>bool</code></td></tr>
+        <tr><td>Dichiarazioni al punto d'uso</td><td>Spostare dichiarazioni vicino al primo utilizzo</td></tr>
+        <tr><td>Usare <code>snprintf</code></td><td>Sostituire <code>sprintf</code> con la versione sicura</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">C99 &rarr; C11: Azioni Consigliate</div>
+      <table>
+        <tr><th>Azione</th><th>Dettaglio</th></tr>
+        <tr><td>Aggiungere <code>-std=c11</code></td><td>Quasi completamente retrocompatibile</td></tr>
+        <tr><td>Usare <code>_Static_assert</code></td><td>Validare assunzioni a compile-time</td></tr>
+        <tr><td>Struct/union anonimi</td><td>Semplificare accesso a campi innestati</td></tr>
+        <tr><td>Valutare <code>_Generic</code></td><td>Per macro type-safe al posto di cast manuali</td></tr>
+        <tr><td>Verificare VLA</td><td>Se usati, testare con <code>__STDC_NO_VLA__</code> per portabilit&agrave;</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">C11/C17 &rarr; C23: Azioni Consigliate</div>
+      <table>
+        <tr><th>Azione</th><th>Dettaglio</th></tr>
+        <tr><td>Aggiungere <code>-std=c23</code></td><td>Verificare la compatibilit&agrave; del compilatore</td></tr>
+        <tr><td>Eliminare definizioni K&amp;R</td><td>Obbligatorio &mdash; non compilano pi&ugrave;</td></tr>
+        <tr><td>Rimuovere <code>&lt;stdbool.h&gt;</code></td><td><code>bool</code> &egrave; keyword nativa</td></tr>
+        <tr><td>Usare <code>[[noreturn]]</code></td><td>Sostituire <code>_Noreturn</code> / <code>&lt;stdnoreturn.h&gt;</code></td></tr>
+        <tr><td>Usare <code>nullptr</code></td><td>Pi&ugrave; sicuro di <code>NULL</code> / <code>0</code> per puntatori</td></tr>
+        <tr><td>Valutare <code>typeof</code></td><td>Macro type-safe senza estensioni GNU</td></tr>
+        <tr><td>Usare <code>constexpr</code></td><td>Per costanti al posto di <code>#define</code> dove possibile</td></tr>
+        <tr><td>Valutare <code>#embed</code></td><td>Inclusione dati binari senza tool esterni</td></tr>
+      </table>
+    </div>
+
+    <div class="note">Regola generale: ogni standard &egrave; largamente retrocompatibile col precedente. Le rotture pi&ugrave; significative sono C23 (rimozione K&amp;R, cambio semantica <code>auto</code> e <code>f()</code>) e C11 (<code>gets</code> rimossa). Compilare con <code>-Wall -Wextra -pedantic</code> evidenzia i problemi.</div>
+
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+<script src="../assets/js/mobile.js"></script>
+</body>
+</html>
