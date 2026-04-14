@@ -125,6 +125,7 @@
     <a href="#s-reg-eeprom">EEPROM Registri</a>
     <a href="#s-reg-wdt">Watchdog Timer</a>
     <a href="#s-reg-sleep">Sleep Modes</a>
+    <a href="#s-reg-asm">Inline Assembly (asm volatile)</a>
   </div>
 
   <div class="nav-section">
@@ -1735,6 +1736,82 @@ power_twi_disable();
 power_timer1_disable();
 power_timer2_disable();
 </pre>
+  </div>
+</div>
+
+<!-- ─── INLINE ASSEMBLY ────────────────────────────────────────── -->
+<a class="anchor" id="s-reg-asm"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INLINE ASSEMBLY (asm volatile)</div>
+  <div class="section-body">
+    <p>GCC per AVR permette di inserire istruzioni assembly inline con <code>asm volatile("...")</code>.
+       <code>volatile</code> impedisce al compilatore di ottimizzare/rimuovere il blocco.
+       Utile per operazioni a bassissimo livello non esprimibili in C.</p>
+
+    <table>
+      <tr><th>Istruzione</th><th>Codice</th><th>Effetto</th></tr>
+      <tr><td>Software Reset</td><td><code>asm volatile ("jmp 0");</code></td><td>Salta all&rsquo;indirizzo 0 &mdash; simula un reset (non reinizializza i registri HW, ma riavvia lo sketch)</td></tr>
+      <tr><td>No Operation</td><td><code>asm volatile ("nop");</code></td><td>1 ciclo di clock (~62.5 ns a 16 MHz). Utile per micro-ritardi precisi</td></tr>
+      <tr><td>Disabilita Interrupt</td><td><code>asm volatile ("cli");</code></td><td>Equivalente a <code>noInterrupts()</code> &mdash; clear interrupt flag</td></tr>
+      <tr><td>Abilita Interrupt</td><td><code>asm volatile ("sei");</code></td><td>Equivalente a <code>interrupts()</code> &mdash; set interrupt flag</td></tr>
+      <tr><td>Sleep CPU</td><td><code>asm volatile ("sleep");</code></td><td>Entra nel modo sleep configurato (impostare SMCR prima)</td></tr>
+      <tr><td>Watchdog Reset</td><td><code>asm volatile ("wdr");</code></td><td>Resetta il timer del Watchdog &mdash; equivalente a <code>wdt_reset()</code></td></tr>
+      <tr><td>Break (debug)</td><td><code>asm volatile ("break");</code></td><td>Breakpoint per debugger hardware (JTAG/debugWIRE)</td></tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">Delay preciso con NOP</div>
+<pre>
+<span class="cmt">// Ritardo esatto di N cicli (N × 62.5 ns a 16 MHz)</span>
+<span class="kw">#define</span> NOP asm volatile ("nop")
+
+<span class="cmt">// ~250 ns di pausa (4 cicli)</span>
+NOP; NOP; NOP; NOP;
+
+<span class="cmt">// Utile per rispettare timing stretti di protocolli (es. WS2812B / DHT)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Lettura/Scrittura registri I/O con SBI/CBI</div>
+<pre>
+<span class="cmt">// Set bit &mdash; pin HIGH (1 ciclo, molto pi&ugrave; veloce di digitalWrite)</span>
+asm volatile ("sbi %0, %1" :: "I" (_SFR_IO_ADDR(PORTB)), "I" (<span class="num">5</span>));  <span class="cmt">// PB5 = pin 13 HIGH</span>
+
+<span class="cmt">// Clear bit &mdash; pin LOW</span>
+asm volatile ("cbi %0, %1" :: "I" (_SFR_IO_ADDR(PORTB)), "I" (<span class="num">5</span>));  <span class="cmt">// PB5 = pin 13 LOW</span>
+
+<span class="cmt">// Equivalente C (pi&ugrave; leggibile, stessa velocit&agrave; con ottimizzazione -Os):</span>
+PORTB |=  (<span class="num">1</span> &lt;&lt; PB5);  <span class="cmt">// HIGH</span>
+PORTB &amp;= ~(<span class="num">1</span> &lt;&lt; PB5);  <span class="cmt">// LOW</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Sezione critica atomica</div>
+<pre>
+<span class="cmt">// Salva SREG, disabilita interrupt, esegue, ripristina</span>
+<span class="kw">uint8_t</span> oldSREG;
+asm volatile ("in %0, __SREG__" : "=r" (oldSREG));  <span class="cmt">// salva stato</span>
+asm volatile ("cli");                                 <span class="cmt">// disabilita interrupt</span>
+
+<span class="cmt">// &mdash; operazioni atomiche qui &mdash;</span>
+<span class="kw">uint16_t</span> val = volatileCounter;  <span class="cmt">// lettura 16-bit sicura</span>
+
+asm volatile ("out __SREG__, %0" :: "r" (oldSREG));  <span class="cmt">// ripristina stato</span>
+
+<span class="cmt">// Alternativa pi&ugrave; idiomatica con avr-libc:</span>
+<span class="kw">#include</span> <span class="str">&lt;util/atomic.h&gt;</span>
+ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+  val = volatileCounter;
+}
+</pre>
+    </div>
+
+    <div class="warn">
+      <code>jmp 0</code> non &egrave; un vero reset hardware: i registri delle periferiche (Timer, USART, ADC) mantengono il loro stato.
+      Per un reset completo, usare il Watchdog: <code>wdt_enable(WDTO_15MS); while(1);</code>
+    </div>
   </div>
 </div>
 
