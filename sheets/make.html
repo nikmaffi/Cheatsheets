@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GNU Make CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #0a0505;
+    --bg2:       #0e0808;
+    --panel:     #120c0c;
+    --panel2:    #161010;
+    --border:    #221414;
+    --border2:   #3a2020;
+    --glow:      #cc2222;
+    --glow2:     #ff4444;
+    --glow-dim:  #3b0a0a;
+    --dim:       #4a2020;
+    --text:      #b8a0a0;
+    --text2:     #d0b8b8;
+    --bright:    #ffcccc;
+    --accent:    #cc3333;
+    --accent2:   #ff5555;
+    --key:       #cc6666;
+    --kw:        #ff8888;
+    --str:       #88cc88;
+    --num:       #77bbdd;
+    --cmt:       #6a4444;
+    --reg:       #ff8866;
+    --ins:       #ffaa66;
+    --dir:       #88aadd;
+    --lbl:       #ddaa88;
+    --head:      #ffcccc;
+    --hr:        #221414;
+    --scan:      rgba(204,34,34,0.025);
+    --cmd:       #ff6666;
+    --arg:       #88ccdd;
+    --out:       #889988;
+    --prompt:    #cc4444;
+    --vignette:          rgba(10,0,0,0.7);
+    --header-top:        #1a0808;
+    --header-shadow:     rgba(204,34,34,0.15);
+    --sidebar-hover-bg:  rgba(204,34,34,0.08);
+    --section-shadow:    rgba(60,0,0,0.5);
+    --th-bg:             rgba(204,34,34,0.12);
+    --tr-even-bg:        rgba(40,10,10,0.3);
+    --tr-hover-bg:       rgba(204,34,34,0.06);
+    --note-bg:           rgba(204,34,34,0.08);
+  }
+
+  .cmd    { color: var(--cmd); }
+  .arg    { color: var(--arg); }
+  .out    { color: var(--out); }
+  .reg    { color: var(--reg); }
+  .ins    { color: var(--ins); }
+  .dir    { color: var(--dir); }
+  .prompt { color: var(--prompt); }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; GNU MAKE REFERENCE MANUAL <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>GNU Make / Build System</span> &mdash; v1.0</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-intro">Introduzione &amp; Invocazione</a>
+    <a href="#s-rules">Regole (Rules)</a>
+    <a href="#s-phony">Phony Targets</a>
+    <a href="#s-variables">Variabili</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Variabili &amp; Espansione</div>
+    <a href="#s-auto">Variabili Automatiche</a>
+    <a href="#s-assign">Tipi di Assegnazione</a>
+    <a href="#s-override">Override &amp; Ambiente</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Pattern &amp; Funzioni</div>
+    <a href="#s-pattern">Pattern Rules</a>
+    <a href="#s-functions">Funzioni Built-in</a>
+    <a href="#s-conditionals">Direttive Condizionali</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-include">Include &amp; Multi-directory</a>
+    <a href="#s-multidir">Progetti Multi-directory</a>
+    <a href="#s-recipes">Recipe Avanzate</a>
+    <a href="#s-deps">Dipendenze Automatiche</a>
+    <a href="#s-debug">Debug &amp; Troubleshooting</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Riferimento</div>
+    <a href="#s-complete">Makefile Completo</a>
+    <a href="#s-tips">Tips &amp; Tricks</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ════════════════════════════════════════════════════════════
+     INTRODUZIONE & INVOCAZIONE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-intro"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INTRODUZIONE &amp; INVOCAZIONE</div>
+  <div class="section-body">
+    <p><b>GNU Make</b> &egrave; un build system che automatizza la compilazione leggendo un file chiamato <code>Makefile</code> (o <code>makefile</code>, <code>GNUmakefile</code>). Determina quali parti di un programma devono essere ricompilate ed esegue i comandi necessari basandosi su <b>regole</b>, <b>dipendenze</b> e <b>timestamp</b> dei file.</p>
+
+    <div class="sub">
+      <div class="sub-title">INVOCAZIONE DA RIGA DI COMANDO</div>
+      <table>
+        <tr><th>Comando</th><th>Descrizione</th></tr>
+        <tr><td><code>make</code></td><td>Esegue il primo target del Makefile</td></tr>
+        <tr><td><code>make target</code></td><td>Esegue uno specifico target</td></tr>
+        <tr><td><code>make -f file.mk</code></td><td>Usa un Makefile con nome diverso</td></tr>
+        <tr><td><code>make -j4</code></td><td>Compilazione parallela (4 job)</td></tr>
+        <tr><td><code>make -jN</code></td><td>N job paralleli (<code>-j</code> senza N = illimitati)</td></tr>
+        <tr><td><code>make -n</code></td><td>Dry run: mostra comandi senza eseguirli</td></tr>
+        <tr><td><code>make -B</code></td><td>Forza ricompilazione di tutto (unconditional)</td></tr>
+        <tr><td><code>make -k</code></td><td>Continua anche dopo errori</td></tr>
+        <tr><td><code>make -s</code></td><td>Silent: non stampa i comandi</td></tr>
+        <tr><td><code>make -C dir</code></td><td>Cambia directory prima di leggere il Makefile</td></tr>
+        <tr><td><code>make VAR=value</code></td><td>Override di una variabile dalla command line</td></tr>
+        <tr><td><code>make -p</code></td><td>Stampa il database interno (regole e variabili)</td></tr>
+        <tr><td><code>make -d</code></td><td>Debug mode: output dettagliato</td></tr>
+        <tr><td><code>make --debug=basic</code></td><td>Debug selettivo (<code>basic</code>, <code>verbose</code>, <code>implicit</code>, <code>jobs</code>, <code>all</code>)</td></tr>
+        <tr><td><code>make -t</code></td><td>Touch: aggiorna timestamp senza compilare</td></tr>
+        <tr><td><code>make -q</code></td><td>Query: exit 0 se il target &egrave; aggiornato, 1 altrimenti</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ORDINE DI RICERCA DEL MAKEFILE</div>
+<pre><span class="cmt"># Make cerca in questo ordine:</span>
+<span class="ins">1.</span> <span class="str">GNUmakefile</span>
+<span class="ins">2.</span> <span class="str">makefile</span>
+<span class="ins">3.</span> <span class="str">Makefile</span>          <span class="cmt"># &larr; convenzione pi&ugrave; usata</span></pre>
+    </div>
+
+    <div class="note">La convenzione &egrave; usare <code>Makefile</code> (con la M maiuscola) perch&eacute; appare prima nei listing di directory ordinati (le maiuscole precedono le minuscole in ASCII). <code>GNUmakefile</code> &egrave; sconsigliato perch&eacute; non portabile verso altre implementazioni di Make.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     REGOLE (RULES)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-rules"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> REGOLE (RULES)</div>
+  <div class="section-body">
+    <p>Una <b>regola</b> &egrave; l'unit&agrave; fondamentale di un Makefile. Definisce un <b>target</b> (cosa produrre), le sue <b>dipendenze</b> (prerequisiti) e una <b>recipe</b> (comandi da eseguire). Make ricompila un target solo se &egrave; pi&ugrave; vecchio di almeno una delle sue dipendenze.</p>
+
+    <div class="sub">
+      <div class="sub-title">SINTASSI BASE</div>
+<pre><span class="cmd">target</span>: <span class="arg">dipendenza1 dipendenza2 ...</span>
+	<span class="str">comando1</span>
+	<span class="str">comando2</span>
+
+<span class="cmt"># IMPORTANTE: i comandi DEVONO essere indentati con TAB, non spazi!</span>
+
+<span class="cmt"># Esempio concreto:</span>
+<span class="cmd">prog</span>: <span class="arg">main.o utils.o</span>
+	<span class="str">gcc main.o utils.o -o prog</span>
+
+<span class="cmd">main.o</span>: <span class="arg">main.c main.h</span>
+	<span class="str">gcc -c main.c</span>
+
+<span class="cmd">utils.o</span>: <span class="arg">utils.c utils.h</span>
+	<span class="str">gcc -c utils.c</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TARGET MULTIPLI</div>
+<pre><span class="cmt"># Pi&ugrave; target con la stessa regola</span>
+<span class="cmd">file1.o file2.o</span>: <span class="arg">common.h</span>
+
+<span class="cmt"># Equivale a:</span>
+<span class="cmd">file1.o</span>: <span class="arg">common.h</span>
+<span class="cmd">file2.o</span>: <span class="arg">common.h</span>
+
+<span class="cmt"># Dipendenze aggiuntive (si accumulano)</span>
+<span class="cmd">main.o</span>: <span class="arg">main.c</span>
+<span class="cmd">main.o</span>: <span class="arg">config.h utils.h</span>
+<span class="cmt"># main.o dipende da main.c, config.h E utils.h</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ORDER-ONLY PREREQUISITES</div>
+<pre><span class="cmt"># I prerequisiti dopo | non influenzano il timestamp</span>
+<span class="cmt"># Usati tipicamente per creare directory</span>
+<span class="cmd">build/prog.o</span>: <span class="arg">prog.c</span> | <span class="dir">build</span>
+	<span class="str">gcc -c prog.c -o build/prog.o</span>
+
+<span class="cmd">build</span>:
+	<span class="str">mkdir -p build</span>
+<span class="cmt"># La directory viene creata se non esiste,</span>
+<span class="cmt"># ma modificarla non forza la ricompilazione</span></pre>
+    </div>
+
+    <div class="note">Il primo target del Makefile &egrave; il <b>default goal</b>: viene eseguito quando si invoca <code>make</code> senza argomenti. Convenzione: chiamarlo <code>all</code>.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     PHONY TARGETS
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-phony"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PHONY TARGETS</div>
+  <div class="section-body">
+    <p>Un target <b>phony</b> non corrisponde a un file reale. Senza <code>.PHONY</code>, se esistesse un file chiamato <code>clean</code>, Make lo considererebbe gi&agrave; aggiornato e non eseguirebbe la recipe.</p>
+
+    <div class="sub">
+      <div class="sub-title">DICHIARAZIONE E USO</div>
+<pre><span class="cmd">.PHONY</span>: <span class="arg">all clean install uninstall rebuild test</span>
+
+<span class="cmd">all</span>: <span class="arg">prog</span>
+
+<span class="cmd">clean</span>:
+	<span class="str">rm -f *.o prog</span>
+
+<span class="cmd">install</span>: <span class="arg">prog</span>
+	<span class="str">install -m 755 prog /usr/local/bin/</span>
+
+<span class="cmd">uninstall</span>:
+	<span class="str">rm -f /usr/local/bin/prog</span>
+
+<span class="cmd">rebuild</span>: <span class="arg">clean all</span>
+
+<span class="cmd">test</span>: <span class="arg">prog</span>
+	<span class="str">./prog --test</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PHONY TARGETS COMUNI</div>
+      <table>
+        <tr><th>Target</th><th>Convenzione</th></tr>
+        <tr><td><code>all</code></td><td>Compila tutto (default goal)</td></tr>
+        <tr><td><code>clean</code></td><td>Rimuove file generati (<code>.o</code>, eseguibili)</td></tr>
+        <tr><td><code>install</code></td><td>Installa il programma nel sistema</td></tr>
+        <tr><td><code>uninstall</code></td><td>Rimuove l'installazione</td></tr>
+        <tr><td><code>dist</code></td><td>Crea un archivio per la distribuzione</td></tr>
+        <tr><td><code>distclean</code></td><td><code>clean</code> + rimuove file di configurazione</td></tr>
+        <tr><td><code>check</code> / <code>test</code></td><td>Esegue i test</td></tr>
+        <tr><td><code>help</code></td><td>Mostra i target disponibili</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     VARIABILI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-variables"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> VARIABILI</div>
+  <div class="section-body">
+    <p>Le variabili rendono il Makefile flessibile e manutenibile. Si referenziano con <code>$(VAR)</code> o <code>${VAR}</code>. Per convenzione i nomi sono in <b>MAIUSCOLO</b>.</p>
+
+    <div class="sub">
+      <div class="sub-title">VARIABILI FONDAMENTALI</div>
+<pre><span class="cmd">CC</span>      = <span class="str">gcc</span>                 <span class="cmt"># compilatore C</span>
+<span class="cmd">CXX</span>     = <span class="str">g++</span>                 <span class="cmt"># compilatore C++</span>
+<span class="cmd">CFLAGS</span>  = <span class="arg">-Wall -Wextra -g</span>    <span class="cmt"># flag compilazione C</span>
+<span class="cmd">CXXFLAGS</span>= <span class="arg">-Wall -Wextra -g</span>    <span class="cmt"># flag compilazione C++</span>
+<span class="cmd">LDFLAGS</span> = <span class="arg">-L/usr/local/lib</span>    <span class="cmt"># flag linker (percorsi)</span>
+<span class="cmd">LDLIBS</span>  = <span class="arg">-lm -lpthread</span>      <span class="cmt"># librerie da linkare</span>
+<span class="cmd">CPPFLAGS</span>= <span class="arg">-I./include -DDEBUG</span> <span class="cmt"># flag preprocessore</span>
+<span class="cmd">AR</span>      = <span class="str">ar</span>                  <span class="cmt"># archiviatore</span>
+<span class="cmd">ARFLAGS</span> = <span class="arg">rcs</span>                 <span class="cmt"># flag per ar</span>
+
+<span class="cmd">TARGET</span>  = <span class="str">prog</span>
+<span class="cmd">SRC</span>     = <span class="str">main.c utils.c io.c</span>
+<span class="cmd">OBJ</span>     = <span class="ins">$(SRC:.c=.o)</span>        <span class="cmt"># main.o utils.o io.o</span>
+
+<span class="cmd">$(TARGET)</span>: <span class="arg">$(OBJ)</span>
+	<span class="str">$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">VARIABILI PREDEFINITE IMPORTANTI</div>
+      <table>
+        <tr><th>Variabile</th><th>Default</th><th>Uso</th></tr>
+        <tr><td><code>CC</code></td><td><code>cc</code></td><td>Compilatore C</td></tr>
+        <tr><td><code>CXX</code></td><td><code>g++</code></td><td>Compilatore C++</td></tr>
+        <tr><td><code>CFLAGS</code></td><td><i>(vuoto)</i></td><td>Flag per <code>$(CC)</code></td></tr>
+        <tr><td><code>CXXFLAGS</code></td><td><i>(vuoto)</i></td><td>Flag per <code>$(CXX)</code></td></tr>
+        <tr><td><code>CPPFLAGS</code></td><td><i>(vuoto)</i></td><td>Flag preprocessore (<code>-I</code>, <code>-D</code>)</td></tr>
+        <tr><td><code>LDFLAGS</code></td><td><i>(vuoto)</i></td><td>Flag linker (<code>-L</code>)</td></tr>
+        <tr><td><code>LDLIBS</code></td><td><i>(vuoto)</i></td><td>Librerie (<code>-l</code>)</td></tr>
+        <tr><td><code>AR</code></td><td><code>ar</code></td><td>Archiviatore</td></tr>
+        <tr><td><code>RM</code></td><td><code>rm -f</code></td><td>Comando di rimozione</td></tr>
+        <tr><td><code>MAKE</code></td><td><code>make</code></td><td>Riferimento ricorsivo a make</td></tr>
+        <tr><td><code>SHELL</code></td><td><code>/bin/sh</code></td><td>Shell usata per le recipe</td></tr>
+        <tr><td><code>MAKEFLAGS</code></td><td><i>(vuoto)</i></td><td>Flag passate a sub-make</td></tr>
+      </table>
+    </div>
+
+    <div class="note">Le regole implicite di Make usano queste variabili. Ad esempio, la regola implicita per <code>.c</code> &rarr; <code>.o</code> esegue: <code>$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@</code>. Basta definire le variabili e Make sa gi&agrave; come compilare.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     VARIABILI AUTOMATICHE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-auto"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> VARIABILI AUTOMATICHE</div>
+  <div class="section-body">
+    <p>Le variabili automatiche sono settate da Make per ogni regola eseguita. Disponibili solo all'interno delle recipe.</p>
+
+    <div class="sub">
+      <div class="sub-title">RIFERIMENTO COMPLETO</div>
+      <table>
+        <tr><th>Variabile</th><th>Significato</th><th>Esempio</th></tr>
+        <tr><td><code>$@</code></td><td>Il target</td><td><code>prog</code></td></tr>
+        <tr><td><code>$&lt;</code></td><td>La prima dipendenza</td><td><code>main.c</code></td></tr>
+        <tr><td><code>$^</code></td><td>Tutte le dipendenze (senza duplicati)</td><td><code>main.o utils.o</code></td></tr>
+        <tr><td><code>$+</code></td><td>Tutte le dipendenze (con duplicati)</td><td><code>main.o utils.o main.o</code></td></tr>
+        <tr><td><code>$?</code></td><td>Dipendenze pi&ugrave; recenti del target</td><td>file modificati dopo l'ultimo build</td></tr>
+        <tr><td><code>$*</code></td><td>Lo stem del pattern match</td><td><code>main</code> in <code>%.o: %.c</code></td></tr>
+        <tr><td><code>$(@D)</code></td><td>Directory del target</td><td><code>build</code> in <code>build/prog</code></td></tr>
+        <tr><td><code>$(@F)</code></td><td>Filename del target</td><td><code>prog</code> in <code>build/prog</code></td></tr>
+        <tr><td><code>$(&lt;D)</code></td><td>Directory della prima dipendenza</td><td><code>src</code> in <code>src/main.c</code></td></tr>
+        <tr><td><code>$(&lt;F)</code></td><td>Filename della prima dipendenza</td><td><code>main.c</code> in <code>src/main.c</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPIO PRATICO</div>
+<pre><span class="cmt"># Senza variabili automatiche (ripetitivo)</span>
+<span class="cmd">prog</span>: <span class="arg">main.o utils.o</span>
+	<span class="str">gcc main.o utils.o -o prog</span>
+
+<span class="cmt"># Con variabili automatiche (generico e manutenibile)</span>
+<span class="cmd">prog</span>: <span class="arg">main.o utils.o</span>
+	<span class="str">$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)</span>
+
+<span class="cmt"># $@ = prog, $^ = main.o utils.o</span>
+
+<span class="cmt"># Pattern rule con $&lt; e $@</span>
+<span class="cmd">%.o</span>: <span class="arg">%.c</span>
+	<span class="str">$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@</span>
+<span class="cmt"># $&lt; = il file .c corrispondente, $@ = il file .o target</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     TIPI DI ASSEGNAZIONE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-assign"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TIPI DI ASSEGNAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">OPERATORI DI ASSEGNAZIONE</div>
+      <table>
+        <tr><th>Operatore</th><th>Nome</th><th>Comportamento</th></tr>
+        <tr><td><code>=</code></td><td>Recursive</td><td>Espansione ritardata (lazy): il valore viene espanso ogni volta che la variabile &egrave; usata</td></tr>
+        <tr><td><code>:=</code></td><td>Simple</td><td>Espansione immediata: il valore viene espanso al momento dell'assegnazione</td></tr>
+        <tr><td><code>::=</code></td><td>Simple (POSIX)</td><td>Identico a <code>:=</code>, sintassi POSIX standard</td></tr>
+        <tr><td><code>?=</code></td><td>Conditional</td><td>Assegna solo se la variabile non &egrave; gi&agrave; definita</td></tr>
+        <tr><td><code>+=</code></td><td>Append</td><td>Aggiunge al valore esistente (separato da spazio)</td></tr>
+        <tr><td><code>!=</code></td><td>Shell</td><td>Assegna l'output di un comando shell (GNU Make 4.0+)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DIFFERENZE TRA = E :=</div>
+<pre><span class="cmt"># Recursive (=) &mdash; espansione ritardata</span>
+<span class="cmd">A</span> = <span class="str">$(B)</span>
+<span class="cmd">B</span> = <span class="str">hello</span>
+<span class="cmt"># $(A) vale "hello" &mdash; B viene espanso quando si usa A</span>
+
+<span class="cmt"># Simple (:=) &mdash; espansione immediata</span>
+<span class="cmd">A</span> := <span class="str">$(B)</span>
+<span class="cmd">B</span> := <span class="str">hello</span>
+<span class="cmt"># $(A) vale "" &mdash; B era vuoto quando A &egrave; stato assegnato</span>
+
+<span class="cmt"># Conditional (?=)</span>
+<span class="cmd">CC</span> ?= <span class="str">gcc</span>
+<span class="cmt"># CC = gcc solo se non gi&agrave; definito (es. da ambiente o command line)</span>
+
+<span class="cmt"># Append (+=)</span>
+<span class="cmd">CFLAGS</span>  = <span class="arg">-Wall</span>
+<span class="cmd">CFLAGS</span> += <span class="arg">-Wextra</span>
+<span class="cmd">CFLAGS</span> += <span class="arg">-g</span>
+<span class="cmt"># CFLAGS = "-Wall -Wextra -g"</span>
+
+<span class="cmt"># Shell (!=)</span>
+<span class="cmd">GIT_HASH</span> != <span class="str">git rev-parse --short HEAD</span>
+<span class="cmt"># Equivalente a: GIT_HASH := $(shell git rev-parse --short HEAD)</span></pre>
+    </div>
+
+    <div class="note">Regola pratica: usare <code>:=</code> per la maggior parte delle variabili (pi&ugrave; prevedibile e veloce). Usare <code>=</code> solo quando serve espansione ritardata. Usare <code>?=</code> per dare default sovrascrivibili dall'utente.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     OVERRIDE & AMBIENTE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-override"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> OVERRIDE &amp; AMBIENTE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">PRIORIT&Agrave; DELLE VARIABILI (dalla pi&ugrave; alta)</div>
+      <table>
+        <tr><th>#</th><th>Origine</th><th>Esempio</th></tr>
+        <tr><td><code>1</code></td><td><code>override</code> nel Makefile</td><td><code>override CFLAGS += -g</code></td></tr>
+        <tr><td><code>2</code></td><td>Command line</td><td><code>make CFLAGS="-O2"</code></td></tr>
+        <tr><td><code>3</code></td><td>Makefile</td><td><code>CFLAGS = -Wall</code></td></tr>
+        <tr><td><code>4</code></td><td>Ambiente</td><td><code>export CFLAGS="-O3"</code></td></tr>
+        <tr><td><code>5</code></td><td>Default di Make</td><td><code>CC = cc</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">DIRETTIVA OVERRIDE</div>
+<pre><span class="cmt"># Senza override: "make CFLAGS=-O2" sovrascrive il Makefile</span>
+<span class="cmd">CFLAGS</span> = <span class="arg">-Wall -g</span>
+
+<span class="cmt"># Con override: -g viene SEMPRE aggiunto, anche con override da CLI</span>
+<span class="ins">override</span> <span class="cmd">CFLAGS</span> += <span class="arg">-g</span>
+
+<span class="cmt"># Esportare variabili ai sub-make</span>
+<span class="ins">export</span> <span class="cmd">CC CFLAGS LDFLAGS</span>
+
+<span class="cmt"># Esportare tutto</span>
+<span class="ins">export</span>
+
+<span class="cmt"># Non esportare una variabile specifica</span>
+<span class="ins">unexport</span> <span class="cmd">SECRET_KEY</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">VARIABILI TARGET-SPECIFIC</div>
+<pre><span class="cmt"># Variabili che valgono solo per un target (e le sue dipendenze)</span>
+<span class="cmd">debug</span>: <span class="cmd">CFLAGS</span> += <span class="arg">-DDEBUG -O0</span>
+<span class="cmd">debug</span>: <span class="arg">prog</span>
+
+<span class="cmd">release</span>: <span class="cmd">CFLAGS</span> += <span class="arg">-O2 -DNDEBUG</span>
+<span class="cmd">release</span>: <span class="arg">prog</span>
+
+<span class="cmt"># Ora: "make debug" compila con -DDEBUG -O0</span>
+<span class="cmt">#      "make release" compila con -O2 -DNDEBUG</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     PATTERN RULES
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-pattern"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PATTERN RULES</div>
+  <div class="section-body">
+    <p>Le <b>pattern rules</b> usano <code>%</code> come wildcard per definire regole generiche applicabili a pi&ugrave; file. Sostituiscono le vecchie suffix rules (<code>.c.o:</code>).</p>
+
+    <div class="sub">
+      <div class="sub-title">PATTERN RULES BASE</div>
+<pre><span class="cmt"># Regola generica: qualsiasi .c &rarr; .o</span>
+<span class="cmd">%.o</span>: <span class="arg">%.c</span>
+	<span class="str">$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@</span>
+
+<span class="cmt"># Regola generica: qualsiasi .cpp &rarr; .o</span>
+<span class="cmd">%.o</span>: <span class="arg">%.cpp</span>
+	<span class="str">$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $&lt; -o $@</span>
+
+<span class="cmt"># Con directory di output</span>
+<span class="cmd">build/%.o</span>: <span class="arg">src/%.c</span> | <span class="dir">build</span>
+	<span class="str">$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">REGOLE IMPLICITE BUILT-IN</div>
+      <table>
+        <tr><th>Pattern</th><th>Comando implicito</th></tr>
+        <tr><td><code>%.o</code> da <code>%.c</code></td><td><code>$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@</code></td></tr>
+        <tr><td><code>%.o</code> da <code>%.cpp</code></td><td><code>$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $&lt; -o $@</code></td></tr>
+        <tr><td><code>%</code> da <code>%.o</code></td><td><code>$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@</code></td></tr>
+        <tr><td><code>%.o</code> da <code>%.s</code></td><td><code>$(AS) $(ASFLAGS) $&lt; -o $@</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">STATIC PATTERN RULES</div>
+<pre><span class="cmt"># Applica il pattern solo a un elenco specifico di target</span>
+<span class="cmd">OBJS</span> := <span class="str">main.o utils.o io.o</span>
+
+<span class="cmd">$(OBJS)</span>: <span class="arg">%.o</span>: <span class="arg">%.c</span>
+	<span class="str">$(CC) $(CFLAGS) -c $&lt; -o $@</span>
+
+<span class="cmt"># Sintassi: targets: target-pattern: prereq-pattern</span>
+<span class="cmt"># Utile quando hai pi&ugrave; pattern rules e vuoi evitare ambiguit&agrave;</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CANCELLARE REGOLE IMPLICITE</div>
+<pre><span class="cmt"># Disabilitare una regola implicita specifica</span>
+<span class="cmd">%.o</span>: <span class="arg">%.s</span>
+
+<span class="cmt"># Disabilitare TUTTE le regole implicite</span>
+<span class="cmd">MAKEFLAGS</span> += <span class="arg">--no-builtin-rules</span>
+<span class="cmd">.SUFFIXES</span>:</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     FUNZIONI BUILT-IN
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-functions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> FUNZIONI BUILT-IN</div>
+  <div class="section-body">
+    <p>GNU Make offre numerose funzioni richiamabili con <code>$(funzione argomenti)</code> o <code>${funzione argomenti}</code>.</p>
+
+    <div class="sub">
+      <div class="sub-title">FUNZIONI SU STRINGHE</div>
+      <table>
+        <tr><th>Funzione</th><th>Descrizione</th><th>Esempio</th></tr>
+        <tr><td><code>$(subst da,a,testo)</code></td><td>Sostituzione testuale</td><td><code>$(subst .c,.o,main.c)</code> &rarr; <code>main.o</code></td></tr>
+        <tr><td><code>$(patsubst pat,repl,testo)</code></td><td>Sostituzione con pattern</td><td><code>$(patsubst %.c,%.o,main.c utils.c)</code></td></tr>
+        <tr><td><code>$(strip testo)</code></td><td>Rimuove spazi iniziali/finali e duplicati</td><td><code>$(strip &nbsp; a &nbsp; b &nbsp;)</code> &rarr; <code>a b</code></td></tr>
+        <tr><td><code>$(findstring needle,testo)</code></td><td>Cerca una stringa</td><td>Vuoto se non trovata</td></tr>
+        <tr><td><code>$(filter pattern,testo)</code></td><td>Filtra parole che matchano</td><td><code>$(filter %.c,main.c lib.h)</code> &rarr; <code>main.c</code></td></tr>
+        <tr><td><code>$(filter-out pattern,testo)</code></td><td>Esclude parole che matchano</td><td><code>$(filter-out %.h,main.c lib.h)</code> &rarr; <code>main.c</code></td></tr>
+        <tr><td><code>$(sort lista)</code></td><td>Ordina e rimuove duplicati</td><td><code>$(sort c a b a)</code> &rarr; <code>a b c</code></td></tr>
+        <tr><td><code>$(word n,testo)</code></td><td>Ennesima parola (1-based)</td><td><code>$(word 2,a b c)</code> &rarr; <code>b</code></td></tr>
+        <tr><td><code>$(words testo)</code></td><td>Numero di parole</td><td><code>$(words a b c)</code> &rarr; <code>3</code></td></tr>
+        <tr><td><code>$(firstword testo)</code></td><td>Prima parola</td><td><code>$(firstword a b)</code> &rarr; <code>a</code></td></tr>
+        <tr><td><code>$(lastword testo)</code></td><td>Ultima parola</td><td><code>$(lastword a b c)</code> &rarr; <code>c</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FUNZIONI SU NOMI DI FILE</div>
+      <table>
+        <tr><th>Funzione</th><th>Descrizione</th><th>Esempio</th></tr>
+        <tr><td><code>$(dir nomi)</code></td><td>Parte directory</td><td><code>$(dir src/main.c)</code> &rarr; <code>src/</code></td></tr>
+        <tr><td><code>$(notdir nomi)</code></td><td>Parte filename</td><td><code>$(notdir src/main.c)</code> &rarr; <code>main.c</code></td></tr>
+        <tr><td><code>$(suffix nomi)</code></td><td>Estensione</td><td><code>$(suffix main.c)</code> &rarr; <code>.c</code></td></tr>
+        <tr><td><code>$(basename nomi)</code></td><td>Senza estensione</td><td><code>$(basename main.c)</code> &rarr; <code>main</code></td></tr>
+        <tr><td><code>$(addsuffix sfx,nomi)</code></td><td>Aggiunge suffisso</td><td><code>$(addsuffix .c,main utils)</code> &rarr; <code>main.c utils.c</code></td></tr>
+        <tr><td><code>$(addprefix pfx,nomi)</code></td><td>Aggiunge prefisso</td><td><code>$(addprefix src/,main.c)</code> &rarr; <code>src/main.c</code></td></tr>
+        <tr><td><code>$(join lista1,lista2)</code></td><td>Concatena parola per parola</td><td><code>$(join a b,1 2)</code> &rarr; <code>a1 b2</code></td></tr>
+        <tr><td><code>$(wildcard pattern)</code></td><td>Glob sul filesystem</td><td><code>$(wildcard src/*.c)</code></td></tr>
+        <tr><td><code>$(realpath nomi)</code></td><td>Percorso assoluto canonico</td><td>Risolve symlink</td></tr>
+        <tr><td><code>$(abspath nomi)</code></td><td>Percorso assoluto</td><td>Non risolve symlink</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FUNZIONI DI CONTROLLO</div>
+<pre><span class="cmt"># foreach</span>
+<span class="cmd">DIRS</span> := <span class="str">src lib test</span>
+<span class="cmd">SRCS</span> := <span class="ins">$(foreach d,$(DIRS),$(wildcard $(d)/*.c))</span>
+
+<span class="cmt"># if (espande then se condizione non vuota)</span>
+<span class="cmd">DEBUG_FLAGS</span> := <span class="ins">$(if $(DEBUG),-g -O0,-O2)</span>
+
+<span class="cmt"># or (primo valore non vuoto)</span>
+<span class="cmd">CC</span> := <span class="ins">$(or $(CUSTOM_CC),gcc)</span>
+
+<span class="cmt"># and (ultimo valore se tutti non vuoti, altrimenti vuoto)</span>
+<span class="cmd">RESULT</span> := <span class="ins">$(and $(CC),$(CFLAGS),ok)</span>
+
+<span class="cmt"># call (chiama una funzione definita dall'utente)</span>
+<span class="cmd">to_upper</span> = <span class="ins">$(shell echo $(1) | tr a-z A-Z)</span>
+<span class="cmd">NAME</span> := <span class="ins">$(call to_upper,hello)</span>   <span class="cmt"># HELLO</span>
+
+<span class="cmt"># shell (esegue un comando e cattura stdout)</span>
+<span class="cmd">DATE</span>  := <span class="ins">$(shell date +%Y-%m-%d)</span>
+<span class="cmd">FILES</span> := <span class="ins">$(shell find src -name '*.c')</span>
+
+<span class="cmt"># value (valore non espanso di una variabile)</span>
+<span class="cmd">RAW</span> := <span class="ins">$(value CC)</span>
+
+<span class="cmt"># eval (espande e valuta come sintassi Makefile)</span>
+<span class="ins">$(eval $(call genera_regola,modulo1))</span>
+
+<span class="cmt"># error / warning / info</span>
+<span class="ins">$(error Messaggio fatale: build interrotto)</span>
+<span class="ins">$(warning Attenzione: variabile non settata)</span>
+<span class="ins">$(info Build avviato alle $(DATE))</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DIRETTIVE CONDIZIONALI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-conditionals"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DIRETTIVE CONDIZIONALI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">SINTASSI CONDIZIONALE</div>
+<pre><span class="cmt"># ifeq / ifneq &mdash; confronto tra stringhe</span>
+<span class="ins">ifeq</span> (<span class="str">$(CC)</span>,<span class="str">gcc</span>)
+  <span class="cmd">CFLAGS</span> += <span class="arg">-Wno-unused-result</span>
+<span class="ins">else ifeq</span> (<span class="str">$(CC)</span>,<span class="str">clang</span>)
+  <span class="cmd">CFLAGS</span> += <span class="arg">-Wno-unused-command-line-argument</span>
+<span class="ins">else</span>
+  <span class="cmd">CFLAGS</span> += <span class="arg">-W</span>
+<span class="ins">endif</span>
+
+<span class="cmt"># ifdef / ifndef &mdash; verifica se la variabile &egrave; definita</span>
+<span class="ins">ifdef</span> <span class="cmd">DEBUG</span>
+  <span class="cmd">CFLAGS</span> += <span class="arg">-g -O0 -DDEBUG</span>
+<span class="ins">else</span>
+  <span class="cmd">CFLAGS</span> += <span class="arg">-O2 -DNDEBUG</span>
+<span class="ins">endif</span>
+
+<span class="cmt"># Uso dalla riga di comando: make DEBUG=1</span>
+
+<span class="cmt"># Confronto con stringa vuota</span>
+<span class="ins">ifeq</span> (<span class="str">$(VERBOSE)</span>,)
+  <span class="cmd">Q</span> := <span class="str">@</span>           <span class="cmt"># silenzia i comandi</span>
+<span class="ins">else</span>
+  <span class="cmd">Q</span> :=             <span class="cmt"># mostra i comandi</span>
+<span class="ins">endif</span>
+
+<span class="cmd">%.o</span>: <span class="arg">%.c</span>
+	<span class="str">$(Q)$(CC) $(CFLAGS) -c $&lt; -o $@</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">RILEVAMENTO OS</div>
+<pre><span class="cmd">UNAME_S</span> := <span class="ins">$(shell uname -s)</span>
+
+<span class="ins">ifeq</span> (<span class="str">$(UNAME_S)</span>,<span class="str">Linux</span>)
+  <span class="cmd">LDLIBS</span> += <span class="arg">-lrt -lpthread</span>
+<span class="ins">endif</span>
+<span class="ins">ifeq</span> (<span class="str">$(UNAME_S)</span>,<span class="str">Darwin</span>)
+  <span class="cmd">CC</span> := <span class="str">clang</span>
+  <span class="cmd">LDLIBS</span> += <span class="arg">-framework CoreFoundation</span>
+<span class="ins">endif</span>
+
+<span class="cmt"># Rilevamento Windows (MinGW / MSYS)</span>
+<span class="ins">ifdef</span> <span class="cmd">COMSPEC</span>
+  <span class="cmd">RM</span> = <span class="str">del /Q</span>
+  <span class="cmd">EXE</span> = <span class="str">.exe</span>
+<span class="ins">else</span>
+  <span class="cmd">RM</span> = <span class="str">rm -f</span>
+  <span class="cmd">EXE</span> =
+<span class="ins">endif</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     INCLUDE & MULTI-DIRECTORY
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-include"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INCLUDE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">DIRETTIVA INCLUDE</div>
+<pre><span class="cmt"># Include un altro Makefile</span>
+<span class="ins">include</span> <span class="str">config.mk</span>
+<span class="ins">include</span> <span class="str">$(wildcard deps/*.d)</span>
+
+<span class="cmt"># -include (o sinclude): non d&agrave; errore se il file non esiste</span>
+<span class="ins">-include</span> <span class="str">$(OBJ:.o=.d)</span>
+
+<span class="cmt"># Uso tipico: file .d per dipendenze automatiche (vedi sezione dedicata)</span>
+<span class="cmt"># Uso tipico: config.mk per variabili specifiche dell'ambiente</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     PROGETTI MULTI-DIRECTORY
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-multidir"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PROGETTI MULTI-DIRECTORY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">APPROCCIO RICORSIVO (RECURSIVE MAKE)</div>
+<pre><span class="cmt"># Makefile principale che invoca sub-make</span>
+<span class="cmd">SUBDIRS</span> := <span class="str">src lib tests</span>
+
+<span class="cmd">.PHONY</span>: <span class="arg">all clean $(SUBDIRS)</span>
+
+<span class="cmd">all</span>: <span class="arg">$(SUBDIRS)</span>
+
+<span class="cmd">$(SUBDIRS)</span>:
+	<span class="str">$(MAKE) -C $@</span>
+
+<span class="cmt"># Dipendenze tra sottodirectory</span>
+<span class="cmd">src</span>: <span class="arg">lib</span>
+<span class="cmd">tests</span>: <span class="arg">src</span>
+
+<span class="cmd">clean</span>:
+	<span class="str">for dir in $(SUBDIRS); do $(MAKE) -C $$dir clean; done</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">APPROCCIO NON RICORSIVO (SINGOLO MAKEFILE)</div>
+<pre><span class="cmt"># Struttura:</span>
+<span class="cmt">#   src/main.c src/utils.c</span>
+<span class="cmt">#   lib/parser.c lib/lexer.c</span>
+<span class="cmt">#   build/  (output)</span>
+
+<span class="cmd">SRCDIR</span>  := <span class="str">src</span>
+<span class="cmd">LIBDIR</span>  := <span class="str">lib</span>
+<span class="cmd">BUILDDIR</span>:= <span class="str">build</span>
+
+<span class="cmd">SRC</span>     := <span class="ins">$(wildcard $(SRCDIR)/*.c) $(wildcard $(LIBDIR)/*.c)</span>
+<span class="cmd">OBJ</span>     := <span class="ins">$(patsubst %.c,$(BUILDDIR)/%.o,$(notdir $(SRC)))</span>
+<span class="cmd">TARGET</span>  := <span class="str">$(BUILDDIR)/prog</span>
+
+<span class="cmd">VPATH</span>   := <span class="str">$(SRCDIR) $(LIBDIR)</span>
+
+<span class="cmd">$(TARGET)</span>: <span class="arg">$(OBJ)</span> | <span class="dir">$(BUILDDIR)</span>
+	<span class="str">$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)</span>
+
+<span class="cmd">$(BUILDDIR)/%.o</span>: <span class="arg">%.c</span> | <span class="dir">$(BUILDDIR)</span>
+	<span class="str">$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@</span>
+
+<span class="cmd">$(BUILDDIR)</span>:
+	<span class="str">mkdir -p $@</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">VPATH &mdash; RICERCA SORGENTI</div>
+<pre><span class="cmt"># VPATH: lista di directory dove cercare i prerequisiti</span>
+<span class="cmd">VPATH</span> = <span class="str">src:lib:include</span>
+
+<span class="cmt"># vpath (minuscolo): pi&ugrave; selettivo, per pattern</span>
+<span class="ins">vpath</span> <span class="str">%.c</span> <span class="str">src lib</span>
+<span class="ins">vpath</span> <span class="str">%.h</span> <span class="str">include</span>
+
+<span class="cmt"># Con vpath Make cerca automaticamente i .c nelle directory specificate</span>
+<span class="cmt"># quando un prerequisito non viene trovato nella directory corrente</span></pre>
+    </div>
+
+    <div class="note"><b>Recursive vs non-recursive make:</b> il recursive make (<code>$(MAKE) -C subdir</code>) &egrave; pi&ugrave; semplice ma pu&ograve; avere problemi con le dipendenze tra directory. Il non-recursive (singolo Makefile) &egrave; pi&ugrave; efficiente e corretto ma pi&ugrave; complesso da gestire.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RECIPE AVANZATE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-recipes"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RECIPE AVANZATE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">PREFISSI DELLE RECIPE</div>
+      <table>
+        <tr><th>Prefisso</th><th>Significato</th></tr>
+        <tr><td><code>@</code></td><td>Silenzia il comando (non viene stampato)</td></tr>
+        <tr><td><code>-</code></td><td>Ignora errori (continua anche se il comando fallisce)</td></tr>
+        <tr><td><code>+</code></td><td>Esegue anche con <code>-n</code> (dry run) &mdash; usato per sub-make</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ESEMPI PREFISSI</div>
+<pre><span class="cmd">clean</span>:
+	<span class="str">@echo "Pulizia in corso..."</span>    <span class="cmt"># @ = non stampare il comando</span>
+	<span class="str">-rm -f *.o</span>                      <span class="cmt"># - = non fallire se non ci sono .o</span>
+	<span class="str">@echo "Fatto."</span>
+
+<span class="cmd">submake</span>:
+	<span class="str">+$(MAKE) -C subdir</span>              <span class="cmt"># + = esegui anche con make -n</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MULTI-LINE &amp; SHELL</div>
+<pre><span class="cmt"># Ogni riga della recipe &egrave; eseguita in una shell separata!</span>
+<span class="cmd">bad</span>:
+	<span class="str">cd subdir</span>
+	<span class="str">ls</span>            <span class="cmt"># NON lista subdir! Il cd si &egrave; perso</span>
+
+<span class="cmt"># Soluzione 1: una riga sola con ;</span>
+<span class="cmd">good1</span>:
+	<span class="str">cd subdir; ls</span>
+
+<span class="cmt"># Soluzione 2: backslash per continuazione</span>
+<span class="cmd">good2</span>:
+	<span class="str">cd subdir &amp;&amp; \</span>
+	<span class="str">ls &amp;&amp; \</span>
+	<span class="str">pwd</span>
+
+<span class="cmt"># Soluzione 3: .ONESHELL (GNU Make 3.82+)</span>
+<span class="cmd">.ONESHELL</span>:
+<span class="cmd">good3</span>:
+	<span class="str">cd subdir</span>
+	<span class="str">ls</span>
+	<span class="str">pwd</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">VARIABILI SHELL VS MAKE</div>
+<pre><span class="cmt"># $ in una recipe: bisogna raddoppiare per la shell</span>
+<span class="cmd">list</span>:
+	<span class="str">for f in *.c; do echo $$f; done</span>
+<span class="cmt"># $$ diventa $ per la shell, $f &egrave; la variabile shell</span>
+<span class="cmt"># Un singolo $ verrebbe interpretato da Make</span>
+
+<span class="cmt"># Accedere a variabili d'ambiente nella recipe</span>
+<span class="cmd">info</span>:
+	<span class="str">@echo "User: $$USER"</span>
+	<span class="str">@echo "CC:   $(CC)"</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DIPENDENZE AUTOMATICHE
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-deps"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DIPENDENZE AUTOMATICHE</div>
+  <div class="section-body">
+    <p>Generare manualmente le dipendenze degli header &egrave; fragile e tedioso. GCC/Clang possono generare file <code>.d</code> con le dipendenze, che Make include automaticamente.</p>
+
+    <div class="sub">
+      <div class="sub-title">METODO CLASSICO (FILE .d)</div>
+<pre><span class="cmd">CC</span>      := <span class="str">gcc</span>
+<span class="cmd">CFLAGS</span>  := <span class="arg">-Wall -g</span>
+<span class="cmd">DEPFLAGS</span>= <span class="arg">-MMD -MP</span>
+
+<span class="cmd">SRC</span>     := <span class="ins">$(wildcard *.c)</span>
+<span class="cmd">OBJ</span>     := <span class="ins">$(SRC:.c=.o)</span>
+<span class="cmd">DEP</span>     := <span class="ins">$(SRC:.c=.d)</span>
+
+<span class="cmd">prog</span>: <span class="arg">$(OBJ)</span>
+	<span class="str">$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)</span>
+
+<span class="cmd">%.o</span>: <span class="arg">%.c</span>
+	<span class="str">$(CC) $(CPPFLAGS) $(CFLAGS) $(DEPFLAGS) -c $&lt; -o $@</span>
+
+<span class="ins">-include</span> <span class="str">$(DEP)</span>
+
+<span class="cmd">clean</span>:
+	<span class="str">$(RM) $(OBJ) $(DEP) prog</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FLAG PER LE DIPENDENZE</div>
+      <table>
+        <tr><th>Flag</th><th>Descrizione</th></tr>
+        <tr><td><code>-M</code></td><td>Genera tutte le dipendenze (incluse system headers)</td></tr>
+        <tr><td><code>-MM</code></td><td>Genera dipendenze escludendo system headers</td></tr>
+        <tr><td><code>-MD</code></td><td><code>-M</code> + compila normalmente + scrive in <code>.d</code></td></tr>
+        <tr><td><code>-MMD</code></td><td><code>-MM</code> + compila normalmente + scrive in <code>.d</code></td></tr>
+        <tr><td><code>-MP</code></td><td>Aggiunge target phony per ogni header (evita errori se l'header viene rimosso)</td></tr>
+        <tr><td><code>-MF file</code></td><td>Scrive le dipendenze nel file specificato</td></tr>
+        <tr><td><code>-MT target</code></td><td>Specifica il target nella regola generata</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CONTENUTO DI UN FILE .d</div>
+<pre><span class="cmt"># main.d generato da gcc -MMD -MP main.c</span>
+<span class="cmd">main.o</span>: <span class="arg">main.c main.h utils.h config.h</span>
+
+<span class="cmd">main.h</span>:
+<span class="cmd">utils.h</span>:
+<span class="cmd">config.h</span>:
+<span class="cmt"># Le regole vuote (-MP) evitano errori se un header viene cancellato</span></pre>
+    </div>
+
+    <div class="note">Il flag <code>-MP</code> &egrave; importante: senza di esso, se si cancella un header file referenziato nel <code>.d</code>, Make d&agrave; errore perch&eacute; non trova il prerequisito. Con <code>-MP</code>, ogni header ha un target phony che evita l'errore.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DEBUG & TROUBLESHOOTING
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-debug"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DEBUG &amp; TROUBLESHOOTING</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">COMANDI DI DEBUG</div>
+      <table>
+        <tr><th>Comando</th><th>Descrizione</th></tr>
+        <tr><td><code>make -n</code></td><td>Dry run: mostra cosa farebbe senza eseguire</td></tr>
+        <tr><td><code>make -d</code></td><td>Debug completo (molto verboso)</td></tr>
+        <tr><td><code>make --debug=basic</code></td><td>Debug leggero: mostra quali target vengono ricompilati e perch&eacute;</td></tr>
+        <tr><td><code>make --debug=verbose</code></td><td>Come basic + file cercati per regole implicite</td></tr>
+        <tr><td><code>make --debug=implicit</code></td><td>Solo ricerca regole implicite</td></tr>
+        <tr><td><code>make --debug=jobs</code></td><td>Informazioni sui job paralleli</td></tr>
+        <tr><td><code>make -p</code></td><td>Stampa database interno (tutte le regole e variabili)</td></tr>
+        <tr><td><code>make -p -f /dev/null</code></td><td>Solo regole built-in (senza leggere il Makefile)</td></tr>
+        <tr><td><code>make --warn-undefined-variables</code></td><td>Avvisa se una variabile non &egrave; definita</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">FUNZIONI DI DEBUG NEL MAKEFILE</div>
+<pre><span class="cmt"># Stampare il valore di una variabile</span>
+<span class="ins">$(info CFLAGS = $(CFLAGS))</span>
+<span class="ins">$(warning SRC = $(SRC))</span>            <span class="cmt"># come info ma con file:linea</span>
+
+<span class="cmt"># Target di debug</span>
+<span class="cmd">print-%</span>:
+	<span class="str">@echo '$* = $($*)'</span>
+<span class="cmt"># Uso: make print-CFLAGS  make print-SRC  make print-OBJ</span>
+
+<span class="cmt"># Ispezionare l'origine di una variabile</span>
+<span class="ins">$(info origin CC = $(origin CC))</span>
+<span class="cmt"># Possibili valori: undefined, default, environment,</span>
+<span class="cmt"># file, command line, override, automatic</span>
+
+<span class="cmt"># Ispezionare il flavor di una variabile</span>
+<span class="ins">$(info flavor CFLAGS = $(flavor CFLAGS))</span>
+<span class="cmt"># Possibili valori: undefined, recursive, simple</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">ERRORI COMUNI</div>
+<pre><span class="cmt"># ERRORE: *** missing separator.  Stop.</span>
+<span class="cmt"># Causa: spazi invece di TAB nella recipe</span>
+<span class="cmt"># Fix: usare TAB reali (non soft-tab del tuo editor)</span>
+
+<span class="cmt"># ERRORE: No rule to make target 'file.h'</span>
+<span class="cmt"># Causa: file .d obsoleto riferisce un header cancellato</span>
+<span class="cmt"># Fix: aggiungere -MP alle DEPFLAGS, oppure make clean</span>
+
+<span class="cmt"># ERRORE: circular dependency dropped</span>
+<span class="cmt"># Causa: un target dipende (direttamente o indirettamente) da s&eacute; stesso</span>
+
+<span class="cmt"># Il target non viene ricompilato nonostante modifiche</span>
+<span class="cmt"># Causa: dipendenze incomplete (manca un header nelle dipendenze)</span>
+<span class="cmt"># Fix: usare le dipendenze automatiche (-MMD -MP)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MAKEFILE COMPLETO
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-complete"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MAKEFILE COMPLETO DI RIFERIMENTO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">PROGETTO C STANDARD</div>
+<pre><span class="cmt"># ── Progetto C con dipendenze automatiche, build dir, debug/release ──</span>
+
+<span class="cmt"># Compilatore e flag</span>
+<span class="cmd">CC</span>       := <span class="str">gcc</span>
+<span class="cmd">CFLAGS</span>   := <span class="arg">-Wall -Wextra -Wpedantic -std=c17</span>
+<span class="cmd">CPPFLAGS</span> := <span class="arg">-I./include</span>
+<span class="cmd">LDFLAGS</span>  :=
+<span class="cmd">LDLIBS</span>   := <span class="arg">-lm</span>
+<span class="cmd">DEPFLAGS</span>  = <span class="arg">-MMD -MP -MF $(DEPDIR)/$*.d</span>
+
+<span class="cmt"># Directory</span>
+<span class="cmd">SRCDIR</span>   := <span class="str">src</span>
+<span class="cmd">BUILDDIR</span> := <span class="str">build</span>
+<span class="cmd">DEPDIR</span>   := <span class="str">$(BUILDDIR)/deps</span>
+
+<span class="cmt"># File</span>
+<span class="cmd">SRC</span>      := <span class="ins">$(wildcard $(SRCDIR)/*.c)</span>
+<span class="cmd">OBJ</span>      := <span class="ins">$(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(SRC))</span>
+<span class="cmd">DEP</span>      := <span class="ins">$(patsubst $(SRCDIR)/%.c,$(DEPDIR)/%.d,$(SRC))</span>
+<span class="cmd">TARGET</span>   := <span class="str">$(BUILDDIR)/prog</span>
+
+<span class="cmt"># Debug/Release</span>
+<span class="ins">ifdef</span> <span class="cmd">DEBUG</span>
+  <span class="cmd">CFLAGS</span> += <span class="arg">-g3 -O0 -DDEBUG</span>
+<span class="ins">else</span>
+  <span class="cmd">CFLAGS</span> += <span class="arg">-O2 -DNDEBUG</span>
+<span class="ins">endif</span>
+
+<span class="cmt"># ── Target principali ──</span>
+<span class="cmd">.PHONY</span>: <span class="arg">all clean rebuild help</span>
+
+<span class="cmd">all</span>: <span class="arg">$(TARGET)</span>
+
+<span class="cmd">$(TARGET)</span>: <span class="arg">$(OBJ)</span> | <span class="dir">$(BUILDDIR)</span>
+	<span class="str">$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)</span>
+	<span class="str">@echo "Build completato: $@"</span>
+
+<span class="cmd">$(BUILDDIR)/%.o</span>: <span class="arg">$(SRCDIR)/%.c</span> | <span class="dir">$(BUILDDIR) $(DEPDIR)</span>
+	<span class="str">$(CC) $(CPPFLAGS) $(CFLAGS) $(DEPFLAGS) -c $&lt; -o $@</span>
+
+<span class="cmt"># ── Directory ──</span>
+<span class="cmd">$(BUILDDIR) $(DEPDIR)</span>:
+	<span class="str">mkdir -p $@</span>
+
+<span class="cmt"># ── Pulizia ──</span>
+<span class="cmd">clean</span>:
+	<span class="str">$(RM) -r $(BUILDDIR)</span>
+
+<span class="cmd">rebuild</span>: <span class="arg">clean all</span>
+
+<span class="cmt"># ── Help ──</span>
+<span class="cmd">help</span>:
+	<span class="str">@echo "Target disponibili:"</span>
+	<span class="str">@echo "  all      - Compila il progetto (default)"</span>
+	<span class="str">@echo "  clean    - Rimuove i file generati"</span>
+	<span class="str">@echo "  rebuild  - Clean + build"</span>
+	<span class="str">@echo "  help     - Mostra questo messaggio"</span>
+	<span class="str">@echo ""</span>
+	<span class="str">@echo "Variabili:"</span>
+	<span class="str">@echo "  DEBUG=1  - Compila con simboli di debug"</span>
+	<span class="str">@echo "  CC=clang - Usa un compilatore diverso"</span>
+
+<span class="cmt"># ── Dipendenze automatiche ──</span>
+<span class="ins">-include</span> <span class="str">$(DEP)</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LIBRERIA STATICA</div>
+<pre><span class="cmd">LIB</span>     := <span class="str">libutils.a</span>
+<span class="cmd">LIB_SRC</span> := <span class="ins">$(wildcard lib/*.c)</span>
+<span class="cmd">LIB_OBJ</span> := <span class="ins">$(LIB_SRC:.c=.o)</span>
+
+<span class="cmd">$(LIB)</span>: <span class="arg">$(LIB_OBJ)</span>
+	<span class="str">$(AR) $(ARFLAGS) $@ $^</span>
+
+<span class="cmt"># Linkare il programma alla libreria</span>
+<span class="cmd">prog</span>: <span class="arg">main.o $(LIB)</span>
+	<span class="str">$(CC) $(LDFLAGS) main.o -L. -lutils -o $@</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">LIBRERIA DINAMICA (SHARED)</div>
+<pre><span class="cmd">SHLIB</span>     := <span class="str">libutils.so</span>
+<span class="cmd">SHLIB_SRC</span> := <span class="ins">$(wildcard lib/*.c)</span>
+<span class="cmd">SHLIB_OBJ</span> := <span class="ins">$(SHLIB_SRC:.c=.o)</span>
+
+<span class="cmt"># Compilare con -fPIC per shared library</span>
+<span class="cmd">lib/%.o</span>: <span class="arg">lib/%.c</span>
+	<span class="str">$(CC) $(CFLAGS) -fPIC -c $&lt; -o $@</span>
+
+<span class="cmd">$(SHLIB)</span>: <span class="arg">$(SHLIB_OBJ)</span>
+	<span class="str">$(CC) -shared $^ -o $@</span>
+
+<span class="cmt"># Linkare ed eseguire</span>
+<span class="cmd">prog</span>: <span class="arg">main.o $(SHLIB)</span>
+	<span class="str">$(CC) $(LDFLAGS) main.o -L. -lutils -o $@</span>
+<span class="cmt"># Esecuzione: LD_LIBRARY_PATH=. ./prog</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     TIPS & TRICKS
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-tips"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TIPS &amp; TRICKS</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">SPECIAL TARGETS</div>
+      <table>
+        <tr><th>Target</th><th>Descrizione</th></tr>
+        <tr><td><code>.PHONY</code></td><td>I target elencati non corrispondono a file reali</td></tr>
+        <tr><td><code>.SUFFIXES</code></td><td>Definisce le suffix rules (svuotare per disabilitare: <code>.SUFFIXES:</code>)</td></tr>
+        <tr><td><code>.DEFAULT</code></td><td>Recipe per target senza regola</td></tr>
+        <tr><td><code>.PRECIOUS</code></td><td>Non cancellare i file elencati in caso di errore o interruzione</td></tr>
+        <tr><td><code>.INTERMEDIATE</code></td><td>I file elencati vengono cancellati automaticamente dopo l'uso</td></tr>
+        <tr><td><code>.SECONDARY</code></td><td>Come <code>.INTERMEDIATE</code> ma non vengono cancellati</td></tr>
+        <tr><td><code>.DELETE_ON_ERROR</code></td><td>Cancella il target se la recipe fallisce</td></tr>
+        <tr><td><code>.ONESHELL</code></td><td>Esegue tutta la recipe in una singola shell</td></tr>
+        <tr><td><code>.SILENT</code></td><td>Non stampare i comandi (come <code>@</code> su ogni riga)</td></tr>
+        <tr><td><code>.EXPORT_ALL_VARIABLES</code></td><td>Esporta tutte le variabili ai sub-processi</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TRUCCHI UTILI</div>
+<pre><span class="cmt"># Sopprimere "Nothing to be done" e "is up to date"</span>
+<span class="cmd">all</span>: <span class="arg">prog</span>
+	<span class="str">@:</span>                          <span class="cmt"># : = comando nullo della shell</span>
+
+<span class="cmt"># Forzare la ricompilazione di un target</span>
+<span class="cmd">.PHONY</span>: <span class="arg">FORCE</span>
+<span class="cmd">FORCE</span>:
+<span class="cmd">version.o</span>: <span class="arg">FORCE</span>            <span class="cmt"># sempre ricompilato</span>
+
+<span class="cmt"># Stampare un separatore colorato</span>
+<span class="cmd">build</span>: <span class="arg">$(TARGET)</span>
+	<span class="str">@printf '\033[32m=== Build OK ===\033[0m\n'</span>
+
+<span class="cmt"># Creare automaticamente le directory per gli output</span>
+<span class="cmd">$(BUILDDIR)/%.o</span>: <span class="arg">%.c</span>
+	<span class="str">@mkdir -p $(@D)</span>
+	<span class="str">$(CC) $(CFLAGS) -c $&lt; -o $@</span>
+
+<span class="cmt"># Target help auto-documentante</span>
+<span class="cmd">help</span>: <span class="cmt">## Mostra questo messaggio</span>
+	<span class="str">@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \</span>
+	<span class="str">  awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'</span>
+
+<span class="cmt"># Timestamp di build</span>
+<span class="cmd">CPPFLAGS</span> += <span class="arg">-DBUILD_DATE='"$(shell date)"'</span>
+<span class="cmd">CPPFLAGS</span> += <span class="arg">-DGIT_HASH='"$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)"'</span>
+
+<span class="cmt"># Check se un programma &egrave; installato</span>
+<span class="cmd">check-deps</span>:
+	<span class="str">@command -v $(CC) &gt;/dev/null 2&gt;&amp;1 || { echo "$(CC) non trovato"; exit 1; }</span>
+
+<span class="cmt"># Compilazione condizionale con feature flags</span>
+<span class="ins">ifdef</span> <span class="cmd">WITH_SSL</span>
+  <span class="cmd">CPPFLAGS</span> += <span class="arg">-DWITH_SSL</span>
+  <span class="cmd">LDLIBS</span>   += <span class="arg">-lssl -lcrypto</span>
+<span class="ins">endif</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CHEAT SHEET RAPIDO</div>
+      <table>
+        <tr><th>Cosa</th><th>Comando / Sintassi</th></tr>
+        <tr><td>Compilare tutto</td><td><code>make</code> oppure <code>make all</code></td></tr>
+        <tr><td>Pulire</td><td><code>make clean</code></td></tr>
+        <tr><td>Build parallelo</td><td><code>make -j$(nproc)</code></td></tr>
+        <tr><td>Dry run</td><td><code>make -n</code></td></tr>
+        <tr><td>Debug build</td><td><code>make DEBUG=1</code></td></tr>
+        <tr><td>Altro compilatore</td><td><code>make CC=clang</code></td></tr>
+        <tr><td>Verboso</td><td><code>make VERBOSE=1</code> o <code>make V=1</code></td></tr>
+        <tr><td>Valore variabile</td><td><code>make print-CFLAGS</code> (con target print-%)</td></tr>
+        <tr><td>Rebuild forzato</td><td><code>make -B</code></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+<script src="../assets/js/mobile.js"></script>
+</body>
+</html>
