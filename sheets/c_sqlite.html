@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C SQLite API CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #060810;
+    --bg2:       #080b14;
+    --panel:     #0c1018;
+    --panel2:    #10141c;
+    --border:    #141c2a;
+    --border2:   #203050;
+    --glow:      #4488ff;
+    --glow2:     #66aaff;
+    --glow-dim:  #0a1a3b;
+    --dim:       #203060;
+    --text:      #a0b0c8;
+    --text2:     #c0d0e8;
+    --bright:    #c0ddff;
+    --accent:    #3366cc;
+    --accent2:   #5599ff;
+    --key:       #5588cc;
+    --kw:        #4488ff;
+    --fn:        #66ccaa;
+    --str:       #88cc66;
+    --num:       #dd8844;
+    --cmt:       #445577;
+    --type:      #cc77dd;
+    --dir:       #ddaa44;
+    --lbl:       #88aadd;
+    --head:      #c0ddff;
+    --hr:        #141c2a;
+    --scan:      rgba(68,136,255,0.025);
+    --vignette:          rgba(0,2,10,0.7);
+    --header-top:        #0a1020;
+    --header-shadow:     rgba(68,136,255,0.15);
+    --sidebar-hover-bg:  rgba(68,136,255,0.08);
+    --section-shadow:    rgba(20,40,80,0.5);
+    --th-bg:             rgba(68,136,255,0.12);
+    --tr-even-bg:        rgba(10,20,50,0.3);
+    --tr-hover-bg:       rgba(68,136,255,0.06);
+    --note-bg:           rgba(68,136,255,0.08);
+  }
+
+  .fn   { color: var(--fn);  }
+  .type { color: var(--type); }
+  .dir  { color: var(--dir); }
+
+  .flow {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0;
+    max-width: 640px;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    transition: background 0.12s;
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-step:hover { background: rgba(68,136,255,0.06); }
+  .flow-num {
+    color: var(--accent2);
+    font-size: 11px;
+    min-width: 40px;
+    letter-spacing: 1px;
+    font-family: 'VT323', monospace;
+  }
+  .flow-fn {
+    color: var(--fn);
+    min-width: 180px;
+    font-size: 12px;
+  }
+  .flow-desc {
+    color: var(--text2);
+    flex: 1;
+    font-size: 11px;
+  }
+  .flow-step.step-open   { background: rgba(40,80,200,0.10); }
+  .flow-step.step-prep   { background: rgba(80,120,160,0.10); }
+  .flow-step.step-bind   { background: rgba(80,180,120,0.10); }
+  .flow-step.step-step   { background: rgba(220,160,60,0.08); }
+  .flow-step.step-final  { background: rgba(100,60,120,0.15); }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; C SQLITE API REFERENCE <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>SQLite 3 C Interface &mdash; libsqlite3</span> &mdash; v3.2</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-intro">Introduzione</a>
+    <a href="#s-compile">Compilazione &amp; Linking</a>
+    <a href="#s-headers">Header &amp; Tipi</a>
+    <a href="#s-flow">Flusso Tipico</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Connessione</div>
+    <a href="#s-open">sqlite3_open()</a>
+    <a href="#s-open-v2">sqlite3_open_v2()</a>
+    <a href="#s-close">sqlite3_close()</a>
+    <a href="#s-uri">URI Filename</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Esecuzione Rapida</div>
+    <a href="#s-exec">sqlite3_exec()</a>
+    <a href="#s-callback">Callback di Risultati</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Prepared Statements</div>
+    <a href="#s-prepare">sqlite3_prepare_v2()</a>
+    <a href="#s-step">sqlite3_step()</a>
+    <a href="#s-reset">sqlite3_reset()</a>
+    <a href="#s-finalize">sqlite3_finalize()</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Bind Parametri</div>
+    <a href="#s-bind">sqlite3_bind_*()</a>
+    <a href="#s-bind-named">Parametri Nominati</a>
+    <a href="#s-bind-meta">Introspezione Bind</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Lettura Colonne</div>
+    <a href="#s-column">sqlite3_column_*()</a>
+    <a href="#s-column-meta">Metadati Colonne</a>
+    <a href="#s-types">Type Affinity</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Transazioni</div>
+    <a href="#s-trans">BEGIN / COMMIT / ROLLBACK</a>
+    <a href="#s-savepoint">Savepoint</a>
+    <a href="#s-trans-mode">Modalità Transazione</a>
+    <a href="#s-autocommit">Autocommit</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Errori</div>
+    <a href="#s-errcode">Codici di Errore</a>
+    <a href="#s-errmsg">Messaggi &amp; Extended Codes</a>
+    <a href="#s-busy">Busy Handler</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Avanzato</div>
+    <a href="#s-pragma">PRAGMA</a>
+    <a href="#s-blob">BLOB Incrementale</a>
+    <a href="#s-backup">Backup API</a>
+    <a href="#s-hooks">Hooks &amp; Callback</a>
+    <a href="#s-custom">Funzioni Custom</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Pattern &amp; Utility</div>
+    <a href="#s-memory">Gestione Memoria</a>
+    <a href="#s-threading">Threading</a>
+    <a href="#s-pattern-crud">Pattern CRUD</a>
+    <a href="#s-perf">Performance Tips</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ────────────────────────────────────────────────────────────
+     FONDAMENTI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-intro"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> INTRODUZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Cos'&egrave; SQLite</div>
+      <p>SQLite &egrave; una libreria C <strong>serverless</strong>, <strong>zero-configuration</strong>, <strong>transazionale</strong> che implementa un motore SQL embedded. L'intero database risiede in un singolo file cross-platform. Conforme ad <code>ACID</code> anche in presenza di crash e power loss.</p>
+      <table>
+        <tr><th>Caratteristica</th><th>Dettaglio</th></tr>
+        <tr><td>Tipo</td><td>Libreria in-process, no daemon, no IPC</td></tr>
+        <tr><td>File DB</td><td>Singolo file portabile (little-endian, cross-OS)</td></tr>
+        <tr><td>Tipi SQL</td><td>NULL, INTEGER, REAL, TEXT, BLOB (type affinity)</td></tr>
+        <tr><td>Concorrenza</td><td>Multi-reader / single-writer (WAL: reader non bloccati)</td></tr>
+        <tr><td>Limite DB</td><td>281 TB (teorico) &mdash; tipicamente &lt; qualche GB</td></tr>
+        <tr><td>Licenza</td><td>Public Domain</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Interfacce C Principali</div>
+      <table>
+        <tr><th>Oggetto</th><th>Ruolo</th></tr>
+        <tr><td><code>sqlite3</code></td><td>Handle di connessione al database</td></tr>
+        <tr><td><code>sqlite3_stmt</code></td><td>Statement preparato (SQL compilato)</td></tr>
+        <tr><td><code>sqlite3_value</code></td><td>Valore dinamico (usato nelle funzioni custom)</td></tr>
+        <tr><td><code>sqlite3_blob</code></td><td>Handle per I/O BLOB incrementale</td></tr>
+        <tr><td><code>sqlite3_backup</code></td><td>Handle per operazioni di backup online</td></tr>
+        <tr><td><code>sqlite3_context</code></td><td>Contesto esecuzione di funzioni SQL utente</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── COMPILAZIONE -->
+<span class="anchor" id="s-compile"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> COMPILAZIONE &amp; LINKING</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Linking con libsqlite3</div>
+      <p>Linux/macOS forniscono tipicamente <code>libsqlite3</code> come libreria di sistema. L'header &egrave; <code>sqlite3.h</code>, la libreria &egrave; <code>-lsqlite3</code>.</p>
+<pre>
+<span class="cmt"># Compilazione base</span>
+gcc -Wall -Wextra -std=c11 main.c -o app -lsqlite3
+
+<span class="cmt"># Con pkg-config (se disponibile)</span>
+gcc main.c -o app $(pkg-config --cflags --libs sqlite3)
+
+<span class="cmt"># Verifica presenza libreria</span>
+pkg-config --modversion sqlite3
+ldconfig -p | grep sqlite3
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Compilazione Static (Amalgamation)</div>
+      <p>SQLite distribuisce una <strong>amalgamation</strong> (file unico <code>sqlite3.c</code> + <code>sqlite3.h</code>) per embedding diretto. Nessuna dipendenza esterna richiesta.</p>
+<pre>
+<span class="cmt"># Download da sqlite.org/download.html</span>
+<span class="cmt"># Compila sqlite3.c insieme al tuo codice</span>
+gcc -O2 -DSQLITE_THREADSAFE=1 \
+    main.c sqlite3.c -o app \
+    -lpthread -ldl -lm
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Macro di Compilazione Utili</div>
+      <table>
+        <tr><th>Macro</th><th>Effetto</th></tr>
+        <tr><td><code>SQLITE_THREADSAFE=0|1|2</code></td><td>0=single, 1=serialized, 2=multi-thread</td></tr>
+        <tr><td><code>SQLITE_ENABLE_FTS5</code></td><td>Abilita full-text search v5</td></tr>
+        <tr><td><code>SQLITE_ENABLE_JSON1</code></td><td>Funzioni JSON (integrato dal 3.38)</td></tr>
+        <tr><td><code>SQLITE_ENABLE_RTREE</code></td><td>Indici R-tree (spatial)</td></tr>
+        <tr><td><code>SQLITE_ENABLE_COLUMN_METADATA</code></td><td>Attiva sqlite3_column_database_name() ecc.</td></tr>
+        <tr><td><code>SQLITE_OMIT_DEPRECATED</code></td><td>Rimuove API obsolete</td></tr>
+        <tr><td><code>SQLITE_DEFAULT_MEMSTATUS=0</code></td><td>Disabilita tracking memoria (performance)</td></tr>
+        <tr><td><code>SQLITE_USE_URI=1</code></td><td>Abilita parsing URI nei filename</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Verifica Versione Runtime / Compile-time</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sqlite3.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="cmt">/* Compile-time: macro #define */</span>
+    <span class="fn">printf</span>(<span class="str">"Compile: %s (%d)\n"</span>,
+           SQLITE_VERSION, SQLITE_VERSION_NUMBER);
+
+    <span class="cmt">/* Runtime: funzioni della libreria dinamicamente linkata */</span>
+    <span class="fn">printf</span>(<span class="str">"Runtime: %s (%d)\n"</span>,
+           <span class="fn">sqlite3_libversion</span>(), <span class="fn">sqlite3_libversion_number</span>());
+    <span class="fn">printf</span>(<span class="str">"Source: %s\n"</span>, <span class="fn">sqlite3_sourceid</span>());
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+      <div class="note">Se compile e runtime version divergono, la libreria dinamica &egrave; diversa dall'header. Usa <code>sqlite3_libversion_number()</code> per controlli condizionali a runtime.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── HEADER -->
+<span class="anchor" id="s-headers"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> HEADER &amp; TIPI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Header</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sqlite3.h&gt;</span>   <span class="cmt">// tutta l'API pubblica</span>
+</pre>
+      <p>Un singolo header espone tutte le funzioni, macro e tipi opachi. Nessun sotto-header.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tipi Opachi</div>
+<pre>
+<span class="type">sqlite3</span>         *db;     <span class="cmt">// handle di connessione</span>
+<span class="type">sqlite3_stmt</span>    *stmt;   <span class="cmt">// statement preparato</span>
+<span class="type">sqlite3_blob</span>    *blob;   <span class="cmt">// handle BLOB per I/O incrementale</span>
+<span class="type">sqlite3_backup</span>  *bkp;    <span class="cmt">// sessione di backup</span>
+<span class="type">sqlite3_value</span>   *val;    <span class="cmt">// valore dinamico (in funzioni custom)</span>
+<span class="type">sqlite3_context</span> *ctx;    <span class="cmt">// contesto di esecuzione UDF</span>
+
+<span class="cmt">/* Intero a 64 bit definito dalla libreria */</span>
+<span class="type">sqlite3_int64</span>  id = <span class="num">123456789012</span>;
+<span class="type">sqlite3_uint64</span> sz;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Costanti di Stato &amp; Tipo</div>
+      <div class="grid2">
+        <div>
+          <p><span class="hd">Codici di ritorno principali:</span></p>
+          <p>&#8226; <code>SQLITE_OK</code> (0) &mdash; successo<br>
+             &#8226; <code>SQLITE_ROW</code> (100) &mdash; step ha prodotto riga<br>
+             &#8226; <code>SQLITE_DONE</code> (101) &mdash; step completato<br>
+             &#8226; <code>SQLITE_BUSY</code> (5) &mdash; DB lock<br>
+             &#8226; <code>SQLITE_ERROR</code> (1) &mdash; errore generico<br>
+             &#8226; <code>SQLITE_MISUSE</code> (21) &mdash; API usata scorrettamente<br>
+             &#8226; <code>SQLITE_CONSTRAINT</code> (19) &mdash; violazione vincolo</p>
+        </div>
+        <div>
+          <p><span class="hd">Tipi di storage (column_type):</span></p>
+          <p>&#8226; <code>SQLITE_INTEGER</code> (1)<br>
+             &#8226; <code>SQLITE_FLOAT</code> (2)<br>
+             &#8226; <code>SQLITE_TEXT</code> (3)<br>
+             &#8226; <code>SQLITE_BLOB</code> (4)<br>
+             &#8226; <code>SQLITE_NULL</code> (5)</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── FLOW -->
+<span class="anchor" id="s-flow"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> FLUSSO TIPICO (PREPARED STATEMENT)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Ciclo di Vita di una Query</div>
+      <div class="flow">
+        <div class="flow-step step-open">
+          <div class="flow-num">1.</div>
+          <div class="flow-fn">sqlite3_open_v2()</div>
+          <div class="flow-desc">apre/crea il file database, alloca <code>sqlite3*</code></div>
+        </div>
+        <div class="flow-step step-prep">
+          <div class="flow-num">2.</div>
+          <div class="flow-fn">sqlite3_prepare_v2()</div>
+          <div class="flow-desc">compila SQL in bytecode, alloca <code>sqlite3_stmt*</code></div>
+        </div>
+        <div class="flow-step step-bind">
+          <div class="flow-num">3.</div>
+          <div class="flow-fn">sqlite3_bind_*()</div>
+          <div class="flow-desc">lega valori ai parametri <code>?</code>, <code>?N</code>, <code>:nome</code></div>
+        </div>
+        <div class="flow-step step-step">
+          <div class="flow-num">4.</div>
+          <div class="flow-fn">sqlite3_step()</div>
+          <div class="flow-desc">esegue; ritorna <code>SQLITE_ROW</code> per ogni riga, poi <code>SQLITE_DONE</code></div>
+        </div>
+        <div class="flow-step step-bind">
+          <div class="flow-num">5.</div>
+          <div class="flow-fn">sqlite3_column_*()</div>
+          <div class="flow-desc">estrae i valori dalla riga corrente (dopo <code>SQLITE_ROW</code>)</div>
+        </div>
+        <div class="flow-step step-prep">
+          <div class="flow-num">6.</div>
+          <div class="flow-fn">sqlite3_reset()</div>
+          <div class="flow-desc">opzionale: riporta lo statement allo stato iniziale per riuso</div>
+        </div>
+        <div class="flow-step step-final">
+          <div class="flow-num">7.</div>
+          <div class="flow-fn">sqlite3_finalize()</div>
+          <div class="flow-desc">dealloca lo statement</div>
+        </div>
+        <div class="flow-step step-final">
+          <div class="flow-num">8.</div>
+          <div class="flow-fn">sqlite3_close()</div>
+          <div class="flow-desc">chiude la connessione (tutti gli stmt devono essere finalizzati)</div>
+        </div>
+      </div>
+      <div class="note">Il ciclo <code>prepare &rarr; bind &rarr; step &rarr; reset</code> pu&ograve; essere ripetuto N volte: compila una sola volta, esegui molte. &Egrave; il pattern pi&ugrave; efficiente e sicuro (no SQL injection).</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     CONNESSIONE
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-open"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_open()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Firma</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_open</span>(<span class="kw">const</span> <span class="type">char</span> *filename, <span class="type">sqlite3</span> **ppDb);
+</pre>
+      <p>Apre (o crea) un database. <code>filename</code> &egrave; una stringa UTF-8. Ritorna <code>SQLITE_OK</code> in caso di successo. Anche in caso di errore <code>*ppDb</code> &egrave; valido e deve essere chiuso con <code>sqlite3_close()</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Filename Speciali</div>
+      <table>
+        <tr><th>Filename</th><th>Significato</th></tr>
+        <tr><td><code>"file.db"</code></td><td>Database su disco (relativo al cwd)</td></tr>
+        <tr><td><code>":memory:"</code></td><td>Database in RAM, distrutto alla chiusura</td></tr>
+        <tr><td><code>""</code> (stringa vuota)</td><td>Database temporaneo su disco, cancellato alla chiusura</td></tr>
+        <tr><td><code>"file:foo.db?mode=ro"</code></td><td>URI (richiede flag o <code>SQLITE_USE_URI</code>)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Base</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sqlite3.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="type">sqlite3</span> *db = <span class="num">NULL</span>;
+    <span class="type">int</span> rc = <span class="fn">sqlite3_open</span>(<span class="str">"test.db"</span>, &amp;db);
+    <span class="kw">if</span> (rc != SQLITE_OK) {
+        <span class="fn">fprintf</span>(stderr, <span class="str">"open: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db));
+        <span class="fn">sqlite3_close</span>(db);   <span class="cmt">// va chiamata anche in errore</span>
+        <span class="kw">return</span> <span class="num">1</span>;
+    }
+
+    <span class="cmt">/* ... uso del DB ... */</span>
+
+    <span class="fn">sqlite3_close</span>(db);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── open_v2 -->
+<span class="anchor" id="s-open-v2"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_open_v2()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Firma &amp; Flag</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_open_v2</span>(
+    <span class="kw">const</span> <span class="type">char</span>  *filename,   <span class="cmt">// UTF-8 path o URI</span>
+    <span class="type">sqlite3</span>    **ppDb,       <span class="cmt">// out: handle</span>
+    <span class="type">int</span>          flags,       <span class="cmt">// SQLITE_OPEN_*</span>
+    <span class="kw">const</span> <span class="type">char</span>  *zVfs        <span class="cmt">// VFS name (NULL = default)</span>
+);
+</pre>
+      <table>
+        <tr><th>Flag</th><th>Significato</th></tr>
+        <tr><td><code>SQLITE_OPEN_READONLY</code></td><td>Sola lettura; errore se il file non esiste</td></tr>
+        <tr><td><code>SQLITE_OPEN_READWRITE</code></td><td>Lettura/scrittura; errore se non esiste</td></tr>
+        <tr><td><code>SQLITE_OPEN_CREATE</code></td><td>Crea se non esiste (con READWRITE)</td></tr>
+        <tr><td><code>SQLITE_OPEN_URI</code></td><td>Interpreta <code>filename</code> come URI</td></tr>
+        <tr><td><code>SQLITE_OPEN_MEMORY</code></td><td>DB in memoria puro</td></tr>
+        <tr><td><code>SQLITE_OPEN_NOMUTEX</code></td><td>Multi-thread mode (no serial. interna)</td></tr>
+        <tr><td><code>SQLITE_OPEN_FULLMUTEX</code></td><td>Serialized mode (pi&ugrave; protezione, pi&ugrave; lento)</td></tr>
+        <tr><td><code>SQLITE_OPEN_SHAREDCACHE</code></td><td>Shared cache (deprecato in molti casi)</td></tr>
+        <tr><td><code>SQLITE_OPEN_PRIVATECACHE</code></td><td>Cache privata (default in molti build)</td></tr>
+        <tr><td><code>SQLITE_OPEN_NOFOLLOW</code></td><td>Rifiuta symlink</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="type">sqlite3</span> *db;
+<span class="type">int</span> rc = <span class="fn">sqlite3_open_v2</span>(
+    <span class="str">"data.db"</span>,
+    &amp;db,
+    SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX,
+    <span class="num">NULL</span>);
+
+<span class="kw">if</span> (rc != SQLITE_OK) {
+    <span class="fn">fprintf</span>(stderr, <span class="str">"open_v2: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db));
+    <span class="fn">sqlite3_close_v2</span>(db);
+    <span class="kw">return</span> <span class="num">1</span>;
+}
+</pre>
+      <div class="warn"><code>sqlite3_open()</code> equivale a <code>open_v2</code> con flag <code>READWRITE | CREATE</code> e nessun URI. Per controllo fine preferisci sempre <code>open_v2</code>.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── close -->
+<span class="anchor" id="s-close"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_close() &amp; close_v2()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Differenze</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_close</span>   (<span class="type">sqlite3</span> *db);   <span class="cmt">// fallisce se ci sono stmt/blob non finalizzati</span>
+<span class="type">int</span> <span class="fn">sqlite3_close_v2</span>(<span class="type">sqlite3</span> *db);   <span class="cmt">// chiusura "zombie": chiude quando tutti gli stmt finalizzati</span>
+</pre>
+      <p><code>close()</code> ritorna <code>SQLITE_BUSY</code> se esistono statement preparati ancora vivi. <code>close_v2()</code> marca la connessione per chiusura deferita e non fallisce mai per quel motivo.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Cleanup Ordinato</div>
+<pre>
+<span class="cmt">/* Enumerare e finalizzare tutti gli stmt rimasti */</span>
+<span class="type">sqlite3_stmt</span> *s = <span class="num">NULL</span>;
+<span class="kw">while</span> ((s = <span class="fn">sqlite3_next_stmt</span>(db, s)) != <span class="num">NULL</span>)
+    <span class="fn">sqlite3_finalize</span>(s);
+
+<span class="fn">sqlite3_close</span>(db);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── URI -->
+<span class="anchor" id="s-uri"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> URI FILENAME</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Sintassi</div>
+      <p>Con flag <code>SQLITE_OPEN_URI</code> (o macro di compile <code>SQLITE_USE_URI=1</code>), il filename diventa un URI con query string.</p>
+<pre>
+file:data.db                              <span class="cmt">// relativo</span>
+file:/var/lib/app.db                      <span class="cmt">// assoluto</span>
+file:data.db?mode=ro                      <span class="cmt">// read-only</span>
+file:data.db?mode=rwc&amp;cache=shared         <span class="cmt">// rw+create, cache condivisa</span>
+file::memory:?cache=shared                <span class="cmt">// memoria condivisa tra connessioni</span>
+file:/tmp/t.db?psow=0&amp;nolock=1
+</pre>
+      <table>
+        <tr><th>Parametro</th><th>Valori</th></tr>
+        <tr><td><code>mode</code></td><td><code>ro</code> / <code>rw</code> / <code>rwc</code> / <code>memory</code></td></tr>
+        <tr><td><code>cache</code></td><td><code>shared</code> / <code>private</code></td></tr>
+        <tr><td><code>psow</code></td><td>Powersafe overwrite (0/1)</td></tr>
+        <tr><td><code>nolock</code></td><td>Disabilita file locking (solo lettura)</td></tr>
+        <tr><td><code>immutable</code></td><td>Il file non sar&agrave; mai modificato</td></tr>
+        <tr><td><code>vfs</code></td><td>Nome VFS da usare</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     ESECUZIONE RAPIDA
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-exec"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_exec() &mdash; ESECUZIONE RAPIDA</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Firma</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_exec</span>(
+    <span class="type">sqlite3</span>  *db,
+    <span class="kw">const</span> <span class="type">char</span> *sql,              <span class="cmt">// SQL (pu&ograve; contenere pi&ugrave; statement)</span>
+    <span class="type">int</span> (*callback)(<span class="kw">void</span>*, <span class="type">int</span>, <span class="type">char</span>**, <span class="type">char</span>**),
+    <span class="kw">void</span>     *arg,             <span class="cmt">// passato al callback come 1&deg; arg</span>
+    <span class="type">char</span>    **errmsg           <span class="cmt">// out: msg errore (da liberare)</span>
+);
+</pre>
+      <p>Wrapper che fa <code>prepare &rarr; step &rarr; finalize</code> per ogni statement nella stringa SQL. Ideale per DDL e statement "fire and forget" senza parametri.</p>
+      <div class="warn">NON usare <code>sqlite3_exec()</code> con SQL costruito concatenando input utente &mdash; SQL injection. Usa <strong>prepared statement + bind</strong>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Senza Callback (DDL)</div>
+<pre>
+<span class="type">char</span> *err = <span class="num">NULL</span>;
+<span class="kw">const</span> <span class="type">char</span> *ddl =
+    <span class="str">"CREATE TABLE IF NOT EXISTS utenti ("</span>
+    <span class="str">"  id   INTEGER PRIMARY KEY AUTOINCREMENT,"</span>
+    <span class="str">"  nome TEXT NOT NULL UNIQUE,"</span>
+    <span class="str">"  eta  INTEGER CHECK(eta &gt;= 0)"</span>
+    <span class="str">");"</span>;
+
+<span class="type">int</span> rc = <span class="fn">sqlite3_exec</span>(db, ddl, <span class="num">NULL</span>, <span class="num">NULL</span>, &amp;err);
+<span class="kw">if</span> (rc != SQLITE_OK) {
+    <span class="fn">fprintf</span>(stderr, <span class="str">"DDL: %s\n"</span>, err);
+    <span class="fn">sqlite3_free</span>(err);  <span class="cmt">// errmsg allocato internamente</span>
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio con Callback</div>
+<pre>
+<span class="type">static</span> <span class="type">int</span> <span class="fn">dump_row</span>(<span class="kw">void</span> *ud, <span class="type">int</span> ncol, <span class="type">char</span> **vals, <span class="type">char</span> **cols) {
+    (<span class="kw">void</span>)ud;
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; ncol; i++)
+        <span class="fn">printf</span>(<span class="str">"%s=%s  "</span>, cols[i], vals[i] ? vals[i] : <span class="str">"NULL"</span>);
+    <span class="fn">putchar</span>(<span class="str">'\n'</span>);
+    <span class="kw">return</span> <span class="num">0</span>;  <span class="cmt">// !=0 interrompe l'esecuzione con SQLITE_ABORT</span>
+}
+
+<span class="type">char</span> *err = <span class="num">NULL</span>;
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"SELECT id,nome FROM utenti;"</span>, dump_row, <span class="num">NULL</span>, &amp;err);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── CALLBACK -->
+<span class="anchor" id="s-callback"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> CALLBACK DI RISULTATI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipo Dettagliato</div>
+<pre>
+<span class="type">int</span> <span class="fn">callback</span>(
+    <span class="kw">void</span>  *user_data,    <span class="cmt">// 4&deg; arg di sqlite3_exec()</span>
+    <span class="type">int</span>    ncol,         <span class="cmt">// numero colonne della riga</span>
+    <span class="type">char</span> **values,       <span class="cmt">// array di stringhe (valori come TEXT, NULL possibile)</span>
+    <span class="type">char</span> **column_names  <span class="cmt">// array di stringhe (nomi colonne)</span>
+);
+<span class="cmt">// return 0 = continua; return !=0 = abort (sqlite3_exec ritorna SQLITE_ABORT)</span>
+</pre>
+      <table>
+        <tr><th>Aspetto</th><th>Nota</th></tr>
+        <tr><td>Memoria</td><td>Tutti i puntatori sono validi solo durante la chiamata. Copia se serve tenerli.</td></tr>
+        <tr><td>Tipi</td><td>Tutti i valori arrivano come <code>char*</code> (stringa). Tipi nativi solo con prepared statement.</td></tr>
+        <tr><td>NULL</td><td><code>values[i] == NULL</code> quando la colonna &egrave; NULL SQL.</td></tr>
+        <tr><td>Errori</td><td>Non chiamare altre API SQLite sulla stessa <code>db</code> dal callback.</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern: User-Data Tipizzato</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">struct</span> { <span class="type">int</span> count; <span class="type">long</span> sum; } agg_t;
+
+<span class="type">static</span> <span class="type">int</span> <span class="fn">aggregate</span>(<span class="kw">void</span> *ud, <span class="type">int</span> nc, <span class="type">char</span> **v, <span class="type">char</span> **cn) {
+    (<span class="kw">void</span>)nc; (<span class="kw">void</span>)cn;
+    agg_t *a = (agg_t *)ud;
+    a-&gt;count++;
+    <span class="kw">if</span> (v[<span class="num">0</span>]) a-&gt;sum += <span class="fn">atol</span>(v[<span class="num">0</span>]);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+agg_t a = {<span class="num">0</span>,<span class="num">0</span>};
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"SELECT eta FROM utenti;"</span>, aggregate, &amp;a, <span class="num">NULL</span>);
+<span class="fn">printf</span>(<span class="str">"%d righe, somma=%ld\n"</span>, a.count, a.sum);
+</pre>
+      <div class="note">Per query con tipi non-testo (BLOB, grandi numeri) o binding di input, <strong>preferisci sempre</strong> prepared statement + <code>sqlite3_column_*</code>.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     PREPARED STATEMENTS
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-prepare"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_prepare_v2()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Firma</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_prepare_v2</span>(
+    <span class="type">sqlite3</span>       *db,
+    <span class="kw">const</span> <span class="type">char</span>    *zSql,        <span class="cmt">// SQL UTF-8</span>
+    <span class="type">int</span>             nByte,       <span class="cmt">// lunghezza in byte, o -1 per strlen</span>
+    <span class="type">sqlite3_stmt</span> **ppStmt,      <span class="cmt">// out: stmt compilato</span>
+    <span class="kw">const</span> <span class="type">char</span>   **pzTail        <span class="cmt">// out: primo byte dopo il primo stmt</span>
+);
+</pre>
+      <p>Compila <strong>un solo</strong> statement SQL. Se <code>zSql</code> contiene pi&ugrave; statement, <code>*pzTail</code> punta all'inizio del successivo: loop su <code>prepare_v2</code> per eseguirli tutti.</p>
+      <table>
+        <tr><th>Variante</th><th>Differenza</th></tr>
+        <tr><td><code>sqlite3_prepare()</code></td><td><strong>LEGACY</strong>: gestione errori peggiore, non usare.</td></tr>
+        <tr><td><code>sqlite3_prepare_v2()</code></td><td>Versione standard raccomandata.</td></tr>
+        <tr><td><code>sqlite3_prepare_v3()</code></td><td>Aggiunge flag (<code>SQLITE_PREPARE_PERSISTENT</code>, ecc.).</td></tr>
+        <tr><td><code>sqlite3_prepare16_v2()</code></td><td>Input UTF-16.</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="type">sqlite3_stmt</span> *stmt = <span class="num">NULL</span>;
+<span class="kw">const</span> <span class="type">char</span> *sql = <span class="str">"INSERT INTO utenti(nome, eta) VALUES (?, ?);"</span>;
+
+<span class="type">int</span> rc = <span class="fn">sqlite3_prepare_v2</span>(db, sql, -<span class="num">1</span>, &amp;stmt, <span class="num">NULL</span>);
+<span class="kw">if</span> (rc != SQLITE_OK) {
+    <span class="fn">fprintf</span>(stderr, <span class="str">"prepare: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db));
+    <span class="kw">return</span> -<span class="num">1</span>;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flag di prepare_v3</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_prepare_v3</span>(db, sql, -<span class="num">1</span>, flags, &amp;stmt, <span class="num">NULL</span>);
+</pre>
+      <table>
+        <tr><th>Flag</th><th>Significato</th></tr>
+        <tr><td><code>SQLITE_PREPARE_PERSISTENT</code></td><td>Stmt riusato a lungo: hint per il planner (evita cache eviction).</td></tr>
+        <tr><td><code>SQLITE_PREPARE_NORMALIZE</code></td><td>Abilita <code>sqlite3_normalized_sql()</code>.</td></tr>
+        <tr><td><code>SQLITE_PREPARE_NO_VTAB</code></td><td>Non usare virtual table.</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── step -->
+<span class="anchor" id="s-step"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_step()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Semantica</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_step</span>(<span class="type">sqlite3_stmt</span> *stmt);
+</pre>
+      <table>
+        <tr><th>Ritorno</th><th>Significato</th></tr>
+        <tr><td><code>SQLITE_ROW</code> (100)</td><td>Riga disponibile: leggi con <code>column_*</code>, poi richiama <code>step</code></td></tr>
+        <tr><td><code>SQLITE_DONE</code> (101)</td><td>Esecuzione completata</td></tr>
+        <tr><td><code>SQLITE_BUSY</code> (5)</td><td>DB lock, retry o abort</td></tr>
+        <tr><td><code>SQLITE_CONSTRAINT</code></td><td>Violazione di vincolo (UNIQUE, CHECK, NOT NULL, FK)</td></tr>
+        <tr><td><code>SQLITE_ERROR</code></td><td>Errore generico (controlla <code>errmsg</code>)</td></tr>
+        <tr><td><code>SQLITE_MISUSE</code></td><td>Uso scorretto (es. step dopo finalize)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Loop Tipico SELECT</div>
+<pre>
+<span class="kw">while</span> ((rc = <span class="fn">sqlite3_step</span>(stmt)) == SQLITE_ROW) {
+    <span class="type">int</span>         id   = <span class="fn">sqlite3_column_int</span> (stmt, <span class="num">0</span>);
+    <span class="kw">const</span> <span class="type">unsigned</span> <span class="type">char</span> *nome
+                     = <span class="fn">sqlite3_column_text</span>(stmt, <span class="num">1</span>);
+    <span class="fn">printf</span>(<span class="str">"%d %s\n"</span>, id, nome);
+}
+<span class="kw">if</span> (rc != SQLITE_DONE)
+    <span class="fn">fprintf</span>(stderr, <span class="str">"step: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db));
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esecuzione Single-Shot (INSERT/UPDATE)</div>
+<pre>
+<span class="kw">if</span> (<span class="fn">sqlite3_step</span>(stmt) != SQLITE_DONE) {
+    <span class="fn">fprintf</span>(stderr, <span class="str">"insert: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db));
+}
+<span class="type">sqlite3_int64</span> last_id = <span class="fn">sqlite3_last_insert_rowid</span>(db);
+<span class="type">int</span>           changes = <span class="fn">sqlite3_changes</span>(db);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── reset -->
+<span class="anchor" id="s-reset"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_reset() &amp; sqlite3_clear_bindings()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Firme</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_reset</span>         (<span class="type">sqlite3_stmt</span> *stmt);
+<span class="type">int</span> <span class="fn">sqlite3_clear_bindings</span>(<span class="type">sqlite3_stmt</span> *stmt);
+</pre>
+      <p><code>reset()</code> riporta lo stato di esecuzione allo stadio <em>"pronto per il primo step"</em>, <strong>senza</strong> cancellare i bind. <code>clear_bindings()</code> azzera tutti i parametri a NULL.</p>
+      <div class="note">Dopo <code>SQLITE_DONE</code>, non &egrave; obbligatorio chiamare <code>reset()</code> prima di <code>finalize()</code>. Il motivo di usarlo &egrave; <strong>riusare lo stesso statement</strong> con nuovi bind.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern: Insert Ripetuti</div>
+<pre>
+<span class="kw">const</span> <span class="type">char</span> *sql = <span class="str">"INSERT INTO utenti(nome, eta) VALUES (?,?);"</span>;
+<span class="type">sqlite3_stmt</span> *s;
+<span class="fn">sqlite3_prepare_v2</span>(db, sql, -<span class="num">1</span>, &amp;s, <span class="num">NULL</span>);
+
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+    <span class="fn">sqlite3_bind_text</span>(s, <span class="num">1</span>, names[i], -<span class="num">1</span>, SQLITE_TRANSIENT);
+    <span class="fn">sqlite3_bind_int</span> (s, <span class="num">2</span>, ages[i]);
+
+    <span class="kw">if</span> (<span class="fn">sqlite3_step</span>(s) != SQLITE_DONE)
+        <span class="fn">fprintf</span>(stderr, <span class="str">"err: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db));
+
+    <span class="fn">sqlite3_reset</span>(s);          <span class="cmt">// pronto per il prossimo</span>
+    <span class="fn">sqlite3_clear_bindings</span>(s); <span class="cmt">// opzionale (nuovi bind li sovrascrivono)</span>
+}
+<span class="fn">sqlite3_finalize</span>(s);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── finalize -->
+<span class="anchor" id="s-finalize"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_finalize()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Firma</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_finalize</span>(<span class="type">sqlite3_stmt</span> *stmt);
+</pre>
+      <p>Distrugge lo statement e libera tutte le risorse associate. Sicura da chiamare su <code>NULL</code> (noop). Va chiamata <strong>sempre</strong> prima di <code>sqlite3_close()</code> (ma non prima di <code>close_v2()</code>).</p>
+      <div class="warn">Fuga di statement non finalizzati &rarr; <code>sqlite3_close()</code> ritorna <code>SQLITE_BUSY</code> e il database rimane aperto.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Idioma RAII-like</div>
+<pre>
+<span class="dir">#define</span> <span class="fn">SQL_FINALIZE</span>(s) <span class="kw">do</span> {            \
+    <span class="kw">if</span> (s) { <span class="fn">sqlite3_finalize</span>(s); s = <span class="num">NULL</span>; } \
+} <span class="kw">while</span>(<span class="num">0</span>)
+
+<span class="type">sqlite3_stmt</span> *stmt = <span class="num">NULL</span>;
+<span class="cmt">/* ... prepare, bind, step ... */</span>
+<span class="fn">SQL_FINALIZE</span>(stmt);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     BIND PARAMETRI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-bind"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_bind_*() &mdash; BIND DEI PARAMETRI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Famiglia di Funzioni</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_bind_int</span>    (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i, <span class="type">int</span>    v);
+<span class="type">int</span> <span class="fn">sqlite3_bind_int64</span>  (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i, <span class="type">sqlite3_int64</span> v);
+<span class="type">int</span> <span class="fn">sqlite3_bind_double</span> (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i, <span class="type">double</span> v);
+<span class="type">int</span> <span class="fn">sqlite3_bind_text</span>   (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i,
+                          <span class="kw">const</span> <span class="type">char</span>* v, <span class="type">int</span> n, <span class="kw">void</span>(*fin)(<span class="kw">void</span>*));
+<span class="type">int</span> <span class="fn">sqlite3_bind_text16</span> (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i,
+                          <span class="kw">const</span> <span class="kw">void</span>* v, <span class="type">int</span> n, <span class="kw">void</span>(*fin)(<span class="kw">void</span>*));
+<span class="type">int</span> <span class="fn">sqlite3_bind_blob</span>   (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i,
+                          <span class="kw">const</span> <span class="kw">void</span>* v, <span class="type">int</span> n, <span class="kw">void</span>(*fin)(<span class="kw">void</span>*));
+<span class="type">int</span> <span class="fn">sqlite3_bind_zeroblob</span>(<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i, <span class="type">int</span> n);
+<span class="type">int</span> <span class="fn">sqlite3_bind_null</span>   (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">int</span> <span class="fn">sqlite3_bind_value</span>  (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i, <span class="kw">const</span> <span class="type">sqlite3_value</span>*);
+<span class="type">int</span> <span class="fn">sqlite3_bind_pointer</span>(<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i,
+                          <span class="kw">void</span>*, <span class="kw">const</span> <span class="type">char</span>* type, <span class="kw">void</span>(*fin)(<span class="kw">void</span>*));
+</pre>
+      <div class="note">Gli indici partono da <strong>1</strong>, non da 0. La colonna 0 ritornata da <code>sqlite3_column_*</code> parte invece da 0. Facile fonte di bug.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Distruttori: TRANSIENT vs STATIC</div>
+      <p>L'ultimo parametro di <code>bind_text/blob</code> indica a SQLite come gestire il buffer passato.</p>
+      <table>
+        <tr><th>Valore</th><th>Semantica</th></tr>
+        <tr><td><code>SQLITE_STATIC</code></td><td>Il buffer &egrave; valido per tutta la vita dello statement (no copia).</td></tr>
+        <tr><td><code>SQLITE_TRANSIENT</code></td><td>SQLite <strong>copia</strong> subito il dato; il buffer originale pu&ograve; essere liberato.</td></tr>
+        <tr><td>Puntatore a funzione</td><td>Chiamata da SQLite quando il dato non serve pi&ugrave; (<code>free</code>, custom, ecc.).</td></tr>
+      </table>
+<pre>
+<span class="type">char</span> buf[<span class="num">64</span>];
+<span class="fn">snprintf</span>(buf, <span class="kw">sizeof</span> buf, <span class="str">"Mario-%d"</span>, i);
+
+<span class="cmt">// STATIC: buf &egrave; stabile per tutta la vita dello stmt? No, &egrave; temporaneo &rarr; TRANSIENT</span>
+<span class="fn">sqlite3_bind_text</span>(s, <span class="num">1</span>, buf, -<span class="num">1</span>, SQLITE_TRANSIENT);
+
+<span class="cmt">// Stringa letterale: TEXT segment immortale &rarr; STATIC</span>
+<span class="fn">sqlite3_bind_text</span>(s, <span class="num">2</span>, <span class="str">"admin"</span>, -<span class="num">1</span>, SQLITE_STATIC);
+
+<span class="cmt">// Buffer malloc-ato che vogliamo cedere: passa free</span>
+<span class="type">char</span> *heap = <span class="fn">strdup</span>(<span class="str">"xxxx"</span>);
+<span class="fn">sqlite3_bind_text</span>(s, <span class="num">3</span>, heap, -<span class="num">1</span>, free);
+</pre>
+      <div class="warn">Passare <code>SQLITE_STATIC</code> con un buffer automatico/di stack che esce di scope &egrave; <strong>undefined behavior</strong>. In dubbio: <code>SQLITE_TRANSIENT</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Lunghezze &amp; Conversioni</div>
+      <table>
+        <tr><th>Parametro <code>n</code></th><th>Significato in <code>bind_text</code></th></tr>
+        <tr><td><code>n = -1</code></td><td>Usa <code>strlen</code> per determinare la lunghezza (stringa C terminata)</td></tr>
+        <tr><td><code>n &gt;= 0</code></td><td>Numero di byte (non include <code>\0</code> terminatore)</td></tr>
+      </table>
+<pre>
+<span class="cmt">/* Bind di un BLOB */</span>
+<span class="type">unsigned</span> <span class="type">char</span> data[<span class="num">256</span>];
+<span class="fn">sqlite3_bind_blob</span>(s, <span class="num">1</span>, data, <span class="kw">sizeof</span> data, SQLITE_TRANSIENT);
+
+<span class="cmt">/* Bind di BLOB vuoto di N byte (da riempire con incremental I/O) */</span>
+<span class="fn">sqlite3_bind_zeroblob</span>(s, <span class="num">1</span>, <span class="num">1024</span>);
+
+<span class="cmt">/* Bind di NULL esplicito */</span>
+<span class="fn">sqlite3_bind_null</span>(s, <span class="num">3</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── bind named -->
+<span class="anchor" id="s-bind-named"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PARAMETRI NOMINATI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Sintassi SQL</div>
+      <table>
+        <tr><th>Forma</th><th>Descrizione</th></tr>
+        <tr><td><code>?</code></td><td>Anonimo, posizione automatica</td></tr>
+        <tr><td><code>?NNN</code></td><td>Posizionale esplicito (NNN = 1..999)</td></tr>
+        <tr><td><code>:nome</code></td><td>Nominato (colon-prefix)</td></tr>
+        <tr><td><code>@nome</code></td><td>Nominato (at-prefix, stile T-SQL)</td></tr>
+        <tr><td><code>$nome</code></td><td>Nominato (dollar-prefix, stile TCL)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Risoluzione Nome &rarr; Indice</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_bind_parameter_index</span>(<span class="type">sqlite3_stmt</span>*, <span class="kw">const</span> <span class="type">char</span> *zName);
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_bind_parameter_name</span>(<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">int</span> <span class="fn">sqlite3_bind_parameter_count</span>(<span class="type">sqlite3_stmt</span>*);
+</pre>
+      <p>Il <em>nome</em> include il prefisso (es. <code>":nome"</code>, non <code>"nome"</code>).</p>
+<pre>
+<span class="kw">const</span> <span class="type">char</span> *sql =
+    <span class="str">"UPDATE utenti SET eta = :eta WHERE nome = :nome;"</span>;
+
+<span class="type">sqlite3_stmt</span> *s;
+<span class="fn">sqlite3_prepare_v2</span>(db, sql, -<span class="num">1</span>, &amp;s, <span class="num">NULL</span>);
+
+<span class="type">int</span> iEta  = <span class="fn">sqlite3_bind_parameter_index</span>(s, <span class="str">":eta"</span>);
+<span class="type">int</span> iNome = <span class="fn">sqlite3_bind_parameter_index</span>(s, <span class="str">":nome"</span>);
+
+<span class="fn">sqlite3_bind_int</span> (s, iEta, <span class="num">30</span>);
+<span class="fn">sqlite3_bind_text</span>(s, iNome, <span class="str">"Mario"</span>, -<span class="num">1</span>, SQLITE_STATIC);
+
+<span class="fn">sqlite3_step</span>(s);
+<span class="fn">sqlite3_finalize</span>(s);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── bind meta -->
+<span class="anchor" id="s-bind-meta"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> INTROSPEZIONE DI UNO STATEMENT</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Funzioni</div>
+<pre>
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_sql</span>           (<span class="type">sqlite3_stmt</span>*);  <span class="cmt">// testo originale</span>
+<span class="type">char</span>*       <span class="fn">sqlite3_expanded_sql</span>  (<span class="type">sqlite3_stmt</span>*);  <span class="cmt">// con parametri bind-ati (free con sqlite3_free)</span>
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_normalized_sql</span>(<span class="type">sqlite3_stmt</span>*);  <span class="cmt">// forma normalizzata (prepare_v3)</span>
+<span class="type">int</span>         <span class="fn">sqlite3_stmt_readonly</span> (<span class="type">sqlite3_stmt</span>*);  <span class="cmt">// != 0 se non modifica il DB</span>
+<span class="type">int</span>         <span class="fn">sqlite3_stmt_busy</span>     (<span class="type">sqlite3_stmt</span>*);  <span class="cmt">// != 0 se in corso di esecuzione</span>
+<span class="type">int</span>         <span class="fn">sqlite3_data_count</span>    (<span class="type">sqlite3_stmt</span>*);  <span class="cmt">// colonne dopo SQLITE_ROW</span>
+<span class="type">int</span>         <span class="fn">sqlite3_column_count</span>  (<span class="type">sqlite3_stmt</span>*);  <span class="cmt">// colonne della query</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     LETTURA COLONNE
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-column"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> sqlite3_column_*() &mdash; LETTURA RIGHE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Accesso ai Valori (indice base 0)</div>
+<pre>
+<span class="type">int</span>              <span class="fn">sqlite3_column_int</span>    (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">sqlite3_int64</span>    <span class="fn">sqlite3_column_int64</span>  (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">double</span>           <span class="fn">sqlite3_column_double</span> (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="kw">const</span> <span class="type">unsigned</span> <span class="type">char</span>*
+                 <span class="fn">sqlite3_column_text</span>   (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="kw">const</span> <span class="kw">void</span>*      <span class="fn">sqlite3_column_text16</span> (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="kw">const</span> <span class="kw">void</span>*      <span class="fn">sqlite3_column_blob</span>   (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">int</span>              <span class="fn">sqlite3_column_bytes</span>  (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">int</span>              <span class="fn">sqlite3_column_bytes16</span>(<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">int</span>              <span class="fn">sqlite3_column_type</span>   (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+<span class="type">sqlite3_value</span>*   <span class="fn">sqlite3_column_value</span>  (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> i);
+</pre>
+      <table>
+        <tr><th>Funzione</th><th>Nota</th></tr>
+        <tr><td><code>column_text()</code></td><td>Ritorna <code>const unsigned char*</code> UTF-8, terminata da <code>\0</code>.</td></tr>
+        <tr><td><code>column_blob()</code></td><td>NON terminata; usa <code>column_bytes()</code> per la dimensione.</td></tr>
+        <tr><td><code>column_bytes()</code></td><td>Numero di byte del valore BLOB/TEXT (escluso <code>\0</code>).</td></tr>
+        <tr><td><code>column_type()</code></td><td>Ritorna <code>SQLITE_INTEGER</code>, <code>_FLOAT</code>, <code>_TEXT</code>, <code>_BLOB</code>, <code>_NULL</code>.</td></tr>
+      </table>
+      <div class="warn">I puntatori ritornati da <code>column_text/blob</code> sono validi solo fino alla prossima <code>sqlite3_step/reset/finalize</code> sullo stesso stmt, o a una qualsiasi conversione di tipo su quella colonna. <strong>Copia subito</strong> se serve persistere.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Completo</div>
+<pre>
+<span class="kw">const</span> <span class="type">char</span> *sql = <span class="str">"SELECT id, nome, eta FROM utenti WHERE eta &gt; ?;"</span>;
+<span class="type">sqlite3_stmt</span> *s;
+
+<span class="kw">if</span> (<span class="fn">sqlite3_prepare_v2</span>(db, sql, -<span class="num">1</span>, &amp;s, <span class="num">NULL</span>) != SQLITE_OK) <span class="kw">goto</span> err;
+<span class="fn">sqlite3_bind_int</span>(s, <span class="num">1</span>, <span class="num">18</span>);
+
+<span class="type">int</span> rc;
+<span class="kw">while</span> ((rc = <span class="fn">sqlite3_step</span>(s)) == SQLITE_ROW) {
+    <span class="type">int</span> id              = <span class="fn">sqlite3_column_int</span>  (s, <span class="num">0</span>);
+    <span class="kw">const</span> <span class="type">unsigned</span> <span class="type">char</span> *n = <span class="fn">sqlite3_column_text</span> (s, <span class="num">1</span>);
+    <span class="type">int</span> eta             = <span class="fn">sqlite3_column_int</span>  (s, <span class="num">2</span>);
+
+    <span class="kw">if</span> (<span class="fn">sqlite3_column_type</span>(s, <span class="num">1</span>) == SQLITE_NULL) n = (<span class="kw">const</span> <span class="type">unsigned</span> <span class="type">char</span>*)<span class="str">"(null)"</span>;
+    <span class="fn">printf</span>(<span class="str">"%3d | %-20s | %d\n"</span>, id, n, eta);
+}
+<span class="kw">if</span> (rc != SQLITE_DONE)
+    <span class="fn">fprintf</span>(stderr, <span class="str">"step: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db));
+
+err:
+<span class="fn">sqlite3_finalize</span>(s);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── column meta -->
+<span class="anchor" id="s-column-meta"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> METADATI COLONNE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Funzioni</div>
+<pre>
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_column_name</span>         (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> N);
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_column_decltype</span>     (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> N);
+
+<span class="cmt">/* Richiedono SQLITE_ENABLE_COLUMN_METADATA */</span>
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_column_database_name</span>(<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> N);
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_column_table_name</span>   (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> N);
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_column_origin_name</span>  (<span class="type">sqlite3_stmt</span>*, <span class="type">int</span> N);
+</pre>
+      <p><code>column_decltype</code> ritorna il tipo dichiarato nella <code>CREATE TABLE</code> (es. <code>"INTEGER"</code>, <code>"VARCHAR(50)"</code>), non il tipo storage corrente. SQLite &egrave; <strong>typeless</strong>: usa type affinity.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Stampa Intestazione Dinamica</div>
+<pre>
+<span class="type">int</span> nc = <span class="fn">sqlite3_column_count</span>(s);
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; nc; i++)
+    <span class="fn">printf</span>(<span class="str">"%-15s "</span>, <span class="fn">sqlite3_column_name</span>(s, i));
+<span class="fn">putchar</span>(<span class="str">'\n'</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── type affinity -->
+<span class="anchor" id="s-types"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> TYPE AFFINITY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Le 5 Classi di Storage</div>
+      <p>In SQLite <em>i valori</em> hanno tipo, <em>le colonne</em> hanno affinit&agrave;. Una colonna <code>INTEGER</code> pu&ograve; contenere un TEXT (se non c'&egrave; <code>STRICT</code>).</p>
+      <table>
+        <tr><th>Tipo Dichiarato</th><th>Affinit&agrave;</th></tr>
+        <tr><td>INT, INTEGER, BIGINT, SMALLINT...</td><td>INTEGER</td></tr>
+        <tr><td>TEXT, CHAR, VARCHAR(n), CLOB</td><td>TEXT</td></tr>
+        <tr><td>BLOB, (nessun tipo)</td><td>BLOB</td></tr>
+        <tr><td>REAL, DOUBLE, FLOAT</td><td>REAL</td></tr>
+        <tr><td>NUMERIC, DECIMAL, BOOLEAN, DATE</td><td>NUMERIC</td></tr>
+      </table>
+      <div class="note">Dal 3.37: tabelle <code>STRICT</code> rifiutano tipi non conformi. Dal 3.38: tipo <code>ANY</code> esplicito per colonne senza conversione.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     TRANSAZIONI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-trans"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> TRANSAZIONI &mdash; BEGIN / COMMIT / ROLLBACK</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Modello</div>
+      <p>SQLite &egrave; <strong>ACID</strong>. Per default opera in <em>autocommit</em>: ogni statement &egrave; una transazione. <code>BEGIN</code> apre una transazione esplicita, <code>COMMIT</code> la conferma, <code>ROLLBACK</code> la annulla.</p>
+<pre>
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"BEGIN TRANSACTION;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+<span class="cmt">/* ... molte INSERT/UPDATE ... */</span>
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"COMMIT;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+
+<span class="cmt">// oppure, su errore:</span>
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"ROLLBACK;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+</pre>
+      <div class="note">Raggruppare N INSERT in una sola transazione &egrave; <strong>decisivo</strong> per le performance: si passa da ~N fsync() a uno solo. Fattore 100&times;&ndash;1000&times; tipico.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern con Rollback su Errore</div>
+<pre>
+<span class="type">int</span> <span class="fn">bulk_insert</span>(<span class="type">sqlite3</span> *db, <span class="kw">const</span> <span class="type">char</span> **names, <span class="type">int</span> n) {
+    <span class="type">char</span> *err = <span class="num">NULL</span>;
+    <span class="type">int</span> rc;
+
+    <span class="kw">if</span> (<span class="fn">sqlite3_exec</span>(db, <span class="str">"BEGIN IMMEDIATE;"</span>, <span class="num">0</span>, <span class="num">0</span>, &amp;err) != SQLITE_OK)
+        <span class="kw">goto</span> fail;
+
+    <span class="type">sqlite3_stmt</span> *s;
+    <span class="fn">sqlite3_prepare_v2</span>(db,
+        <span class="str">"INSERT INTO utenti(nome) VALUES(?);"</span>, -<span class="num">1</span>, &amp;s, <span class="num">NULL</span>);
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="fn">sqlite3_bind_text</span>(s, <span class="num">1</span>, names[i], -<span class="num">1</span>, SQLITE_STATIC);
+        <span class="kw">if</span> (<span class="fn">sqlite3_step</span>(s) != SQLITE_DONE) {
+            <span class="fn">sqlite3_finalize</span>(s);
+            <span class="kw">goto</span> rollback;
+        }
+        <span class="fn">sqlite3_reset</span>(s);
+    }
+    <span class="fn">sqlite3_finalize</span>(s);
+
+    <span class="kw">return</span> <span class="fn">sqlite3_exec</span>(db, <span class="str">"COMMIT;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+
+rollback:
+    <span class="fn">sqlite3_exec</span>(db, <span class="str">"ROLLBACK;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+fail:
+    <span class="fn">sqlite3_free</span>(err);
+    <span class="kw">return</span> -<span class="num">1</span>;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── savepoint -->
+<span class="anchor" id="s-savepoint"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SAVEPOINT (TRANSAZIONI ANNIDATE)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Sintassi</div>
+<pre>
+SAVEPOINT   sp1;         <span class="cmt">-- crea punto di salvataggio</span>
+<span class="cmt">-- ... statement ...</span>
+RELEASE     sp1;         <span class="cmt">-- "commit" del savepoint</span>
+ROLLBACK TO sp1;         <span class="cmt">-- rollback parziale, la tx principale resta attiva</span>
+</pre>
+      <p>I savepoint sono annidabili, si comportano come mini-transazioni dentro una transazione. Utili per parsing/import a stadi con recupero.</p>
+<pre>
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"BEGIN;"</span>, <span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>);
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"SAVEPOINT chunk;"</span>, <span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>);
+
+<span class="kw">if</span> (processing_failed)
+    <span class="fn">sqlite3_exec</span>(db, <span class="str">"ROLLBACK TO chunk;"</span>, <span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>);
+<span class="kw">else</span>
+    <span class="fn">sqlite3_exec</span>(db, <span class="str">"RELEASE chunk;"</span>, <span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>);
+
+<span class="fn">sqlite3_exec</span>(db, <span class="str">"COMMIT;"</span>, <span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── trans mode -->
+<span class="anchor" id="s-trans-mode"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> MODALIT&Agrave; DI TRANSAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tipi di BEGIN</div>
+      <table>
+        <tr><th>Sintassi</th><th>Lock acquisito</th><th>Quando</th></tr>
+        <tr><td><code>BEGIN</code> / <code>BEGIN DEFERRED</code></td><td>Nessuno inizialmente; SHARED sul primo SELECT, RESERVED sul primo WRITE</td><td>Default. Rischio <code>SQLITE_BUSY</code> su upgrade</td></tr>
+        <tr><td><code>BEGIN IMMEDIATE</code></td><td>RESERVED subito</td><td>Per transazioni che sicuramente scriveranno</td></tr>
+        <tr><td><code>BEGIN EXCLUSIVE</code></td><td>EXCLUSIVE subito (no altri reader, non-WAL)</td><td>Operazioni esclusive (rare)</td></tr>
+      </table>
+      <div class="note">In modalit&agrave; <strong>WAL</strong>, EXCLUSIVE non blocca i reader. Per logica "read then write", <code>BEGIN IMMEDIATE</code> &egrave; la scelta sicura per evitare deadlock di upgrade.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Journal Mode</div>
+<pre>
+PRAGMA journal_mode = WAL;       <span class="cmt">-- Write-Ahead Logging (concorrenza ottima)</span>
+PRAGMA journal_mode = DELETE;    <span class="cmt">-- default classico</span>
+PRAGMA journal_mode = TRUNCATE;
+PRAGMA journal_mode = PERSIST;
+PRAGMA journal_mode = MEMORY;    <span class="cmt">-- non durabile</span>
+PRAGMA journal_mode = OFF;       <span class="cmt">-- NO rollback, NO crash safety</span>
+
+PRAGMA synchronous = FULL;       <span class="cmt">-- default, max durabilit&agrave;</span>
+PRAGMA synchronous = NORMAL;     <span class="cmt">-- OK con WAL, 2&ndash;3&times; pi&ugrave; veloce</span>
+PRAGMA synchronous = OFF;        <span class="cmt">-- rischio corruzione su crash</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── autocommit -->
+<span class="anchor" id="s-autocommit"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> AUTOCOMMIT &amp; STATO TRANSAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Funzioni</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_get_autocommit</span>(<span class="type">sqlite3</span> *db);
+<span class="cmt">// 1 = autocommit attivo (nessuna tx aperta)
+// 0 = tx in corso</span>
+
+<span class="type">int</span> <span class="fn">sqlite3_txn_state</span>(<span class="type">sqlite3</span> *db, <span class="kw">const</span> <span class="type">char</span> *zSchema);
+<span class="cmt">// SQLITE_TXN_NONE  (0)    : nessuna tx
+// SQLITE_TXN_READ  (1)    : tx di sola lettura
+// SQLITE_TXN_WRITE (2)    : tx di scrittura</span>
+</pre>
+      <p>Utile per wrapping difensivo: se la routine ritorna con <code>get_autocommit() == 0</code>, c'&egrave; una transazione dimenticata.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     GESTIONE ERRORI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-errcode"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> GESTIONE ERRORI &mdash; CODICI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Codici Principali</div>
+      <table>
+        <tr><th>Codice</th><th>Val</th><th>Significato</th></tr>
+        <tr><td><code>SQLITE_OK</code></td><td>0</td><td>Successo</td></tr>
+        <tr><td><code>SQLITE_ERROR</code></td><td>1</td><td>Errore SQL / generico</td></tr>
+        <tr><td><code>SQLITE_INTERNAL</code></td><td>2</td><td>Bug interno (non dovresti vederlo)</td></tr>
+        <tr><td><code>SQLITE_PERM</code></td><td>3</td><td>Permessi insufficienti</td></tr>
+        <tr><td><code>SQLITE_ABORT</code></td><td>4</td><td>Abort (callback ha ritornato !=0)</td></tr>
+        <tr><td><code>SQLITE_BUSY</code></td><td>5</td><td>File lock; ritenta</td></tr>
+        <tr><td><code>SQLITE_LOCKED</code></td><td>6</td><td>Deadlock sulla stessa connessione</td></tr>
+        <tr><td><code>SQLITE_NOMEM</code></td><td>7</td><td>malloc fallito</td></tr>
+        <tr><td><code>SQLITE_READONLY</code></td><td>8</td><td>Scrittura su DB read-only</td></tr>
+        <tr><td><code>SQLITE_INTERRUPT</code></td><td>9</td><td>sqlite3_interrupt()</td></tr>
+        <tr><td><code>SQLITE_IOERR</code></td><td>10</td><td>Errore I/O sul VFS</td></tr>
+        <tr><td><code>SQLITE_CORRUPT</code></td><td>11</td><td>File corrotto</td></tr>
+        <tr><td><code>SQLITE_NOTFOUND</code></td><td>12</td><td>Non trovato</td></tr>
+        <tr><td><code>SQLITE_FULL</code></td><td>13</td><td>DB pieno (disco)</td></tr>
+        <tr><td><code>SQLITE_CANTOPEN</code></td><td>14</td><td>Impossibile aprire il file</td></tr>
+        <tr><td><code>SQLITE_SCHEMA</code></td><td>17</td><td>Schema cambiato (stmt va ricompilato)</td></tr>
+        <tr><td><code>SQLITE_CONSTRAINT</code></td><td>19</td><td>Violazione vincolo</td></tr>
+        <tr><td><code>SQLITE_MISMATCH</code></td><td>20</td><td>Tipo incompatibile</td></tr>
+        <tr><td><code>SQLITE_MISUSE</code></td><td>21</td><td>API usata male</td></tr>
+        <tr><td><code>SQLITE_RANGE</code></td><td>25</td><td>Indice bind fuori range</td></tr>
+        <tr><td><code>SQLITE_NOTADB</code></td><td>26</td><td>File non &egrave; un DB SQLite</td></tr>
+        <tr><td><code>SQLITE_ROW</code></td><td>100</td><td>Riga disponibile</td></tr>
+        <tr><td><code>SQLITE_DONE</code></td><td>101</td><td>Esecuzione completata</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── errmsg -->
+<span class="anchor" id="s-errmsg"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> MESSAGGI &amp; EXTENDED CODES</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Funzioni</div>
+<pre>
+<span class="type">int</span>         <span class="fn">sqlite3_errcode</span>         (<span class="type">sqlite3</span>*);          <span class="cmt">// codice primario</span>
+<span class="type">int</span>         <span class="fn">sqlite3_extended_errcode</span>(<span class="type">sqlite3</span>*);          <span class="cmt">// codice esteso</span>
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_errmsg</span>          (<span class="type">sqlite3</span>*);          <span class="cmt">// messaggio, NUL-term</span>
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_errmsg16</span>        (<span class="type">sqlite3</span>*);
+<span class="kw">const</span> <span class="type">char</span>* <span class="fn">sqlite3_errstr</span>          (<span class="type">int</span> rc);             <span class="cmt">// descrizione statica</span>
+<span class="type">int</span>         <span class="fn">sqlite3_error_offset</span>    (<span class="type">sqlite3</span>*);          <span class="cmt">// offset token errore</span>
+
+<span class="type">int</span> <span class="fn">sqlite3_extended_result_codes</span>(<span class="type">sqlite3</span>*, <span class="type">int</span> onoff); <span class="cmt">// attiva extended</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Extended Result Codes</div>
+      <p>Ogni codice base pu&ograve; essere esteso come <code>CODICE_BASE | (sub_code &lt;&lt; 8)</code>. Permette diagnosi fine.</p>
+      <table>
+        <tr><th>Extended</th><th>Significato</th></tr>
+        <tr><td><code>SQLITE_CONSTRAINT_PRIMARYKEY</code></td><td>Violazione PK</td></tr>
+        <tr><td><code>SQLITE_CONSTRAINT_UNIQUE</code></td><td>UNIQUE fallita</td></tr>
+        <tr><td><code>SQLITE_CONSTRAINT_NOTNULL</code></td><td>NOT NULL violato</td></tr>
+        <tr><td><code>SQLITE_CONSTRAINT_CHECK</code></td><td>CHECK fallita</td></tr>
+        <tr><td><code>SQLITE_CONSTRAINT_FOREIGNKEY</code></td><td>FK violata</td></tr>
+        <tr><td><code>SQLITE_IOERR_WRITE</code></td><td>I/O in scrittura</td></tr>
+        <tr><td><code>SQLITE_IOERR_FSYNC</code></td><td>fsync fallito</td></tr>
+        <tr><td><code>SQLITE_READONLY_RECOVERY</code></td><td>Serve recupero WAL</td></tr>
+        <tr><td><code>SQLITE_BUSY_RECOVERY</code></td><td>Recovery WAL in corso</td></tr>
+        <tr><td><code>SQLITE_BUSY_SNAPSHOT</code></td><td>Snapshot troppo vecchio (WAL)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Helper di Logging</div>
+<pre>
+<span class="type">static</span> <span class="kw">void</span> <span class="fn">sql_die</span>(<span class="type">sqlite3</span> *db, <span class="kw">const</span> <span class="type">char</span> *ctx) {
+    <span class="fn">fprintf</span>(stderr,
+        <span class="str">"[%s] rc=%d ext=%d off=%d: %s\n"</span>,
+        ctx,
+        <span class="fn">sqlite3_errcode</span>(db),
+        <span class="fn">sqlite3_extended_errcode</span>(db),
+        <span class="fn">sqlite3_error_offset</span>(db),
+        <span class="fn">sqlite3_errmsg</span>(db));
+    <span class="fn">exit</span>(<span class="num">1</span>);
+}
+
+<span class="cmt">/* Abilita extended codes all'inizio */</span>
+<span class="fn">sqlite3_extended_result_codes</span>(db, <span class="num">1</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── busy -->
+<span class="anchor" id="s-busy"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> BUSY HANDLER &amp; TIMEOUT</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Firma</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_busy_timeout</span>(<span class="type">sqlite3</span>*, <span class="type">int</span> ms);
+<span class="type">int</span> <span class="fn">sqlite3_busy_handler</span>(<span class="type">sqlite3</span>*, <span class="type">int</span>(*cb)(<span class="kw">void</span>*,<span class="type">int</span>), <span class="kw">void</span>*);
+</pre>
+      <p><code>busy_timeout(ms)</code> imposta un handler built-in che effettua sleep-retry per fino a <code>ms</code> millisecondi prima di ritornare <code>SQLITE_BUSY</code>. Zero lo disabilita.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Custom Busy Handler</div>
+<pre>
+<span class="type">static</span> <span class="type">int</span> <span class="fn">my_busy</span>(<span class="kw">void</span> *ud, <span class="type">int</span> n) {
+    (<span class="kw">void</span>)ud;
+    <span class="kw">if</span> (n &gt; <span class="num">10</span>) <span class="kw">return</span> <span class="num">0</span>;   <span class="cmt">// ritorna 0 &rarr; SQLite d&agrave; SQLITE_BUSY</span>
+    <span class="fn">usleep</span>(<span class="num">100000</span>);          <span class="cmt">// 100 ms</span>
+    <span class="kw">return</span> <span class="num">1</span>;                 <span class="cmt">// ritorna !=0 &rarr; ritenta</span>
+}
+<span class="fn">sqlite3_busy_handler</span>(db, my_busy, <span class="num">NULL</span>);
+</pre>
+      <div class="note">Non settare <strong>entrambi</strong> busy_handler e busy_timeout: l'ultima chiamata vince. Di solito <code>busy_timeout(5000)</code> &egrave; sufficiente.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     AVANZATO
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-pragma"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PRAGMA UTILI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tuning Performance &amp; Integrit&agrave;</div>
+<pre>
+PRAGMA foreign_keys = ON;            <span class="cmt">-- attiva enforcement FK (default OFF)</span>
+PRAGMA journal_mode = WAL;            <span class="cmt">-- concorrenza read/write</span>
+PRAGMA synchronous  = NORMAL;         <span class="cmt">-- bilanciato con WAL</span>
+PRAGMA temp_store   = MEMORY;         <span class="cmt">-- tmp in RAM</span>
+PRAGMA cache_size   = -20000;         <span class="cmt">-- 20 MB di cache (negativo = KB)</span>
+PRAGMA mmap_size    = 268435456;      <span class="cmt">-- 256 MB di mmap</span>
+PRAGMA page_size    = 4096;           <span class="cmt">-- solo prima del primo CREATE</span>
+
+PRAGMA integrity_check;               <span class="cmt">-- verifica integrit&agrave;</span>
+PRAGMA quick_check;                   <span class="cmt">-- verifica veloce</span>
+PRAGMA wal_checkpoint(TRUNCATE);      <span class="cmt">-- checkpoint WAL</span>
+PRAGMA optimize;                      <span class="cmt">-- ANALYZE selettivo (3.18+)</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Introspezione Schema</div>
+<pre>
+PRAGMA table_info(<span class="str">'utenti'</span>);
+PRAGMA table_list;                    <span class="cmt">-- 3.37+</span>
+PRAGMA index_list(<span class="str">'utenti'</span>);
+PRAGMA index_info(<span class="str">'idx_nome'</span>);
+PRAGMA foreign_key_list(<span class="str">'ordini'</span>);
+PRAGMA database_list;
+PRAGMA user_version = 3;              <span class="cmt">-- int 32 libero per schema versioning</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── blob -->
+<span class="anchor" id="s-blob"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> BLOB INCREMENTALE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_blob_open</span>(
+    <span class="type">sqlite3</span> *db, <span class="kw">const</span> <span class="type">char</span> *zDb, <span class="kw">const</span> <span class="type">char</span> *zTable,
+    <span class="kw">const</span> <span class="type">char</span> *zColumn, <span class="type">sqlite3_int64</span> iRow,
+    <span class="type">int</span> flags, <span class="type">sqlite3_blob</span> **ppBlob);
+
+<span class="type">int</span> <span class="fn">sqlite3_blob_bytes</span>  (<span class="type">sqlite3_blob</span>*);
+<span class="type">int</span> <span class="fn">sqlite3_blob_read</span>   (<span class="type">sqlite3_blob</span>*, <span class="kw">void</span> *buf, <span class="type">int</span> n, <span class="type">int</span> off);
+<span class="type">int</span> <span class="fn">sqlite3_blob_write</span>  (<span class="type">sqlite3_blob</span>*, <span class="kw">const</span> <span class="kw">void</span>*, <span class="type">int</span> n, <span class="type">int</span> off);
+<span class="type">int</span> <span class="fn">sqlite3_blob_reopen</span> (<span class="type">sqlite3_blob</span>*, <span class="type">sqlite3_int64</span> newRow);
+<span class="type">int</span> <span class="fn">sqlite3_blob_close</span>  (<span class="type">sqlite3_blob</span>*);
+</pre>
+      <p>Permette lettura/scrittura di un BLOB a chunk, senza caricarlo tutto in memoria. La dimensione &egrave; fissa (non pu&ograve; crescere): prima allocala con <code>zeroblob()</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="cmt">/* Pre-allocare 1 MB */</span>
+<span class="fn">sqlite3_exec</span>(db,
+    <span class="str">"INSERT INTO files(name,data) VALUES('foo.bin', zeroblob(1048576));"</span>,
+    <span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>);
+
+<span class="type">sqlite3_int64</span> rowid = <span class="fn">sqlite3_last_insert_rowid</span>(db);
+<span class="type">sqlite3_blob</span> *b;
+<span class="fn">sqlite3_blob_open</span>(db, <span class="str">"main"</span>, <span class="str">"files"</span>, <span class="str">"data"</span>, rowid, <span class="num">1</span>, &amp;b);
+
+<span class="type">char</span> chunk[<span class="num">4096</span>];
+<span class="kw">for</span> (<span class="type">int</span> off = <span class="num">0</span>; off &lt; <span class="num">1048576</span>; off += <span class="kw">sizeof</span> chunk) {
+    <span class="cmt">/* ... riempi chunk ... */</span>
+    <span class="fn">sqlite3_blob_write</span>(b, chunk, <span class="kw">sizeof</span> chunk, off);
+}
+<span class="fn">sqlite3_blob_close</span>(b);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── backup -->
+<span class="anchor" id="s-backup"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> BACKUP API (ONLINE)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Flusso</div>
+<pre>
+<span class="type">sqlite3</span> *src, *dst;
+<span class="fn">sqlite3_open</span>(<span class="str">"live.db"</span>,   &amp;src);
+<span class="fn">sqlite3_open</span>(<span class="str">"backup.db"</span>, &amp;dst);
+
+<span class="type">sqlite3_backup</span> *bkp = <span class="fn">sqlite3_backup_init</span>(dst, <span class="str">"main"</span>, src, <span class="str">"main"</span>);
+<span class="kw">if</span> (bkp) {
+    <span class="cmt">/* copia tutte le pagine in una volta (-1) oppure in step */</span>
+    <span class="kw">do</span> {
+        <span class="type">int</span> rc = <span class="fn">sqlite3_backup_step</span>(bkp, <span class="num">100</span>);  <span class="cmt">// 100 pagine per step</span>
+        <span class="kw">if</span> (rc == SQLITE_OK || rc == SQLITE_BUSY || rc == SQLITE_LOCKED) {
+            <span class="fn">sqlite3_sleep</span>(<span class="num">50</span>);
+            <span class="kw">continue</span>;
+        }
+        <span class="kw">if</span> (rc == SQLITE_DONE) <span class="kw">break</span>;
+        <span class="fn">fprintf</span>(stderr, <span class="str">"backup: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(dst));
+        <span class="kw">break</span>;
+    } <span class="kw">while</span> (<span class="num">1</span>);
+    <span class="fn">sqlite3_backup_finish</span>(bkp);
+}
+
+<span class="fn">sqlite3_close</span>(src); <span class="fn">sqlite3_close</span>(dst);
+</pre>
+      <div class="note">Idiomatica per snapshot atomici di un DB in uso. Progress bar: <code>sqlite3_backup_remaining()</code> e <code>sqlite3_backup_pagecount()</code>.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── hooks -->
+<span class="anchor" id="s-hooks"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> HOOKS &amp; CALLBACK</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Hook Principali</div>
+      <table>
+        <tr><th>Funzione</th><th>Trigger</th></tr>
+        <tr><td><code>sqlite3_commit_hook()</code></td><td>Prima di ogni COMMIT</td></tr>
+        <tr><td><code>sqlite3_rollback_hook()</code></td><td>Prima di ogni ROLLBACK</td></tr>
+        <tr><td><code>sqlite3_update_hook()</code></td><td>Dopo INSERT/UPDATE/DELETE su tabella</td></tr>
+        <tr><td><code>sqlite3_trace_v2()</code></td><td>Tracing SQL (statement/profile/row/close)</td></tr>
+        <tr><td><code>sqlite3_progress_handler()</code></td><td>Ogni N VM opcode (abort di query lunghe)</td></tr>
+        <tr><td><code>sqlite3_wal_hook()</code></td><td>Dopo COMMIT in WAL mode</td></tr>
+        <tr><td><code>sqlite3_authorizer()</code></td><td>Controllo permessi a compile-time di prepare</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Progress Handler</div>
+<pre>
+<span class="type">static</span> <span class="type">int</span> <span class="fn">progress</span>(<span class="kw">void</span> *ud) {
+    <span class="kw">return</span> cancel_requested ? <span class="num">1</span> : <span class="num">0</span>;  <span class="cmt">// !=0 &rarr; SQLITE_INTERRUPT</span>
+}
+<span class="fn">sqlite3_progress_handler</span>(db, <span class="num">1000</span>, progress, <span class="num">NULL</span>);
+
+<span class="cmt">/* Interruzione immediata da altro thread: */</span>
+<span class="fn">sqlite3_interrupt</span>(db);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Update Hook (Audit)</div>
+<pre>
+<span class="type">static</span> <span class="kw">void</span> <span class="fn">audit</span>(<span class="kw">void</span> *ud, <span class="type">int</span> op,
+                  <span class="kw">const</span> <span class="type">char</span> *db_name,
+                  <span class="kw">const</span> <span class="type">char</span> *tbl,
+                  <span class="type">sqlite3_int64</span> rowid) {
+    <span class="kw">const</span> <span class="type">char</span> *o = (op==SQLITE_INSERT) ? <span class="str">"INS"</span> :
+                      (op==SQLITE_UPDATE) ? <span class="str">"UPD"</span> : <span class="str">"DEL"</span>;
+    <span class="fn">fprintf</span>(stderr, <span class="str">"[%s] %s.%s rowid=%lld\n"</span>, o, db_name, tbl, rowid);
+}
+<span class="fn">sqlite3_update_hook</span>(db, audit, <span class="num">NULL</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── custom -->
+<span class="anchor" id="s-custom"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> FUNZIONI SQL CUSTOM (UDF)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Registrazione</div>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_create_function</span>(
+    <span class="type">sqlite3</span>     *db,
+    <span class="kw">const</span> <span class="type">char</span>  *zName,     <span class="cmt">// nome SQL della funzione</span>
+    <span class="type">int</span>           nArg,      <span class="cmt">// numero argomenti (-1 = variadic)</span>
+    <span class="type">int</span>           eTextRep,  <span class="cmt">// SQLITE_UTF8 | SQLITE_DETERMINISTIC</span>
+    <span class="kw">void</span>         *pApp,
+    <span class="kw">void</span> (*xFunc)(<span class="type">sqlite3_context</span>*, <span class="type">int</span>, <span class="type">sqlite3_value</span>**),
+    <span class="kw">void</span> (*xStep)(<span class="type">sqlite3_context</span>*, <span class="type">int</span>, <span class="type">sqlite3_value</span>**),  <span class="cmt">// per aggregati</span>
+    <span class="kw">void</span> (*xFinal)(<span class="type">sqlite3_context</span>*)
+);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Funzione Scalare</div>
+<pre>
+<span class="type">static</span> <span class="kw">void</span> <span class="fn">sq_fn</span>(<span class="type">sqlite3_context</span> *ctx, <span class="type">int</span> n, <span class="type">sqlite3_value</span> **argv) {
+    <span class="kw">if</span> (n &lt; <span class="num">1</span>) { <span class="fn">sqlite3_result_null</span>(ctx); <span class="kw">return</span>; }
+    <span class="type">double</span> x = <span class="fn">sqlite3_value_double</span>(argv[<span class="num">0</span>]);
+    <span class="fn">sqlite3_result_double</span>(ctx, x * x);
+}
+
+<span class="fn">sqlite3_create_function</span>(db, <span class="str">"sq"</span>, <span class="num">1</span>,
+    SQLITE_UTF8 | SQLITE_DETERMINISTIC,
+    <span class="num">NULL</span>, sq_fn, <span class="num">NULL</span>, <span class="num">NULL</span>);
+
+<span class="cmt">/* Ora da SQL: SELECT sq(5.0);  &rarr; 25.0 */</span>
+</pre>
+      <table>
+        <tr><th>Set di result</th><th>Uso</th></tr>
+        <tr><td><code>sqlite3_result_int / _int64</code></td><td>Intero</td></tr>
+        <tr><td><code>sqlite3_result_double</code></td><td>Float</td></tr>
+        <tr><td><code>sqlite3_result_text</code></td><td>Stringa (con TRANSIENT/STATIC)</td></tr>
+        <tr><td><code>sqlite3_result_blob</code></td><td>Buffer binario</td></tr>
+        <tr><td><code>sqlite3_result_null</code></td><td>NULL SQL</td></tr>
+        <tr><td><code>sqlite3_result_error</code></td><td>Propaga errore</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     PATTERN & UTILITY
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-memory"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> GESTIONE MEMORIA</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Allocatori SQLite</div>
+<pre>
+<span class="kw">void</span>*  <span class="fn">sqlite3_malloc</span> (<span class="type">int</span> n);            <span class="cmt">// int: max 2 GB</span>
+<span class="kw">void</span>*  <span class="fn">sqlite3_malloc64</span>(<span class="type">sqlite3_uint64</span> n);
+<span class="kw">void</span>*  <span class="fn">sqlite3_realloc</span>(<span class="kw">void</span>*, <span class="type">int</span>);
+<span class="kw">void</span>   <span class="fn">sqlite3_free</span>   (<span class="kw">void</span>*);
+
+<span class="type">char</span>*  <span class="fn">sqlite3_mprintf</span>(<span class="kw">const</span> <span class="type">char</span>*, ...);  <span class="cmt">// printf-like, libera con sqlite3_free</span>
+<span class="type">char</span>*  <span class="fn">sqlite3_vmprintf</span>(<span class="kw">const</span> <span class="type">char</span>*, va_list);
+</pre>
+      <p>Stringhe e messaggi ritornati/richiesti da API SQLite (es. <code>errmsg</code> di <code>exec</code>, <code>expanded_sql</code>) devono essere liberati con <code>sqlite3_free</code>, <strong>non</strong> con <code>free()</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Formatter Sicuro &mdash; %q, %Q, %w</div>
+<pre>
+<span class="cmt">/* %q : escape di singola quote in stringa SQL (no quote esterne)
+   %Q : come %q, ma aggiunge le quote (o NULL se pointer == NULL)
+   %w : escape per identificatori (nomi tabella/colonna) */</span>
+
+<span class="type">char</span> *sql = <span class="fn">sqlite3_mprintf</span>(
+    <span class="str">"INSERT INTO log VALUES(%Q);"</span>, user_input);
+<span class="fn">sqlite3_exec</span>(db, sql, <span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span>);
+<span class="fn">sqlite3_free</span>(sql);
+</pre>
+      <div class="warn">NON usare <code>sprintf</code>/<code>strcat</code> per costruire SQL con dati utente. Preferisci sempre prepared statement + bind. Se proprio devi, usa <code>%Q</code>.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── threading -->
+<span class="anchor" id="s-threading"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> THREADING</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Tre Modalit&agrave;</div>
+      <table>
+        <tr><th>Modalit&agrave;</th><th>Descrizione</th></tr>
+        <tr><td>Single-thread (<code>THREADSAFE=0</code>)</td><td>No locking. DB accessibile da un solo thread.</td></tr>
+        <tr><td>Multi-thread (<code>THREADSAFE=2</code>)</td><td>Thread diversi possono usare <strong>connessioni diverse</strong>.</td></tr>
+        <tr><td>Serialized (<code>THREADSAFE=1</code>, default)</td><td>Qualsiasi thread, qualsiasi connessione. Lock interno.</td></tr>
+      </table>
+<pre>
+<span class="type">int</span> <span class="fn">sqlite3_config</span>(SQLITE_CONFIG_SINGLETHREAD);
+<span class="type">int</span> <span class="fn">sqlite3_config</span>(SQLITE_CONFIG_MULTITHREAD);
+<span class="type">int</span> <span class="fn">sqlite3_config</span>(SQLITE_CONFIG_SERIALIZED);
+<span class="type">int</span> <span class="fn">sqlite3_threadsafe</span>(<span class="kw">void</span>);  <span class="cmt">// 0/1/2</span>
+</pre>
+      <div class="note">Best practice: <strong>una connessione per thread</strong> in modalit&agrave; multi-thread, serializza esplicitamente per DB. Evita di passare <code>sqlite3_stmt*</code> tra thread.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── pattern crud -->
+<span class="anchor" id="s-pattern-crud"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN CRUD COMPLETO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Wrapper Minimale</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sqlite3.h&gt;</span>
+
+<span class="dir">#define</span> <span class="fn">SQL_OK</span>(db, rc)                                       \
+    <span class="kw">do</span> { <span class="kw">if</span> ((rc) != SQLITE_OK &amp;&amp; (rc) != SQLITE_DONE     \
+              &amp;&amp; (rc) != SQLITE_ROW) {                       \
+        <span class="fn">fprintf</span>(stderr, <span class="str">"[%s:%d] %s\n"</span>, __FILE__, __LINE__, \
+                <span class="fn">sqlite3_errmsg</span>(db)); <span class="fn">exit</span>(<span class="num">1</span>); } } <span class="kw">while</span>(<span class="num">0</span>)
+
+<span class="kw">static</span> <span class="type">sqlite3</span> *<span class="fn">db_open</span>(<span class="kw">const</span> <span class="type">char</span> *path) {
+    <span class="type">sqlite3</span> *db;
+    <span class="type">int</span> rc = <span class="fn">sqlite3_open_v2</span>(path, &amp;db,
+        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, <span class="num">NULL</span>);
+    <span class="fn">SQL_OK</span>(db, rc);
+    <span class="fn">sqlite3_extended_result_codes</span>(db, <span class="num">1</span>);
+    <span class="fn">sqlite3_busy_timeout</span>(db, <span class="num">5000</span>);
+    <span class="fn">sqlite3_exec</span>(db, <span class="str">"PRAGMA journal_mode=WAL;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+    <span class="fn">sqlite3_exec</span>(db, <span class="str">"PRAGMA foreign_keys=ON;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+    <span class="kw">return</span> db;
+}
+
+<span class="kw">static</span> <span class="kw">void</span> <span class="fn">db_init</span>(<span class="type">sqlite3</span> *db) {
+    <span class="kw">const</span> <span class="type">char</span> *ddl =
+        <span class="str">"CREATE TABLE IF NOT EXISTS utenti ("</span>
+        <span class="str">"  id   INTEGER PRIMARY KEY AUTOINCREMENT,"</span>
+        <span class="str">"  nome TEXT NOT NULL UNIQUE,"</span>
+        <span class="str">"  eta  INTEGER CHECK(eta &gt;= 0));"</span>;
+    <span class="type">char</span> *err = <span class="num">NULL</span>;
+    <span class="kw">if</span> (<span class="fn">sqlite3_exec</span>(db, ddl, <span class="num">0</span>, <span class="num">0</span>, &amp;err) != SQLITE_OK) {
+        <span class="fn">fprintf</span>(stderr, <span class="str">"ddl: %s\n"</span>, err); <span class="fn">sqlite3_free</span>(err); <span class="fn">exit</span>(<span class="num">1</span>);
+    }
+}
+
+<span class="kw">static</span> <span class="type">sqlite3_int64</span>
+<span class="fn">user_insert</span>(<span class="type">sqlite3</span> *db, <span class="kw">const</span> <span class="type">char</span> *nome, <span class="type">int</span> eta) {
+    <span class="type">sqlite3_stmt</span> *s;
+    <span class="fn">SQL_OK</span>(db, <span class="fn">sqlite3_prepare_v2</span>(db,
+        <span class="str">"INSERT INTO utenti(nome,eta) VALUES(?1,?2);"</span>,
+        -<span class="num">1</span>, &amp;s, <span class="num">NULL</span>));
+
+    <span class="fn">sqlite3_bind_text</span>(s, <span class="num">1</span>, nome, -<span class="num">1</span>, SQLITE_TRANSIENT);
+    <span class="fn">sqlite3_bind_int</span> (s, <span class="num">2</span>, eta);
+
+    <span class="type">int</span> rc = <span class="fn">sqlite3_step</span>(s);
+    <span class="fn">sqlite3_finalize</span>(s);
+    <span class="kw">if</span> (rc != SQLITE_DONE) { <span class="fn">fprintf</span>(stderr, <span class="str">"ins: %s\n"</span>, <span class="fn">sqlite3_errmsg</span>(db)); <span class="kw">return</span> -<span class="num">1</span>; }
+    <span class="kw">return</span> <span class="fn">sqlite3_last_insert_rowid</span>(db);
+}
+
+<span class="kw">static</span> <span class="type">int</span>
+<span class="fn">user_find_by_name</span>(<span class="type">sqlite3</span> *db, <span class="kw">const</span> <span class="type">char</span> *nome,
+                  <span class="type">int</span> *out_id, <span class="type">int</span> *out_eta) {
+    <span class="type">sqlite3_stmt</span> *s;
+    <span class="fn">SQL_OK</span>(db, <span class="fn">sqlite3_prepare_v2</span>(db,
+        <span class="str">"SELECT id,eta FROM utenti WHERE nome=?1;"</span>,
+        -<span class="num">1</span>, &amp;s, <span class="num">NULL</span>));
+
+    <span class="fn">sqlite3_bind_text</span>(s, <span class="num">1</span>, nome, -<span class="num">1</span>, SQLITE_STATIC);
+
+    <span class="type">int</span> rc = <span class="fn">sqlite3_step</span>(s), found = <span class="num">0</span>;
+    <span class="kw">if</span> (rc == SQLITE_ROW) {
+        *out_id  = <span class="fn">sqlite3_column_int</span>(s, <span class="num">0</span>);
+        *out_eta = <span class="fn">sqlite3_column_int</span>(s, <span class="num">1</span>);
+        found = <span class="num">1</span>;
+    }
+    <span class="fn">sqlite3_finalize</span>(s);
+    <span class="kw">return</span> found;
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="type">sqlite3</span> *db = <span class="fn">db_open</span>(<span class="str">"app.db"</span>);
+    <span class="fn">db_init</span>(db);
+
+    <span class="fn">sqlite3_exec</span>(db, <span class="str">"BEGIN;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+    <span class="fn">user_insert</span>(db, <span class="str">"Mario"</span>, <span class="num">30</span>);
+    <span class="fn">user_insert</span>(db, <span class="str">"Luisa"</span>, <span class="num">25</span>);
+    <span class="fn">sqlite3_exec</span>(db, <span class="str">"COMMIT;"</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+
+    <span class="type">int</span> id, eta;
+    <span class="kw">if</span> (<span class="fn">user_find_by_name</span>(db, <span class="str">"Mario"</span>, &amp;id, &amp;eta))
+        <span class="fn">printf</span>(<span class="str">"Mario id=%d eta=%d\n"</span>, id, eta);
+
+    <span class="fn">sqlite3_close</span>(db);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── perf tips -->
+<span class="anchor" id="s-perf"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PERFORMANCE TIPS</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Regole d'Oro</div>
+      <div class="grid2">
+        <div>
+          <p><span class="hd">Do:</span></p>
+          <p>&#8226; <strong>Una transazione</strong> per N operazioni batch<br>
+             &#8226; <code>journal_mode=WAL</code> per concorrenza<br>
+             &#8226; <code>synchronous=NORMAL</code> con WAL<br>
+             &#8226; <strong>Riusa</strong> prepared statement (prepare+reset)<br>
+             &#8226; Indici su colonne WHERE/JOIN<br>
+             &#8226; <code>PRAGMA optimize</code> a chiusura connessione<br>
+             &#8226; <code>EXPLAIN QUERY PLAN ...</code> per diagnosi<br>
+             &#8226; <code>mmap_size</code> su DB read-heavy</p>
+        </div>
+        <div>
+          <p><span class="hd">Don't:</span></p>
+          <p>&#8226; Concatenare stringhe per costruire SQL<br>
+             &#8226; Una transazione per ogni INSERT<br>
+             &#8226; <code>synchronous=OFF</code> senza accettare data loss<br>
+             &#8226; Tenere transazioni aperte a lungo<br>
+             &#8226; Aprire/chiudere connessione per ogni query<br>
+             &#8226; Ignorare <code>SQLITE_BUSY</code> (imposta timeout)<br>
+             &#8226; <code>SELECT *</code> quando servono 2 colonne<br>
+             &#8226; Condividere <code>sqlite3*</code> tra thread senza serializzare</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">EXPLAIN QUERY PLAN</div>
+<pre>
+<span class="type">sqlite3_stmt</span> *s;
+<span class="fn">sqlite3_prepare_v2</span>(db,
+    <span class="str">"EXPLAIN QUERY PLAN SELECT * FROM utenti WHERE nome=?;"</span>,
+    -<span class="num">1</span>, &amp;s, <span class="num">NULL</span>);
+<span class="fn">sqlite3_bind_text</span>(s, <span class="num">1</span>, <span class="str">"Mario"</span>, -<span class="num">1</span>, SQLITE_STATIC);
+
+<span class="kw">while</span> (<span class="fn">sqlite3_step</span>(s) == SQLITE_ROW)
+    <span class="fn">printf</span>(<span class="str">"%s\n"</span>, <span class="fn">sqlite3_column_text</span>(s, <span class="num">3</span>));
+
+<span class="fn">sqlite3_finalize</span>(s);
+<span class="cmt">/* Output atteso (con indice):
+   SEARCH utenti USING INDEX sqlite_autoindex_utenti_1 (nome=?)
+   Senza indice:
+   SCAN utenti  &larr; attenzione, full table scan */</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Comparativa Transazioni</div>
+      <table>
+        <tr><th>Scenario</th><th>INSERT/sec (tipico SSD)</th></tr>
+        <tr><td>1 INSERT per transazione (autocommit)</td><td>&sim; 100&ndash;500</td></tr>
+        <tr><td>Batch da 1000 in una BEGIN/COMMIT</td><td>&sim; 50.000&ndash;200.000</td></tr>
+        <tr><td>WAL + <code>synchronous=NORMAL</code></td><td>+30&ndash;50%</td></tr>
+        <tr><td>Prepared statement riusato</td><td>+20&ndash;40%</td></tr>
+      </table>
+      <div class="note">Numeri indicativi, dipendono da schema, indici, CPU, filesystem. Misura sempre con il tuo workload reale (<code>.timer on</code> in sqlite3 CLI).</div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.borderLeftColor = a.getAttribute('href') === '#' + current
+      ? 'var(--glow)' : 'transparent';
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--bright)' : '';
+  });
+});
+</script>
+<script src="../assets/js/mobile.js"></script>
+</body>
+</html>
