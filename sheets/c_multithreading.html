@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C Multithreading (POSIX) CHEATSHEET</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #060810;
+    --bg2:       #080b14;
+    --panel:     #0c1018;
+    --panel2:    #10141c;
+    --border:    #141c2a;
+    --border2:   #203050;
+    --glow:      #4488ff;
+    --glow2:     #66aaff;
+    --glow-dim:  #0a1a3b;
+    --dim:       #203060;
+    --text:      #a0b0c8;
+    --text2:     #c0d0e8;
+    --bright:    #c0ddff;
+    --accent:    #3366cc;
+    --accent2:   #5599ff;
+    --key:       #5588cc;
+    --kw:        #4488ff;
+    --fn:        #66ccaa;
+    --str:       #88cc66;
+    --num:       #dd8844;
+    --cmt:       #445577;
+    --type:      #cc77dd;
+    --dir:       #ddaa44;
+    --lbl:       #88aadd;
+    --head:      #c0ddff;
+    --hr:        #141c2a;
+    --scan:      rgba(68,136,255,0.025);
+    --vignette:          rgba(0,2,10,0.7);
+    --header-top:        #0a1020;
+    --header-shadow:     rgba(68,136,255,0.15);
+    --sidebar-hover-bg:  rgba(68,136,255,0.08);
+    --section-shadow:    rgba(20,40,80,0.5);
+    --th-bg:             rgba(68,136,255,0.12);
+    --tr-even-bg:        rgba(10,20,50,0.3);
+    --tr-hover-bg:       rgba(68,136,255,0.06);
+    --note-bg:           rgba(68,136,255,0.08);
+  }
+
+  .fn   { color: var(--fn);  }
+  .type { color: var(--type); }
+  .dir  { color: var(--dir); }
+
+  .mem-map {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0;
+    max-width: 520px;
+  }
+  .mem-seg {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    transition: background 0.12s;
+  }
+  .mem-seg:last-child { border-bottom: none; }
+  .mem-seg:hover { background: rgba(68,136,255,0.06); }
+  .mem-addr {
+    color: var(--dim);
+    font-size: 10px;
+    min-width: 100px;
+    letter-spacing: 1px;
+  }
+  .mem-label {
+    color: var(--text2);
+    flex: 1;
+  }
+  .mem-label small {
+    color: var(--dim);
+    font-size: 10px;
+    margin-left: 6px;
+  }
+  .mem-seg.seg-kernel { background: rgba(100,60,120,0.15); }
+  .mem-seg.seg-stack  { background: rgba(60,100,255,0.12); }
+  .mem-seg.seg-stack2 { background: rgba(80,140,255,0.10); }
+  .mem-seg.seg-heap   { background: rgba(80,180,120,0.10); }
+  .mem-seg.seg-bss    { background: rgba(80,100,140,0.10); }
+  .mem-seg.seg-data   { background: rgba(80,120,160,0.10); }
+  .mem-seg.seg-text   { background: rgba(40,80,200,0.10); }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; C MULTITHREADING REFERENCE (POSIX) <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>POSIX Threads (IEEE Std 1003.1) &mdash; pthread / C11 threads</span> &mdash; v3.2</div>
+</div>
+
+<div id="layout">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR INDEX
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Fondamenti</div>
+    <a href="#s-thread-model">Modello di Thread</a>
+    <a href="#s-proc-vs-thread">Thread vs Processo</a>
+    <a href="#s-headers">Header &amp; Compilazione</a>
+    <a href="#s-memory">Spazio di Memoria</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Ciclo di Vita</div>
+    <a href="#s-create">pthread_create()</a>
+    <a href="#s-exit">pthread_exit()</a>
+    <a href="#s-join">pthread_join()</a>
+    <a href="#s-detach">pthread_detach()</a>
+    <a href="#s-self">pthread_self() &amp; equal</a>
+    <a href="#s-attr">Attributi Thread</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Mutex</div>
+    <a href="#s-mutex">pthread_mutex_t</a>
+    <a href="#s-mutex-attr">Attributi Mutex</a>
+    <a href="#s-mutex-types">Tipi di Mutex</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Condition Variables</div>
+    <a href="#s-cond">pthread_cond_t</a>
+    <a href="#s-cond-pattern">Pattern wait/signal</a>
+    <a href="#s-cond-timed">Timed Wait</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Altri Sincronizzatori</div>
+    <a href="#s-rwlock">Read-Write Lock</a>
+    <a href="#s-barrier">Barriere</a>
+    <a href="#s-spinlock">Spinlock</a>
+    <a href="#s-once">pthread_once()</a>
+    <a href="#s-sem">Semafori POSIX</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Dati per Thread</div>
+    <a href="#s-tls">Thread-Local Storage</a>
+    <a href="#s-keys">pthread_key_t</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Cancellazione &amp; Segnali</div>
+    <a href="#s-cancel">Cancellazione</a>
+    <a href="#s-cleanup">Cleanup Handler</a>
+    <a href="#s-signals">Segnali &amp; Thread</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Atomic &amp; Memoria</div>
+    <a href="#s-atomic">Atomic C11</a>
+    <a href="#s-memorder">Memory Order</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Thread Safety</div>
+    <a href="#s-safety">Thread-Safety</a>
+    <a href="#s-reentrant">Reentrant</a>
+    <a href="#s-errno">errno per Thread</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Pattern</div>
+    <a href="#s-prodcons">Produttore-Consumatore</a>
+    <a href="#s-readwrite">Lettori-Scrittori</a>
+    <a href="#s-pool">Thread Pool</a>
+    <a href="#s-monitor">Monitor</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Problemi</div>
+    <a href="#s-deadlock">Deadlock</a>
+    <a href="#s-livelock">Livelock &amp; Starvation</a>
+    <a href="#s-race">Race Condition</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">C11 &amp; Debug</div>
+    <a href="#s-c11threads">C11 &lt;threads.h&gt;</a>
+    <a href="#s-debug">Debug (tsan / helgrind)</a>
+    <a href="#s-errors">Codici di Errore</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ────────────────────────────────────────────────────────────
+     FONDAMENTI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-thread-model"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> MODELLO DI THREAD POSIX</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Cos'è un Thread</div>
+      <p>Un <strong>thread</strong> è un flusso di esecuzione indipendente all'interno di un processo. Tutti i thread di un processo condividono lo stesso spazio di indirizzamento (code, data, heap, file descriptor, segnali), ma mantengono stack, registri, <code>errno</code>, signal mask e dati thread-local propri.</p>
+      <p>POSIX Threads (<strong>pthread</strong>) è l'API standardizzata da IEEE Std 1003.1c-1995. Su Linux è implementata da <code>NPTL</code> (Native POSIX Threads Library) in cui ogni pthread è un <em>task</em> del kernel (1:1) creato tramite la syscall <code>clone()</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Modelli 1:1, N:1, M:N</div>
+      <table>
+        <tr><th>Modello</th><th>Descrizione</th><th>Esempi</th></tr>
+        <tr><td><code>1:1</code></td><td>Ogni thread user &harr; thread kernel. Vera parallelizzazione multi-core, syscall bloccanti isolate.</td><td>Linux NPTL, Solaris, Windows</td></tr>
+        <tr><td><code>N:1</code></td><td>Più thread user su un solo thread kernel. Scheduling in user-space, syscall bloccante blocca tutti.</td><td>GNU Portable Threads</td></tr>
+        <tr><td><code>M:N</code></td><td>M thread user mappati su N thread kernel. Complesso, poco usato oggi.</td><td>Solaris pre-9, NetBSD SA</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Vantaggi vs Svantaggi</div>
+      <div class="grid2">
+        <div>
+          <p><span class="hd">Vantaggi:</span></p>
+          <p>&#8226; Creazione/distruzione veloce (no COW, no fork)<br>
+             &#8226; Comunicazione via memoria condivisa<br>
+             &#8226; Switch di contesto leggero<br>
+             &#8226; Parallelismo reale su multi-core<br>
+             &#8226; Condivisione automatica risorse</p>
+        </div>
+        <div>
+          <p><span class="hd">Svantaggi:</span></p>
+          <p>&#8226; Race condition, deadlock<br>
+             &#8226; Nessun isolamento: un crash uccide tutto il processo<br>
+             &#8226; Debug complesso (non determinismo)<br>
+             &#8226; Tutte le API libc devono essere MT-safe<br>
+             &#8226; Overhead di sincronizzazione</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Thread vs Processo -->
+<span class="anchor" id="s-proc-vs-thread"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> THREAD VS PROCESSO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Risorse Condivise / Private</div>
+      <table>
+        <tr><th>Risorsa</th><th>Processi (dopo fork)</th><th>Thread</th></tr>
+        <tr><td>Spazio di indirizzamento</td><td>Copia (COW)</td><td><strong>Condiviso</strong></td></tr>
+        <tr><td>Code, data, heap</td><td>Copia privata</td><td><strong>Condivisi</strong></td></tr>
+        <tr><td>Stack</td><td>Copia privata</td><td>Privato per thread</td></tr>
+        <tr><td>File descriptor</td><td>Copia (stesso file offset)</td><td><strong>Condivisi</strong></td></tr>
+        <tr><td>PID</td><td>Diverso</td><td>Unico PID (TID diverso)</td></tr>
+        <tr><td>Signal handler</td><td>Ereditati (copia)</td><td><strong>Condivisi</strong></td></tr>
+        <tr><td>Signal mask</td><td>Ereditata</td><td>Privata per thread</td></tr>
+        <tr><td>Signal pendenti</td><td>Separati</td><td>Per thread + per processo</td></tr>
+        <tr><td><code>errno</code></td><td>Separato</td><td>Privato (TLS)</td></tr>
+        <tr><td>cwd, umask, rlimit</td><td>Ereditati</td><td><strong>Condivisi</strong></td></tr>
+        <tr><td>Timer / alarm</td><td>Azzerati</td><td><strong>Condivisi</strong></td></tr>
+        <tr><td>ID thread</td><td>&mdash;</td><td><code>pthread_t</code> / TID</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Quando Usare Cosa</div>
+      <div class="grid2">
+        <div>
+          <p><span class="hd">Usa i processi quando:</span></p>
+          <p>&#8226; Serve isolamento (sandbox, sicurezza)<br>
+             &#8226; Esegui programmi esterni (exec)<br>
+             &#8226; Il task può crashare senza ucciderti<br>
+             &#8226; I task non devono condividere stato<br>
+             &#8226; Server: pre-fork (nginx, apache)</p>
+        </div>
+        <div>
+          <p><span class="hd">Usa i thread quando:</span></p>
+          <p>&#8226; Servono comunicazioni frequenti<br>
+             &#8226; Parallelismo CPU-intensivo<br>
+             &#8226; Serve bassa latenza creazione<br>
+             &#8226; Condivisione di grandi strutture dati<br>
+             &#8226; Worker pool, I/O asincrono</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Header & Compilazione -->
+<span class="anchor" id="s-headers"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> HEADER &amp; COMPILAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Header Principali</div>
+      <table>
+        <tr><th>Header</th><th>Contenuto</th></tr>
+        <tr><td><code>&lt;pthread.h&gt;</code></td><td>Tutte le API pthread_* (thread, mutex, cond, rwlock, barrier, spinlock, once, key)</td></tr>
+        <tr><td><code>&lt;semaphore.h&gt;</code></td><td>Semafori POSIX (<code>sem_t</code>, <code>sem_init</code>, <code>sem_wait</code>, <code>sem_post</code>)</td></tr>
+        <tr><td><code>&lt;sched.h&gt;</code></td><td>Politiche di scheduling, <code>sched_yield()</code>, affinity CPU</td></tr>
+        <tr><td><code>&lt;stdatomic.h&gt;</code></td><td>Operazioni atomiche C11 (<code>atomic_int</code>, <code>atomic_flag</code>, memory order)</td></tr>
+        <tr><td><code>&lt;threads.h&gt;</code></td><td>C11 threads (<code>thrd_create</code>, <code>mtx_t</code>, <code>cnd_t</code>) — opzionale</td></tr>
+        <tr><td><code>&lt;time.h&gt;</code></td><td><code>struct timespec</code>, <code>clock_gettime</code> (per timed wait)</td></tr>
+        <tr><td><code>&lt;errno.h&gt;</code></td><td><code>errno</code> thread-local (macro), codici EAGAIN, EBUSY, ETIMEDOUT, EDEADLK</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Compilazione e Linking</div>
+<pre>
+<span class="cmt"># GCC / Clang — il flag -pthread abilita macro e linka libpthread</span>
+gcc -Wall -Wextra -pthread -o prog main.c
+
+<span class="cmt"># Solo linking (sconsigliato, non abilita _REENTRANT):</span>
+gcc -Wall -Wextra -o prog main.c -lpthread
+
+<span class="cmt"># Con sanitizer per race-condition (ThreadSanitizer):</span>
+gcc -fsanitize=thread -g -O1 -pthread -o prog main.c
+
+<span class="cmt"># Richiedere feature POSIX specifiche:</span>
+gcc -D_POSIX_C_SOURCE=200809L -pthread -o prog main.c
+
+<span class="cmt"># C11 threads (richiede implementazione libc, es. glibc &ge; 2.28):</span>
+gcc -std=c11 -pthread -o prog main.c
+</pre>
+      <div class="note">Il flag <code>-pthread</code> (senza la "-l") definisce la macro <code>_REENTRANT</code> (o <code>_POSIX_THREADS</code>) e attiva versioni thread-safe delle funzioni libc. Preferiscilo sempre a <code>-lpthread</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Convenzione Ritorno delle API pthread</div>
+<pre>
+<span class="cmt">/* Le funzioni pthread_* NON usano errno: ritornano 0 o codice di errore */</span>
+<span class="type">int</span> err = <span class="fn">pthread_create</span>(&amp;tid, <span class="num">NULL</span>, worker, arg);
+<span class="kw">if</span> (err != <span class="num">0</span>) {
+    <span class="fn">fprintf</span>(stderr, <span class="str">"pthread_create: %s\n"</span>, <span class="fn">strerror</span>(err));
+    <span class="fn">exit</span>(EXIT_FAILURE);
+}
+
+<span class="cmt">/* Eccezioni (usano errno):
+   - pthread_getcpuclockid (POSIX-XSI)
+   - sem_*  (semafori POSIX, usano errno)  */</span>
+</pre>
+      <div class="warn"><strong>NON usare</strong> <code>perror()</code> dopo una pthread_* fallita: <code>errno</code> non è settato. Usa sempre <code>strerror(err)</code> sul valore di ritorno.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Spazio di Memoria -->
+<span class="anchor" id="s-memory"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SPAZIO DI MEMORIA DI UN PROCESSO MULTITHREAD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Layout con più Thread</div>
+      <p>Ogni thread ha il proprio stack (default ~8 MiB su Linux), mentre code, heap, data e bss sono condivisi.</p>
+      <div class="mem-map">
+        <div class="mem-seg seg-kernel">
+          <div class="mem-addr">0xFFFF...FFFF</div>
+          <div class="mem-label">KERNEL SPACE<small>Inaccessibile in user mode</small></div>
+        </div>
+        <div class="mem-seg seg-stack">
+          <div class="mem-addr">0x7FFF...FFFF</div>
+          <div class="mem-label">STACK THREAD MAIN<small>Cresce &darr;. Default RLIMIT_STACK (~8 MiB)</small></div>
+        </div>
+        <div class="mem-seg seg-stack2">
+          <div class="mem-addr">&darr;</div>
+          <div class="mem-label">STACK THREAD #1<small>Allocato da pthread_create (default 8 MiB)</small></div>
+        </div>
+        <div class="mem-seg seg-stack2">
+          <div class="mem-addr">&darr;</div>
+          <div class="mem-label">STACK THREAD #2<small>Thread-local (TLS) segue il TCB di ogni thread</small></div>
+        </div>
+        <div class="mem-seg">
+          <div class="mem-addr">&darr;</div>
+          <div class="mem-label" style="color:var(--dim);font-size:11px;">... mmap area (stack aggiuntivi, librerie, mmap) ...</div>
+        </div>
+        <div class="mem-seg seg-heap">
+          <div class="mem-addr">&uarr;</div>
+          <div class="mem-label">HEAP (condiviso)<small>malloc/free da qualunque thread — richiede MT-safe allocator</small></div>
+        </div>
+        <div class="mem-seg seg-bss">
+          <div class="mem-addr"></div>
+          <div class="mem-label">BSS (condiviso)<small>Globali/static non inizializzati</small></div>
+        </div>
+        <div class="mem-seg seg-data">
+          <div class="mem-addr"></div>
+          <div class="mem-label">DATA / .rodata (condivisi)<small>Globali inizializzati, costanti</small></div>
+        </div>
+        <div class="mem-seg seg-text">
+          <div class="mem-addr">0x0040 0000</div>
+          <div class="mem-label">TEXT (condiviso)<small>Codice eseguibile, condiviso tra tutti i thread</small></div>
+        </div>
+      </div>
+      <div class="note">Le variabili <code>static</code> e globali sono <strong>condivise</strong> tra tutti i thread: ogni accesso in scrittura richiede sincronizzazione o dichiarazione <code>_Thread_local</code> / <code>__thread</code>.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     CICLO DI VITA
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-create"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> pthread_create()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipo</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;pthread.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">pthread_create</span>(<span class="type">pthread_t</span> *thread,
+                   <span class="kw">const</span> <span class="type">pthread_attr_t</span> *attr,
+                   <span class="kw">void</span> *(*start_routine)(<span class="kw">void</span> *),
+                   <span class="kw">void</span> *arg);
+<span class="cmt">// thread    : output — identificativo del thread creato
+// attr      : attributi (NULL = default: joinable, stack 8 MiB)
+// start     : funzione d'ingresso del thread
+// arg       : argomento passato a start
+// Ritorna   : 0 se OK, codice errore (EAGAIN, EINVAL, EPERM) altrimenti</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Base</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;pthread.h&gt;</span>
+
+<span class="kw">void</span> *<span class="fn">worker</span>(<span class="kw">void</span> *arg) {
+    <span class="type">int</span> id = *(<span class="type">int</span> *)arg;
+    <span class="fn">printf</span>(<span class="str">"Thread #%d attivo (tid=%lu)\n"</span>,
+           id, (<span class="kw">unsigned</span> <span class="kw">long</span>)<span class="fn">pthread_self</span>());
+    <span class="kw">return</span> (<span class="kw">void</span> *)(<span class="type">intptr_t</span>)(id * id);
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="type">pthread_t</span> t[<span class="num">4</span>];
+    <span class="type">int</span>       ids[<span class="num">4</span>];
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="num">4</span>; i++) {
+        ids[i] = i;
+        <span class="type">int</span> err = <span class="fn">pthread_create</span>(&amp;t[i], <span class="num">NULL</span>, worker, &amp;ids[i]);
+        <span class="kw">if</span> (err) {
+            <span class="fn">fprintf</span>(stderr, <span class="str">"create: %s\n"</span>, <span class="fn">strerror</span>(err));
+            <span class="fn">exit</span>(<span class="num">1</span>);
+        }
+    }
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="num">4</span>; i++) {
+        <span class="kw">void</span> *ret;
+        <span class="fn">pthread_join</span>(t[i], &amp;ret);
+        <span class="fn">printf</span>(<span class="str">"Thread #%d &rarr; %ld\n"</span>, i, (<span class="type">intptr_t</span>)ret);
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+</pre>
+      <div class="warn">Non passare mai l'indirizzo di una variabile d'iterazione come <code>&amp;i</code>: tutti i thread vedrebbero lo stesso indirizzo in evoluzione. Usa un array di indici o una struct allocata separatamente.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Passare Strutture Dati</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">int</span>    id;
+    <span class="type">double</span> *data;
+    <span class="type">size_t</span> n;
+} <span class="type">task_t</span>;
+
+<span class="kw">void</span> *<span class="fn">worker</span>(<span class="kw">void</span> *arg) {
+    <span class="type">task_t</span> *t = (<span class="type">task_t</span> *)arg;
+    <span class="cmt">/* usa t-&gt;id, t-&gt;data, t-&gt;n */</span>
+    <span class="fn">free</span>(t);            <span class="cmt">// cleanup della task allocata</span>
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+
+<span class="cmt">/* lato chiamante */</span>
+<span class="type">task_t</span> *t = <span class="fn">malloc</span>(<span class="kw">sizeof</span>(*t));
+t-&gt;id = i; t-&gt;data = buf; t-&gt;n = len;
+<span class="fn">pthread_create</span>(&amp;tid, <span class="num">NULL</span>, worker, t);
+</pre>
+      <div class="note">Preferisci <code>malloc</code> per ogni task rispetto allo stack del chiamante: elimina il rischio che la variabile scada prima che il thread la legga.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Errori Comuni di pthread_create</div>
+      <table>
+        <tr><th>errno</th><th>Significato</th></tr>
+        <tr><td><code>EAGAIN</code></td><td>Risorse insufficienti (ulimit -u, memoria per stack)</td></tr>
+        <tr><td><code>EINVAL</code></td><td>Attributi non validi</td></tr>
+        <tr><td><code>EPERM</code></td><td>Permessi insufficienti per la policy di scheduling richiesta</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── pthread_exit() -->
+<span class="anchor" id="s-exit"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> pthread_exit()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Terminazione del Thread</div>
+<pre>
+<span class="type">void</span> <span class="fn">pthread_exit</span>(<span class="kw">void</span> *retval);
+<span class="cmt">// Termina il thread corrente, rendendo retval disponibile
+// al chiamante di pthread_join. Esegue i cleanup handler e
+// i distruttori delle chiavi TLS.</span>
+</pre>
+      <p>Modalità equivalenti di terminazione:</p>
+      <p>&#8226; <code>return val;</code> dalla funzione <code>start_routine</code> &rarr; equivalente a <code>pthread_exit(val)</code><br>
+         &#8226; <code>pthread_exit(val)</code> da una funzione chiamata dal thread<br>
+         &#8226; <code>pthread_cancel(tid)</code> da un altro thread (se cancellable)<br>
+         &#8226; Il processo termina (exit, _exit, kill) &rarr; <strong>tutti</strong> i thread terminano</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">main() e pthread_exit</div>
+<pre>
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="type">pthread_t</span> t;
+    <span class="fn">pthread_create</span>(&amp;t, <span class="num">NULL</span>, worker, <span class="num">NULL</span>);
+
+    <span class="cmt">/* Se main chiama return o exit() → TUTTO il processo termina,
+       uccidendo anche i thread detached ancora in esecuzione.
+       Per lasciarli continuare, usare pthread_exit: il processo
+       vive finché resta almeno un thread. */</span>
+    <span class="fn">pthread_exit</span>(<span class="num">NULL</span>);
+}
+</pre>
+      <div class="warn">In un thread diverso dal main, <code>exit()</code> termina l'intero processo. Usa <code>pthread_exit()</code> o <code>return</code> per uscire dal singolo thread.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Passare un Valore di Ritorno</div>
+<pre>
+<span class="kw">void</span> *<span class="fn">worker</span>(<span class="kw">void</span> *arg) {
+    <span class="type">int</span> *ret = <span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>));
+    *ret = <span class="num">42</span>;
+    <span class="fn">pthread_exit</span>(ret);       <span class="cmt">// lato join: liberare la memoria</span>
+}
+
+<span class="kw">void</span> *res;
+<span class="fn">pthread_join</span>(tid, &amp;res);
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, *(<span class="type">int</span> *)res);
+<span class="fn">free</span>(res);
+</pre>
+      <div class="warn">Non restituire mai un puntatore a una variabile locale al thread: il suo stack viene deallocato alla terminazione.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── pthread_join() -->
+<span class="anchor" id="s-join"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> pthread_join()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Prototipo</div>
+<pre>
+<span class="type">int</span> <span class="fn">pthread_join</span>(<span class="type">pthread_t</span> thread, <span class="kw">void</span> **retval);
+<span class="cmt">// Blocca finché il thread termina, recupera il valore di ritorno,
+// libera le risorse del TCB. DEVE essere chiamata su ogni thread
+// joinable altrimenti le risorse del thread restano occupate.
+// Ritorna 0 o codice errore.</span>
+</pre>
+      <p>Stati di ritorno:</p>
+      <p>&#8226; <code>ESRCH</code> &mdash; nessun thread con quel TID<br>
+         &#8226; <code>EINVAL</code> &mdash; il thread è detached o un altro thread sta già joinando<br>
+         &#8226; <code>EDEADLK</code> &mdash; tentativo di join su se stessi</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Join Non-Bloccante (GNU)</div>
+<pre>
+<span class="dir">#define</span> _GNU_SOURCE
+<span class="dir">#include</span> <span class="str">&lt;pthread.h&gt;</span>
+
+<span class="cmt">/* pthread_tryjoin_np — ritorna EBUSY se il thread è ancora vivo */</span>
+<span class="type">int</span> err = <span class="fn">pthread_tryjoin_np</span>(tid, &amp;ret);
+
+<span class="cmt">/* pthread_timedjoin_np — join con timeout assoluto */</span>
+<span class="kw">struct</span> <span class="type">timespec</span> ts;
+<span class="fn">clock_gettime</span>(CLOCK_REALTIME, &amp;ts);
+ts.tv_sec += <span class="num">5</span>;
+err = <span class="fn">pthread_timedjoin_np</span>(tid, &amp;ret, &amp;ts);
+</pre>
+      <div class="note">Queste estensioni sono GNU/Linux-specifiche: per codice portabile, simulale con un flag e una condition variable o con un detached thread.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Zombie Thread</div>
+      <p>Un thread <strong>joinable</strong> terminato ma mai joinato rimane in stato "zombie": il suo TCB, lo stack e il valore di ritorno non vengono liberati. Soluzioni:</p>
+      <p>&#8226; Chiamare sempre <code>pthread_join</code> sui thread joinable<br>
+         &#8226; Creare il thread <strong>detached</strong> se non interessa il risultato<br>
+         &#8226; Chiamare <code>pthread_detach(pthread_self())</code> dal thread stesso</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── pthread_detach() -->
+<span class="anchor" id="s-detach"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> pthread_detach()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Modalità Detach</div>
+<pre>
+<span class="type">int</span> <span class="fn">pthread_detach</span>(<span class="type">pthread_t</span> thread);
+<span class="cmt">// Dichiara il thread come "detached": alla terminazione le risorse
+// vengono liberate automaticamente. NON può più essere joinato.</span>
+</pre>
+      <table>
+        <tr><th>Stato</th><th>pthread_join</th><th>Pulizia risorse</th></tr>
+        <tr><td><code>PTHREAD_CREATE_JOINABLE</code> (default)</td><td>Obbligatorio</td><td>Al join</td></tr>
+        <tr><td><code>PTHREAD_CREATE_DETACHED</code></td><td>Non permesso</td><td>Automatica</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Creare un Thread Detached</div>
+<pre>
+<span class="type">pthread_attr_t</span> attr;
+<span class="fn">pthread_attr_init</span>(&amp;attr);
+<span class="fn">pthread_attr_setdetachstate</span>(&amp;attr, PTHREAD_CREATE_DETACHED);
+
+<span class="type">pthread_t</span> tid;
+<span class="fn">pthread_create</span>(&amp;tid, &amp;attr, worker, arg);
+
+<span class="fn">pthread_attr_destroy</span>(&amp;attr);
+<span class="cmt">// Non serve pthread_join: il TCB viene rilasciato alla fine del worker</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Auto-Detach</div>
+<pre>
+<span class="kw">void</span> *<span class="fn">fire_and_forget</span>(<span class="kw">void</span> *arg) {
+    <span class="fn">pthread_detach</span>(<span class="fn">pthread_self</span>());  <span class="cmt">// il thread si stacca da solo</span>
+    <span class="cmt">/* ... lavoro ... */</span>
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── pthread_self() & equal -->
+<span class="anchor" id="s-self"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> pthread_self() &amp; pthread_equal()</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Identificazione</div>
+<pre>
+<span class="type">pthread_t</span> <span class="fn">pthread_self</span>(<span class="kw">void</span>);
+<span class="cmt">// Ritorna l'ID del thread chiamante.</span>
+
+<span class="type">int</span> <span class="fn">pthread_equal</span>(<span class="type">pthread_t</span> t1, <span class="type">pthread_t</span> t2);
+<span class="cmt">// Ritorna 0 se diversi, != 0 se uguali.
+// USARE SEMPRE questa funzione: pthread_t è un tipo opaco,
+// non è garantito che sia un intero confrontabile con ==.</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TID Kernel (Linux)</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sys/syscall.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;unistd.h&gt;</span>
+
+<span class="type">pid_t</span> tid = <span class="fn">syscall</span>(SYS_gettid);
+<span class="cmt">// Il "TID kernel" è visibile in /proc/PID/task/TID, in
+// top -H, in gdb. È diverso da pthread_t (opaco user-space).</span>
+
+<span class="cmt">/* Da glibc 2.30: wrapper gettid() */</span>
+<span class="type">pid_t</span> tid = <span class="fn">gettid</span>();
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Attributi Thread -->
+<span class="anchor" id="s-attr"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> ATTRIBUTI DEL THREAD (pthread_attr_t)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Ciclo di Vita degli Attributi</div>
+<pre>
+<span class="type">pthread_attr_t</span> attr;
+<span class="fn">pthread_attr_init</span>(&amp;attr);                  <span class="cmt">// inizializza</span>
+<span class="cmt">/* ... setter ... */</span>
+<span class="fn">pthread_create</span>(&amp;tid, &amp;attr, worker, arg);
+<span class="fn">pthread_attr_destroy</span>(&amp;attr);               <span class="cmt">// rilascia</span>
+</pre>
+      <div class="note">Gli attributi vengono <em>copiati</em> dentro il thread al momento della <code>create</code>: puoi distruggerli subito dopo, anche se il thread non è ancora terminato.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Setter / Getter</div>
+      <table>
+        <tr><th>Attributo</th><th>Funzione setter</th><th>Valori</th></tr>
+        <tr><td>Stato detach</td><td><code>pthread_attr_setdetachstate</code></td><td><code>PTHREAD_CREATE_JOINABLE</code> / <code>DETACHED</code></td></tr>
+        <tr><td>Dimensione stack</td><td><code>pthread_attr_setstacksize</code></td><td><code>size_t</code> (min <code>PTHREAD_STACK_MIN</code>)</td></tr>
+        <tr><td>Indirizzo stack</td><td><code>pthread_attr_setstack</code></td><td>stack_addr + stack_size</td></tr>
+        <tr><td>Guard size</td><td><code>pthread_attr_setguardsize</code></td><td>byte di guardia oltre lo stack</td></tr>
+        <tr><td>Scope</td><td><code>pthread_attr_setscope</code></td><td><code>PTHREAD_SCOPE_SYSTEM</code> / <code>PROCESS</code></td></tr>
+        <tr><td>Inherit scheduling</td><td><code>pthread_attr_setinheritsched</code></td><td><code>PTHREAD_INHERIT_SCHED</code> / <code>EXPLICIT</code></td></tr>
+        <tr><td>Politica</td><td><code>pthread_attr_setschedpolicy</code></td><td><code>SCHED_OTHER</code> / <code>FIFO</code> / <code>RR</code></td></tr>
+        <tr><td>Parametri</td><td><code>pthread_attr_setschedparam</code></td><td><code>struct sched_param</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Stack Size Personalizzato</div>
+<pre>
+<span class="type">pthread_attr_t</span> attr;
+<span class="fn">pthread_attr_init</span>(&amp;attr);
+
+<span class="cmt">/* Stack minimo supportato dal sistema */</span>
+<span class="type">size_t</span> size = <span class="lbl">PTHREAD_STACK_MIN</span>;
+<span class="kw">if</span> (size &lt; <span class="num">64</span> * <span class="num">1024</span>) size = <span class="num">64</span> * <span class="num">1024</span>;
+<span class="fn">pthread_attr_setstacksize</span>(&amp;attr, size);
+
+<span class="cmt">/* Guard zone (default: 1 page) */</span>
+<span class="fn">pthread_attr_setguardsize</span>(&amp;attr, <span class="num">4096</span>);
+
+<span class="fn">pthread_create</span>(&amp;tid, &amp;attr, worker, <span class="num">NULL</span>);
+<span class="fn">pthread_attr_destroy</span>(&amp;attr);
+</pre>
+      <div class="warn">Uno stack troppo piccolo &rarr; overflow silenzioso in pagine adiacenti. Usa sempre una <code>guardsize</code> o compila con <code>-fstack-protector</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Scheduling Realtime (root / CAP_SYS_NICE)</div>
+<pre>
+<span class="kw">struct</span> <span class="type">sched_param</span> sp = {.sched_priority = <span class="num">50</span>};
+
+<span class="fn">pthread_attr_setinheritsched</span>(&amp;attr, PTHREAD_EXPLICIT_SCHED);
+<span class="fn">pthread_attr_setschedpolicy</span>(&amp;attr, SCHED_FIFO);
+<span class="fn">pthread_attr_setschedparam</span>(&amp;attr, &amp;sp);
+
+<span class="cmt">/* Policy disponibili:
+   SCHED_OTHER  - default time-sharing (priority 0)
+   SCHED_BATCH  - meno preemption (CPU-bound)
+   SCHED_IDLE   - priorità molto bassa
+   SCHED_FIFO   - realtime FIFO (1..99)
+   SCHED_RR     - realtime round-robin con quanto  */</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CPU Affinity (GNU/Linux)</div>
+<pre>
+<span class="dir">#define</span> _GNU_SOURCE
+<span class="dir">#include</span> <span class="str">&lt;pthread.h&gt;</span>
+<span class="dir">#include</span> <span class="str">&lt;sched.h&gt;</span>
+
+<span class="type">cpu_set_t</span> set;
+<span class="fn">CPU_ZERO</span>(&amp;set);
+<span class="fn">CPU_SET</span>(<span class="num">0</span>, &amp;set);
+<span class="fn">CPU_SET</span>(<span class="num">2</span>, &amp;set);  <span class="cmt">// thread può girare solo su core 0 o 2</span>
+<span class="fn">pthread_setaffinity_np</span>(tid, <span class="kw">sizeof</span>(set), &amp;set);
+
+<span class="fn">pthread_getaffinity_np</span>(tid, <span class="kw">sizeof</span>(set), &amp;set);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Yield e Sleep</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;sched.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">sched_yield</span>(<span class="kw">void</span>);  <span class="cmt">// cede la CPU allo scheduler</span>
+
+<span class="dir">#include</span> <span class="str">&lt;time.h&gt;</span>
+<span class="kw">struct</span> <span class="type">timespec</span> ts = {<span class="num">0</span>, <span class="num">10</span> * <span class="num">1000000</span>L};  <span class="cmt">// 10 ms</span>
+<span class="fn">nanosleep</span>(&amp;ts, <span class="num">NULL</span>);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     MUTEX
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-mutex"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> MUTEX — pthread_mutex_t</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Cos'è</div>
+      <p>Un <strong>mutex</strong> (MUTual EXclusion) garantisce che al più un thread alla volta sia all'interno di una sezione critica. Ha due stati: <em>unlocked</em> e <em>locked</em>. Un mutex locked ha un <em>owner</em>: solo lui può rilasciarlo.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">API Principali</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;pthread.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">pthread_mutex_init</span>(<span class="type">pthread_mutex_t</span> *m, <span class="kw">const</span> <span class="type">pthread_mutexattr_t</span> *attr);
+<span class="type">int</span> <span class="fn">pthread_mutex_destroy</span>(<span class="type">pthread_mutex_t</span> *m);
+
+<span class="type">int</span> <span class="fn">pthread_mutex_lock</span>(<span class="type">pthread_mutex_t</span> *m);      <span class="cmt">// blocca se occupato</span>
+<span class="type">int</span> <span class="fn">pthread_mutex_trylock</span>(<span class="type">pthread_mutex_t</span> *m);   <span class="cmt">// EBUSY se occupato</span>
+<span class="type">int</span> <span class="fn">pthread_mutex_timedlock</span>(<span class="type">pthread_mutex_t</span> *m,
+                            <span class="kw">const</span> <span class="kw">struct</span> <span class="type">timespec</span> *abs_timeout);
+<span class="type">int</span> <span class="fn">pthread_mutex_unlock</span>(<span class="type">pthread_mutex_t</span> *m);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Inizializzazione Statica vs Dinamica</div>
+<pre>
+<span class="cmt">/* Statica — mutex globale con attributi di default */</span>
+<span class="type">pthread_mutex_t</span> m = PTHREAD_MUTEX_INITIALIZER;
+
+<span class="cmt">/* Dinamica — obbligatoria se servono attributi non-default */</span>
+<span class="type">pthread_mutex_t</span> m;
+<span class="fn">pthread_mutex_init</span>(&amp;m, <span class="num">NULL</span>);
+<span class="cmt">// ... uso ...</span>
+<span class="fn">pthread_mutex_destroy</span>(&amp;m);
+</pre>
+      <div class="warn">Mai distruggere un mutex locked o con thread in attesa: comportamento indefinito. Mai copiare (<code>memcpy</code>) un <code>pthread_mutex_t</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Sezione Critica</div>
+<pre>
+<span class="type">pthread_mutex_t</span> lock = PTHREAD_MUTEX_INITIALIZER;
+<span class="type">long</span>            counter = <span class="num">0</span>;
+
+<span class="kw">void</span> *<span class="fn">worker</span>(<span class="kw">void</span> *arg) {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="num">1000000</span>; i++) {
+        <span class="fn">pthread_mutex_lock</span>(&amp;lock);
+        counter++;              <span class="cmt">// sezione critica</span>
+        <span class="fn">pthread_mutex_unlock</span>(&amp;lock);
+    }
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+</pre>
+      <div class="note">Tieni la sezione critica <strong>piccola</strong>: copiare fuori i dati, elaborarli senza lock, poi riacquisire per scrivere il risultato. Lock tenuti a lungo &rarr; contesa e perdita di scalabilità.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern RAII-like (scoped lock)</div>
+<pre>
+<span class="cmt">/* In C non esiste RAII; si usano macro o la funzione cleanup (GCC) */</span>
+
+<span class="cmt">/* 1) Macro helper */</span>
+<span class="dir">#define</span> <span class="lbl">MUTEX_LOCKED</span>(m) \
+    <span class="kw">for</span>(<span class="type">int</span> _done = (<span class="fn">pthread_mutex_lock</span>(m), <span class="num">0</span>); \
+        !_done; _done = (<span class="fn">pthread_mutex_unlock</span>(m), <span class="num">1</span>))
+
+<span class="lbl">MUTEX_LOCKED</span>(&amp;lock) {
+    <span class="cmt">/* sezione critica — unlock automatico al termine */</span>
+    counter++;
+}
+
+<span class="cmt">/* 2) __attribute__((cleanup)) — GCC/Clang */</span>
+<span class="kw">static</span> <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">unlock_helper</span>(<span class="type">pthread_mutex_t</span> **m) {
+    <span class="fn">pthread_mutex_unlock</span>(*m);
+}
+<span class="dir">#define</span> <span class="lbl">SCOPED_LOCK</span>(mtx) \
+    <span class="type">pthread_mutex_t</span> *_l <span class="kw">__attribute__</span>((<span class="fn">cleanup</span>(unlock_helper))) \
+        = ((<span class="fn">pthread_mutex_lock</span>(mtx)), mtx)
+
+<span class="kw">void</span> <span class="fn">fn</span>(<span class="kw">void</span>) {
+    <span class="lbl">SCOPED_LOCK</span>(&amp;lock);
+    counter++;
+    <span class="cmt">/* unlock automatico all'uscita dallo scope */</span>
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Attributi Mutex -->
+<span class="anchor" id="s-mutex-attr"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> ATTRIBUTI DEL MUTEX</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">pthread_mutexattr_t</div>
+<pre>
+<span class="type">pthread_mutexattr_t</span> ma;
+<span class="fn">pthread_mutexattr_init</span>(&amp;ma);
+
+<span class="fn">pthread_mutexattr_settype</span>(&amp;ma, PTHREAD_MUTEX_RECURSIVE);
+<span class="fn">pthread_mutexattr_setpshared</span>(&amp;ma, PTHREAD_PROCESS_SHARED);
+<span class="fn">pthread_mutexattr_setrobust</span>(&amp;ma, PTHREAD_MUTEX_ROBUST);
+<span class="fn">pthread_mutexattr_setprotocol</span>(&amp;ma, PTHREAD_PRIO_INHERIT);
+
+<span class="fn">pthread_mutex_init</span>(&amp;m, &amp;ma);
+<span class="fn">pthread_mutexattr_destroy</span>(&amp;ma);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Opzioni</div>
+      <table>
+        <tr><th>Attributo</th><th>Valori</th><th>Note</th></tr>
+        <tr><td><code>type</code></td><td>NORMAL, ERRORCHECK, RECURSIVE, DEFAULT</td><td>Vedi tabella sotto</td></tr>
+        <tr><td><code>pshared</code></td><td>PTHREAD_PROCESS_PRIVATE / SHARED</td><td>SHARED &rarr; può vivere in shared memory tra processi</td></tr>
+        <tr><td><code>robust</code></td><td>STALLED / ROBUST</td><td>ROBUST: se l'owner muore, il successivo lock ritorna <code>EOWNERDEAD</code></td></tr>
+        <tr><td><code>protocol</code></td><td>NONE / INHERIT / PROTECT</td><td>Priority Inheritance / Priority Ceiling</td></tr>
+        <tr><td><code>prioceiling</code></td><td>priorità</td><td>Solo con PRIO_PROTECT</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Tipi Mutex -->
+<span class="anchor" id="s-mutex-types"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> TIPI DI MUTEX</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Comportamento per Tipo</div>
+      <table>
+        <tr><th>Tipo</th><th>Relock dell'owner</th><th>Unlock non-owner</th><th>Unlock non-locked</th></tr>
+        <tr><td><code>NORMAL</code></td><td>Deadlock</td><td>Comportamento indefinito</td><td>Comportamento indefinito</td></tr>
+        <tr><td><code>ERRORCHECK</code></td><td>EDEADLK</td><td>EPERM</td><td>EPERM</td></tr>
+        <tr><td><code>RECURSIVE</code></td><td>Contatore++ (ok)</td><td>EPERM</td><td>EPERM</td></tr>
+        <tr><td><code>DEFAULT</code></td><td>Impl-defined (tipicamente = NORMAL)</td><td>Impl-defined</td><td>Impl-defined</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Mutex Ricorsivo</div>
+<pre>
+<span class="cmt">/* Utile per API che richiamano se stesse senza dover rilasciare */</span>
+<span class="type">pthread_mutexattr_t</span> ma;
+<span class="fn">pthread_mutexattr_init</span>(&amp;ma);
+<span class="fn">pthread_mutexattr_settype</span>(&amp;ma, PTHREAD_MUTEX_RECURSIVE);
+
+<span class="type">pthread_mutex_t</span> m;
+<span class="fn">pthread_mutex_init</span>(&amp;m, &amp;ma);
+
+<span class="fn">pthread_mutex_lock</span>(&amp;m);     <span class="cmt">// count = 1</span>
+<span class="fn">pthread_mutex_lock</span>(&amp;m);     <span class="cmt">// count = 2 (stesso thread, ok)</span>
+<span class="fn">pthread_mutex_unlock</span>(&amp;m);   <span class="cmt">// count = 1</span>
+<span class="fn">pthread_mutex_unlock</span>(&amp;m);   <span class="cmt">// count = 0, rilasciato</span>
+</pre>
+      <div class="note">I mutex ricorsivi costano di più e spesso nascondono un design confuso. Preferisci refactoring (API pubblica che lock&rarr; chiama API privata senza lock).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Robust Mutex</div>
+<pre>
+<span class="fn">pthread_mutexattr_setrobust</span>(&amp;ma, PTHREAD_MUTEX_ROBUST);
+<span class="fn">pthread_mutex_init</span>(&amp;m, &amp;ma);
+
+<span class="cmt">/* Nel consumatore: */</span>
+<span class="type">int</span> r = <span class="fn">pthread_mutex_lock</span>(&amp;m);
+<span class="kw">if</span> (r == EOWNERDEAD) {
+    <span class="cmt">/* L'owner precedente è morto mentre deteneva il lock.
+       Devo ripristinare gli invarianti e dichiarare consistente: */</span>
+    <span class="cmt">/* ... ripara lo stato ... */</span>
+    <span class="fn">pthread_mutex_consistent</span>(&amp;m);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">trylock e timedlock</div>
+<pre>
+<span class="cmt">/* Evita di bloccarsi: utile in event loop */</span>
+<span class="kw">if</span> (<span class="fn">pthread_mutex_trylock</span>(&amp;m) == <span class="num">0</span>) {
+    <span class="cmt">/* acquisito */</span>
+    <span class="fn">pthread_mutex_unlock</span>(&amp;m);
+} <span class="kw">else</span> {
+    <span class="cmt">/* EBUSY — non disponibile ora, riprova più tardi */</span>
+}
+
+<span class="cmt">/* Blocca al massimo N secondi */</span>
+<span class="kw">struct</span> <span class="type">timespec</span> ts;
+<span class="fn">clock_gettime</span>(CLOCK_REALTIME, &amp;ts);
+ts.tv_sec += <span class="num">2</span>;
+<span class="kw">if</span> (<span class="fn">pthread_mutex_timedlock</span>(&amp;m, &amp;ts) == ETIMEDOUT) {
+    <span class="cmt">/* non è riuscito entro il timeout */</span>
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     CONDITION VARIABLES
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-cond"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> CONDITION VARIABLES — pthread_cond_t</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetto</div>
+      <p>Una <strong>condition variable</strong> permette a un thread di attendere che una <em>condizione</em> (predicato sullo stato) diventi vera, senza busy-wait. Una cond è <strong>sempre</strong> usata insieme a un mutex che protegge il predicato.</p>
+      <p>Passi tipici:</p>
+      <p>&#8226; Il <strong>waiter</strong> blocca il mutex, controlla il predicato, e se falso chiama <code>pthread_cond_wait</code>, che rilascia il mutex e si sospende atomicamente.<br>
+         &#8226; Il <strong>signaler</strong> blocca il mutex, modifica lo stato, chiama <code>pthread_cond_signal</code> (o <code>broadcast</code>), e rilascia il mutex.<br>
+         &#8226; Al risveglio, <code>pthread_cond_wait</code> riprende il mutex e il waiter ricontrolla il predicato in un <code>while</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">int</span> <span class="fn">pthread_cond_init</span>(<span class="type">pthread_cond_t</span> *c, <span class="kw">const</span> <span class="type">pthread_condattr_t</span> *a);
+<span class="type">int</span> <span class="fn">pthread_cond_destroy</span>(<span class="type">pthread_cond_t</span> *c);
+
+<span class="type">int</span> <span class="fn">pthread_cond_wait</span>(<span class="type">pthread_cond_t</span> *c, <span class="type">pthread_mutex_t</span> *m);
+<span class="type">int</span> <span class="fn">pthread_cond_timedwait</span>(<span class="type">pthread_cond_t</span> *c, <span class="type">pthread_mutex_t</span> *m,
+                           <span class="kw">const</span> <span class="kw">struct</span> <span class="type">timespec</span> *abstime);
+
+<span class="type">int</span> <span class="fn">pthread_cond_signal</span>(<span class="type">pthread_cond_t</span> *c);     <span class="cmt">// risveglia almeno 1 waiter</span>
+<span class="type">int</span> <span class="fn">pthread_cond_broadcast</span>(<span class="type">pthread_cond_t</span> *c);  <span class="cmt">// risveglia tutti</span>
+
+<span class="cmt">/* Statica */</span>
+<span class="type">pthread_cond_t</span> c = PTHREAD_COND_INITIALIZER;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern wait/signal Canonico</div>
+<pre>
+<span class="type">pthread_mutex_t</span> m = PTHREAD_MUTEX_INITIALIZER;
+<span class="type">pthread_cond_t</span>  c = PTHREAD_COND_INITIALIZER;
+<span class="type">int</span> ready = <span class="num">0</span>;
+
+<span class="cmt">/* WAITER */</span>
+<span class="fn">pthread_mutex_lock</span>(&amp;m);
+<span class="kw">while</span> (!ready)                         <span class="cmt">// SEMPRE while, mai if (spurious wakeup)</span>
+    <span class="fn">pthread_cond_wait</span>(&amp;c, &amp;m);
+<span class="cmt">/* ... usa lo stato ... */</span>
+<span class="fn">pthread_mutex_unlock</span>(&amp;m);
+
+<span class="cmt">/* SIGNALER */</span>
+<span class="fn">pthread_mutex_lock</span>(&amp;m);
+ready = <span class="num">1</span>;
+<span class="fn">pthread_cond_signal</span>(&amp;c);
+<span class="fn">pthread_mutex_unlock</span>(&amp;m);
+</pre>
+      <div class="warn"><strong>Spurious wakeup</strong>: <code>pthread_cond_wait</code> può ritornare anche senza un signal esplicito. Il test del predicato deve quindi essere in un ciclo <code>while</code>, non in un <code>if</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">signal vs broadcast</div>
+      <table>
+        <tr><th>Funzione</th><th>Quando usarla</th></tr>
+        <tr><td><code>pthread_cond_signal</code></td><td>Il cambiamento di stato permette a <em>un solo</em> waiter di procedere (tipico: coda "uno sloto libero")</td></tr>
+        <tr><td><code>pthread_cond_broadcast</code></td><td>Lo stato permette a <em>molti</em> waiter (es. "ho appena finito la fase X", rwlock, shutdown)</td></tr>
+      </table>
+      <div class="note">Se non sai quanti waiter possono procedere, <strong>broadcast</strong> è sempre corretto (al costo di più wakeup). <code>signal</code> è solo un'ottimizzazione.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Pattern Condvar -->
+<span class="anchor" id="s-cond-pattern"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN CON CONDITION VARIABLES</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Una tantum (event)</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">pthread_mutex_t</span> m;
+    <span class="type">pthread_cond_t</span>  c;
+    <span class="type">int</span>             fired;
+} <span class="type">event_t</span>;
+
+<span class="kw">void</span> <span class="fn">event_init</span>(<span class="type">event_t</span> *e) {
+    <span class="fn">pthread_mutex_init</span>(&amp;e-&gt;m, <span class="num">NULL</span>);
+    <span class="fn">pthread_cond_init</span>(&amp;e-&gt;c, <span class="num">NULL</span>);
+    e-&gt;fired = <span class="num">0</span>;
+}
+<span class="kw">void</span> <span class="fn">event_wait</span>(<span class="type">event_t</span> *e) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;e-&gt;m);
+    <span class="kw">while</span> (!e-&gt;fired) <span class="fn">pthread_cond_wait</span>(&amp;e-&gt;c, &amp;e-&gt;m);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;e-&gt;m);
+}
+<span class="kw">void</span> <span class="fn">event_fire</span>(<span class="type">event_t</span> *e) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;e-&gt;m);
+    e-&gt;fired = <span class="num">1</span>;
+    <span class="fn">pthread_cond_broadcast</span>(&amp;e-&gt;c);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;e-&gt;m);
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Latch / Countdown</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">pthread_mutex_t</span> m;
+    <span class="type">pthread_cond_t</span>  c;
+    <span class="type">int</span>             count;
+} <span class="type">latch_t</span>;
+
+<span class="kw">void</span> <span class="fn">latch_countdown</span>(<span class="type">latch_t</span> *l) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;l-&gt;m);
+    <span class="kw">if</span> (--l-&gt;count == <span class="num">0</span>)
+        <span class="fn">pthread_cond_broadcast</span>(&amp;l-&gt;c);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;l-&gt;m);
+}
+
+<span class="kw">void</span> <span class="fn">latch_wait</span>(<span class="type">latch_t</span> *l) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;l-&gt;m);
+    <span class="kw">while</span> (l-&gt;count &gt; <span class="num">0</span>)
+        <span class="fn">pthread_cond_wait</span>(&amp;l-&gt;c, &amp;l-&gt;m);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;l-&gt;m);
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Timed Wait -->
+<span class="anchor" id="s-cond-timed"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> TIMED WAIT</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Attesa con Timeout</div>
+<pre>
+<span class="kw">struct</span> <span class="type">timespec</span> ts;
+<span class="fn">clock_gettime</span>(CLOCK_REALTIME, &amp;ts);     <span class="cmt">// orario attuale</span>
+ts.tv_sec += <span class="num">5</span>;                           <span class="cmt">// timeout assoluto fra 5 s</span>
+
+<span class="fn">pthread_mutex_lock</span>(&amp;m);
+<span class="kw">while</span> (!ready) {
+    <span class="type">int</span> r = <span class="fn">pthread_cond_timedwait</span>(&amp;c, &amp;m, &amp;ts);
+    <span class="kw">if</span> (r == ETIMEDOUT) { <span class="cmt">/* timeout */</span> <span class="kw">break</span>; }
+}
+<span class="fn">pthread_mutex_unlock</span>(&amp;m);
+</pre>
+      <div class="note"><strong>Timestamp assoluto</strong>, non durata: se si usa <code>CLOCK_MONOTONIC</code> (preferibile) bisogna settarlo negli attributi della cond con <code>pthread_condattr_setclock</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Clock Monotonic</div>
+<pre>
+<span class="type">pthread_condattr_t</span> ca;
+<span class="fn">pthread_condattr_init</span>(&amp;ca);
+<span class="fn">pthread_condattr_setclock</span>(&amp;ca, CLOCK_MONOTONIC);
+
+<span class="type">pthread_cond_t</span> c;
+<span class="fn">pthread_cond_init</span>(&amp;c, &amp;ca);
+<span class="fn">pthread_condattr_destroy</span>(&amp;ca);
+
+<span class="kw">struct</span> <span class="type">timespec</span> ts;
+<span class="fn">clock_gettime</span>(CLOCK_MONOTONIC, &amp;ts);
+ts.tv_sec += <span class="num">2</span>;
+<span class="fn">pthread_cond_timedwait</span>(&amp;c, &amp;m, &amp;ts);
+<span class="cmt">// Non soggetto a salti all'indietro dell'ora di sistema</span>
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     ALTRI SINCRONIZZATORI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-rwlock"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> READ-WRITE LOCK — pthread_rwlock_t</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetto</div>
+      <p>Permette a <strong>N lettori</strong> di accedere concorrentemente al dato, ma solo a <strong>1 scrittore</strong> alla volta, in mutua esclusione con tutti i lettori. Conviene quando le letture dominano nettamente le scritture.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">pthread_rwlock_t</span> rw = PTHREAD_RWLOCK_INITIALIZER;
+
+<span class="type">int</span> <span class="fn">pthread_rwlock_init</span>(<span class="type">pthread_rwlock_t</span> *rw, <span class="kw">const</span> <span class="type">pthread_rwlockattr_t</span> *a);
+<span class="type">int</span> <span class="fn">pthread_rwlock_destroy</span>(<span class="type">pthread_rwlock_t</span> *rw);
+
+<span class="type">int</span> <span class="fn">pthread_rwlock_rdlock</span>(<span class="type">pthread_rwlock_t</span> *rw);         <span class="cmt">// read, bloccante</span>
+<span class="type">int</span> <span class="fn">pthread_rwlock_tryrdlock</span>(<span class="type">pthread_rwlock_t</span> *rw);      <span class="cmt">// EBUSY se impossibile</span>
+<span class="type">int</span> <span class="fn">pthread_rwlock_timedrdlock</span>(<span class="type">pthread_rwlock_t</span> *rw, <span class="kw">const</span> <span class="kw">struct</span> <span class="type">timespec</span> *abs);
+
+<span class="type">int</span> <span class="fn">pthread_rwlock_wrlock</span>(<span class="type">pthread_rwlock_t</span> *rw);         <span class="cmt">// write, bloccante</span>
+<span class="type">int</span> <span class="fn">pthread_rwlock_trywrlock</span>(<span class="type">pthread_rwlock_t</span> *rw);
+<span class="type">int</span> <span class="fn">pthread_rwlock_timedwrlock</span>(<span class="type">pthread_rwlock_t</span> *rw, <span class="kw">const</span> <span class="kw">struct</span> <span class="type">timespec</span> *abs);
+
+<span class="type">int</span> <span class="fn">pthread_rwlock_unlock</span>(<span class="type">pthread_rwlock_t</span> *rw);         <span class="cmt">// unica unlock per read/write</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="type">pthread_rwlock_t</span> db_lock = PTHREAD_RWLOCK_INITIALIZER;
+
+<span class="type">int</span> <span class="fn">lookup</span>(<span class="type">int</span> key) {
+    <span class="fn">pthread_rwlock_rdlock</span>(&amp;db_lock);
+    <span class="type">int</span> v = <span class="fn">db_get</span>(key);
+    <span class="fn">pthread_rwlock_unlock</span>(&amp;db_lock);
+    <span class="kw">return</span> v;
+}
+
+<span class="kw">void</span> <span class="fn">update</span>(<span class="type">int</span> key, <span class="type">int</span> val) {
+    <span class="fn">pthread_rwlock_wrlock</span>(&amp;db_lock);
+    <span class="fn">db_set</span>(key, val);
+    <span class="fn">pthread_rwlock_unlock</span>(&amp;db_lock);
+}
+</pre>
+      <div class="warn">Rischio di <strong>starvation degli scrittori</strong>: letture continue possono bloccare sempre una scrittura in attesa. L'attributo <code>setkind_np</code> (GNU) permette di preferire gli scrittori: <code>PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP</code>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Regole</div>
+      <p>&#8226; Un thread non deve tenere contemporaneamente un rdlock e un wrlock sullo stesso rwlock (UB)<br>
+         &#8226; rdlock ricorsivo per lo stesso thread è permesso su molte impl., ma non portabile<br>
+         &#8226; L'unlock funziona sia su rdlock sia su wrlock: libera il tipo corrente</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Barriere -->
+<span class="anchor" id="s-barrier"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> BARRIERE — pthread_barrier_t</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetto</div>
+      <p>Una <strong>barriera</strong> sincronizza un gruppo di N thread: nessuno procede finché tutti N non l'hanno raggiunta. Dopo lo sblocco la barriera si "ricarica" e può essere usata di nuovo per la fase successiva. Utile in algoritmi a fasi (simulazioni, calcolo matriciale).</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">pthread_barrier_t</span> b;
+
+<span class="type">int</span> <span class="fn">pthread_barrier_init</span>(<span class="type">pthread_barrier_t</span> *b,
+                         <span class="kw">const</span> <span class="type">pthread_barrierattr_t</span> *a,
+                         <span class="kw">unsigned</span> count);
+<span class="type">int</span> <span class="fn">pthread_barrier_wait</span>(<span class="type">pthread_barrier_t</span> *b);
+<span class="type">int</span> <span class="fn">pthread_barrier_destroy</span>(<span class="type">pthread_barrier_t</span> *b);
+</pre>
+      <p><code>pthread_barrier_wait</code> ritorna:</p>
+      <p>&#8226; <code>0</code> per tutti tranne uno<br>
+         &#8226; <code>PTHREAD_BARRIER_SERIAL_THREAD</code> (positivo) per <em>uno</em> dei thread (utile per eseguire codice di "fine fase" una sola volta)<br>
+         &#8226; codice errore altrimenti</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio a Fasi</div>
+<pre>
+<span class="dir">#define</span> <span class="lbl">N</span> <span class="num">4</span>
+<span class="type">pthread_barrier_t</span> bar;
+
+<span class="kw">void</span> *<span class="fn">phase</span>(<span class="kw">void</span> *arg) {
+    <span class="type">int</span> id = (<span class="type">intptr_t</span>)arg;
+    <span class="kw">for</span> (<span class="type">int</span> step = <span class="num">0</span>; step &lt; <span class="num">3</span>; step++) {
+        <span class="fn">compute</span>(id, step);
+        <span class="type">int</span> r = <span class="fn">pthread_barrier_wait</span>(&amp;bar);
+        <span class="kw">if</span> (r == PTHREAD_BARRIER_SERIAL_THREAD)
+            <span class="fn">printf</span>(<span class="str">"--- fase %d completata ---\n"</span>, step);
+    }
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">pthread_barrier_init</span>(&amp;bar, <span class="num">NULL</span>, <span class="lbl">N</span>);
+    <span class="type">pthread_t</span> t[<span class="lbl">N</span>];
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="lbl">N</span>; i++)
+        <span class="fn">pthread_create</span>(&amp;t[i], <span class="num">NULL</span>, phase, (<span class="kw">void</span>*)(<span class="type">intptr_t</span>)i);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="lbl">N</span>; i++) <span class="fn">pthread_join</span>(t[i], <span class="num">NULL</span>);
+    <span class="fn">pthread_barrier_destroy</span>(&amp;bar);
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Spinlock -->
+<span class="anchor" id="s-spinlock"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SPINLOCK — pthread_spinlock_t</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Quando Usarlo</div>
+      <p>Uno <strong>spinlock</strong> è un lock che, se occupato, fa busy-wait anziché mettere il thread a dormire. Utile solo quando la sezione critica è <em>brevissima</em> (decine di ns) e si è sicuri che il thread owner sia su un'altra CPU. Con una sola CPU logica o sezioni lunghe &rarr; solo spreco di cicli.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">pthread_spinlock_t</span> sl;
+
+<span class="type">int</span> <span class="fn">pthread_spin_init</span>(<span class="type">pthread_spinlock_t</span> *l, <span class="type">int</span> pshared);
+<span class="type">int</span> <span class="fn">pthread_spin_destroy</span>(<span class="type">pthread_spinlock_t</span> *l);
+<span class="type">int</span> <span class="fn">pthread_spin_lock</span>(<span class="type">pthread_spinlock_t</span> *l);      <span class="cmt">// busy-wait</span>
+<span class="type">int</span> <span class="fn">pthread_spin_trylock</span>(<span class="type">pthread_spinlock_t</span> *l);
+<span class="type">int</span> <span class="fn">pthread_spin_unlock</span>(<span class="type">pthread_spinlock_t</span> *l);
+
+<span class="cmt">// pshared: PTHREAD_PROCESS_PRIVATE / PTHREAD_PROCESS_SHARED</span>
+</pre>
+      <div class="warn">Su glibc+futex, i mutex hanno già un <em>adaptive spin</em> prima di bloccarsi. Nella maggior parte dei casi <code>pthread_mutex_t</code> è più veloce di <code>pthread_spinlock_t</code> in user-space.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── pthread_once -->
+<span class="anchor" id="s-once"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> pthread_once() — INIT UNA SOLA VOLTA</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">pthread_once_t</span> once = PTHREAD_ONCE_INIT;
+
+<span class="type">int</span> <span class="fn">pthread_once</span>(<span class="type">pthread_once_t</span> *once, <span class="kw">void</span> (*init)(<span class="kw">void</span>));
+<span class="cmt">// Esegue init() esattamente una volta, anche se chiamata da N thread.
+// I thread successivi attendono la fine di init() e poi ritornano subito.</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Singleton</div>
+<pre>
+<span class="kw">static</span> <span class="type">pthread_once_t</span> g_once = PTHREAD_ONCE_INIT;
+<span class="kw">static</span> <span class="type">Config</span>        *g_cfg  = <span class="num">NULL</span>;
+
+<span class="kw">static</span> <span class="kw">void</span> <span class="fn">init_cfg</span>(<span class="kw">void</span>) {
+    g_cfg = <span class="fn">config_load</span>(<span class="str">"/etc/app.conf"</span>);
+}
+
+<span class="type">Config</span> *<span class="fn">get_cfg</span>(<span class="kw">void</span>) {
+    <span class="fn">pthread_once</span>(&amp;g_once, init_cfg);
+    <span class="kw">return</span> g_cfg;
+}
+</pre>
+      <div class="note">Equivalente thread-safe al pattern "if (!initialized) init();" senza il rischio di double-checked locking scorretto.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Semafori POSIX -->
+<span class="anchor" id="s-sem"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SEMAFORI POSIX (unnamed, tra thread)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetto</div>
+      <p>Un <strong>semaforo contatore</strong> mantiene un intero &ge; 0. <code>sem_wait</code> decrementa (bloccando se già a 0); <code>sem_post</code> incrementa e risveglia un waiter. A differenza dei mutex, un semaforo non ha un owner: può essere rilasciato da un thread diverso da quello che l'ha acquisito. Perfetto come contatore di risorse o per segnalazione.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">API (header <code>&lt;semaphore.h&gt;</code>)</div>
+<pre>
+<span class="type">sem_t</span> s;
+
+<span class="type">int</span> <span class="fn">sem_init</span>(<span class="type">sem_t</span> *s, <span class="type">int</span> pshared, <span class="kw">unsigned</span> value);
+<span class="cmt">// pshared=0 : condiviso solo tra thread
+// pshared!=0: in shared memory tra processi (s deve stare nel segmento condiviso)</span>
+
+<span class="type">int</span> <span class="fn">sem_wait</span>(<span class="type">sem_t</span> *s);       <span class="cmt">// blocca se count == 0</span>
+<span class="type">int</span> <span class="fn">sem_trywait</span>(<span class="type">sem_t</span> *s);    <span class="cmt">// EAGAIN se impossibile</span>
+<span class="type">int</span> <span class="fn">sem_timedwait</span>(<span class="type">sem_t</span> *s, <span class="kw">const</span> <span class="kw">struct</span> <span class="type">timespec</span> *abs);
+<span class="type">int</span> <span class="fn">sem_post</span>(<span class="type">sem_t</span> *s);       <span class="cmt">// incrementa</span>
+<span class="type">int</span> <span class="fn">sem_getvalue</span>(<span class="type">sem_t</span> *s, <span class="type">int</span> *v);
+<span class="type">int</span> <span class="fn">sem_destroy</span>(<span class="type">sem_t</span> *s);
+</pre>
+      <div class="note">Le <code>sem_*</code> seguono la convenzione POSIX "storica": ritornano <code>-1</code> in caso di errore settando <code>errno</code> (al contrario delle <code>pthread_*</code>).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Limitare le Connessioni</div>
+<pre>
+<span class="kw">static</span> <span class="type">sem_t</span> slots;
+
+<span class="kw">void</span> *<span class="fn">handle</span>(<span class="kw">void</span> *arg) {
+    <span class="fn">sem_wait</span>(&amp;slots);          <span class="cmt">// prendi uno slot</span>
+    <span class="fn">do_work</span>(arg);
+    <span class="fn">sem_post</span>(&amp;slots);          <span class="cmt">// rilascia lo slot</span>
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">sem_init</span>(&amp;slots, <span class="num">0</span>, <span class="num">10</span>);  <span class="cmt">// 10 risorse disponibili</span>
+    <span class="cmt">/* ... crea tanti thread che chiamano handle ... */</span>
+    <span class="fn">sem_destroy</span>(&amp;slots);
+}
+</pre>
+      <div class="warn">I semafori <strong>non sono</strong> interrotti in modo pulito: <code>sem_wait</code> può ritornare con <code>EINTR</code> a causa di un segnale, quindi va messo in un ciclo di retry.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     DATI PER THREAD
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-tls"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> THREAD-LOCAL STORAGE — _Thread_local / __thread</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Storage Class Thread-Local</div>
+<pre>
+<span class="cmt">/* C11 standard */</span>
+<span class="kw">_Thread_local</span> <span class="type">int</span> errors;
+
+<span class="cmt">/* Macro equivalente (C11) */</span>
+<span class="dir">#include</span> <span class="str">&lt;threads.h&gt;</span>
+<span class="kw">thread_local</span> <span class="type">int</span> errors;
+
+<span class="cmt">/* Estensione GCC/Clang (pre-C11, molto portabile) */</span>
+<span class="kw">__thread</span> <span class="type">int</span> errors;
+</pre>
+      <p>Ogni thread ha la propria copia della variabile, allocata automaticamente alla creazione del thread e distrutta alla sua uscita. Molto più veloce di <code>pthread_key_t</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Limitazioni</div>
+      <p>&#8226; Solo per variabili a durata statica (globali, <code>static</code>)<br>
+         &#8226; Non può essere inizializzata con espressioni non costanti<br>
+         &#8226; Non invoca distruttori: se tiene un puntatore, devi gestirlo a mano<br>
+         &#8226; Alcune vecchie piattaforme non la supportano &rarr; fallback con <code>pthread_key_t</code></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── pthread_key_t -->
+<span class="anchor" id="s-keys"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> pthread_key_t — TSD CON DISTRUTTORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">int</span> <span class="fn">pthread_key_create</span>(<span class="type">pthread_key_t</span> *k, <span class="kw">void</span> (*dtor)(<span class="kw">void</span>*));
+<span class="type">int</span> <span class="fn">pthread_key_delete</span>(<span class="type">pthread_key_t</span> k);
+
+<span class="kw">void</span> *<span class="fn">pthread_getspecific</span>(<span class="type">pthread_key_t</span> k);
+<span class="type">int</span>   <span class="fn">pthread_setspecific</span>(<span class="type">pthread_key_t</span> k, <span class="kw">const</span> <span class="kw">void</span> *val);
+</pre>
+      <p>Crea una "chiave" globale; ogni thread può associarle un proprio valore <code>void *</code>. Alla terminazione del thread il distruttore associato viene chiamato su ogni valore non-NULL, permettendo free() automatiche.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Buffer per Thread</div>
+<pre>
+<span class="kw">static</span> <span class="type">pthread_key_t</span> buf_key;
+<span class="kw">static</span> <span class="type">pthread_once_t</span> once = PTHREAD_ONCE_INIT;
+
+<span class="kw">static</span> <span class="kw">void</span> <span class="fn">buf_dtor</span>(<span class="kw">void</span> *p) { <span class="fn">free</span>(p); }
+<span class="kw">static</span> <span class="kw">void</span> <span class="fn">init_key</span>(<span class="kw">void</span>) { <span class="fn">pthread_key_create</span>(&amp;buf_key, buf_dtor); }
+
+<span class="type">char</span> *<span class="fn">thread_buf</span>(<span class="kw">void</span>) {
+    <span class="fn">pthread_once</span>(&amp;once, init_key);
+    <span class="type">char</span> *p = <span class="fn">pthread_getspecific</span>(buf_key);
+    <span class="kw">if</span> (!p) {
+        p = <span class="fn">malloc</span>(<span class="num">4096</span>);
+        <span class="fn">pthread_setspecific</span>(buf_key, p);
+    }
+    <span class="kw">return</span> p;
+}
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     CANCELLAZIONE & SEGNALI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-cancel"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> CANCELLAZIONE DI THREAD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Concetti</div>
+<pre>
+<span class="type">int</span> <span class="fn">pthread_cancel</span>(<span class="type">pthread_t</span> tid);
+<span class="type">int</span> <span class="fn">pthread_setcancelstate</span>(<span class="type">int</span> state, <span class="type">int</span> *old);
+<span class="cmt">// state: PTHREAD_CANCEL_ENABLE (default) / DISABLE</span>
+<span class="type">int</span> <span class="fn">pthread_setcanceltype</span>(<span class="type">int</span> type, <span class="type">int</span> *old);
+<span class="cmt">// type:  PTHREAD_CANCEL_DEFERRED (default) / ASYNCHRONOUS</span>
+<span class="kw">void</span> <span class="fn">pthread_testcancel</span>(<span class="kw">void</span>);  <span class="cmt">// punto di cancellazione esplicito</span>
+</pre>
+      <p>La cancellazione non è un "kill" immediato: il thread termina solo quando raggiunge un <strong>cancellation point</strong> (se DEFERRED) oppure subito (ASYNCHRONOUS, rischioso — stato inconsistente).</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Principali Cancellation Point</div>
+      <p>Molte syscall bloccanti lo sono: <code>read</code>, <code>write</code>, <code>open</code>, <code>close</code>, <code>wait</code>, <code>sleep</code>, <code>nanosleep</code>, <code>pthread_cond_wait</code>, <code>pthread_join</code>, <code>select</code>, <code>poll</code>, <code>sem_wait</code>. Lista completa: <code>man 7 pthreads</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="kw">void</span> *<span class="fn">worker</span>(<span class="kw">void</span> *arg) {
+    <span class="fn">pthread_setcancelstate</span>(PTHREAD_CANCEL_ENABLE, <span class="num">NULL</span>);
+    <span class="fn">pthread_setcanceltype</span>(PTHREAD_CANCEL_DEFERRED, <span class="num">NULL</span>);
+
+    <span class="kw">while</span> (<span class="num">1</span>) {
+        <span class="fn">compute_chunk</span>();
+        <span class="fn">pthread_testcancel</span>();   <span class="cmt">// controllo esplicito</span>
+    }
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+
+<span class="cmt">/* Da un altro thread: */</span>
+<span class="fn">pthread_cancel</span>(tid);
+<span class="fn">pthread_join</span>(tid, &amp;ret);
+<span class="kw">if</span> (ret == PTHREAD_CANCELED) { <span class="cmt">/* cancellato */</span> }
+</pre>
+      <div class="warn">La cancellazione con stato inconsistente è facile: un thread cancellato mentre tiene un mutex deve rilasciarlo. Soluzione: cleanup handler.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Cleanup Handler -->
+<span class="anchor" id="s-cleanup"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> CLEANUP HANDLER</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">push / pop</div>
+<pre>
+<span class="kw">void</span> <span class="fn">pthread_cleanup_push</span>(<span class="kw">void</span> (*routine)(<span class="kw">void</span>*), <span class="kw">void</span> *arg);
+<span class="kw">void</span> <span class="fn">pthread_cleanup_pop</span>(<span class="type">int</span> execute);
+
+<span class="cmt">// push/pop sono MACRO che aprono/chiudono un blocco: devono
+// apparire nello STESSO scope sintattico.
+// L'handler viene eseguito se:
+//   - il thread viene cancellato
+//   - il thread chiama pthread_exit
+//   - pop(1) viene eseguito esplicitamente</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Tipico</div>
+<pre>
+<span class="kw">static</span> <span class="kw">void</span> <span class="fn">unlock_m</span>(<span class="kw">void</span> *arg) {
+    <span class="fn">pthread_mutex_unlock</span>((<span class="type">pthread_mutex_t</span> *)arg);
+}
+
+<span class="kw">void</span> *<span class="fn">worker</span>(<span class="kw">void</span> *arg) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;m);
+    <span class="fn">pthread_cleanup_push</span>(unlock_m, &amp;m);
+
+    <span class="kw">while</span> (!ready)
+        <span class="fn">pthread_cond_wait</span>(&amp;c, &amp;m);     <span class="cmt">// cancel point!</span>
+
+    <span class="fn">pthread_cleanup_pop</span>(<span class="num">1</span>);               <span class="cmt">// esegue unlock normale</span>
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+</pre>
+      <div class="note">Se un thread viene cancellato dentro <code>pthread_cond_wait</code>, il mutex viene ri-acquisito prima della terminazione: l'handler lo rilascia correttamente.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Segnali & Thread -->
+<span class="anchor" id="s-signals"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> SEGNALI IN PROGRAMMI MULTITHREAD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Regole Principali</div>
+      <p>&#8226; I <code>sigaction</code> handler sono <strong>condivisi</strong> tra tutti i thread del processo<br>
+         &#8226; La <strong>signal mask</strong> è invece <strong>privata</strong> a ogni thread<br>
+         &#8226; Un segnale diretto al processo viene consegnato a <em>uno qualsiasi</em> dei thread che non lo ha mascherato<br>
+         &#8226; <code>pthread_kill</code> invia un segnale a uno specifico thread</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">API</div>
+<pre>
+<span class="type">int</span> <span class="fn">pthread_sigmask</span>(<span class="type">int</span> how, <span class="kw">const</span> <span class="type">sigset_t</span> *set, <span class="type">sigset_t</span> *oldset);
+<span class="cmt">// how: SIG_BLOCK / SIG_UNBLOCK / SIG_SETMASK</span>
+
+<span class="type">int</span> <span class="fn">pthread_kill</span>(<span class="type">pthread_t</span> tid, <span class="type">int</span> sig);
+<span class="type">int</span> <span class="fn">sigwait</span>(<span class="kw">const</span> <span class="type">sigset_t</span> *set, <span class="type">int</span> *sig);
+<span class="type">int</span> <span class="fn">sigtimedwait</span>(<span class="kw">const</span> <span class="type">sigset_t</span> *set, <span class="type">siginfo_t</span> *info,
+                 <span class="kw">const</span> <span class="kw">struct</span> <span class="type">timespec</span> *t);
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Pattern: Thread Dedicato ai Segnali</div>
+<pre>
+<span class="type">sigset_t</span> set;
+<span class="fn">sigemptyset</span>(&amp;set);
+<span class="fn">sigaddset</span>(&amp;set, SIGINT);
+<span class="fn">sigaddset</span>(&amp;set, SIGTERM);
+<span class="fn">pthread_sigmask</span>(SIG_BLOCK, &amp;set, <span class="num">NULL</span>);  <span class="cmt">// BLOCCA nel main PRIMA di creare i thread</span>
+
+<span class="kw">void</span> *<span class="fn">sig_thread</span>(<span class="kw">void</span> *arg) {
+    <span class="type">sigset_t</span> *s = (<span class="type">sigset_t</span> *)arg;
+    <span class="type">int</span> sig;
+    <span class="kw">while</span> (<span class="num">1</span>) {
+        <span class="fn">sigwait</span>(s, &amp;sig);          <span class="cmt">// attesa sincrona</span>
+        <span class="kw">if</span> (sig == SIGTERM) <span class="fn">shutdown_gracefully</span>();
+    }
+}
+
+<span class="type">pthread_t</span> tid;
+<span class="fn">pthread_create</span>(&amp;tid, <span class="num">NULL</span>, sig_thread, &amp;set);
+</pre>
+      <div class="note">Questo pattern evita i problemi di async-signal-safety: il lavoro è fatto da un thread normale, non dentro un handler.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Async-Signal-Safety</div>
+      <p>Dentro un signal handler si possono chiamare solo funzioni <em>async-signal-safe</em> (lista in <code>man 7 signal-safety</code>): <code>write</code>, <code>_exit</code>, <code>read</code>, <code>sem_post</code>, <code>pthread_sigmask</code>, etc. <strong>Non sono sicuri</strong>: <code>printf</code>, <code>malloc</code>, <code>pthread_mutex_lock</code>.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     ATOMIC & MEMORIA
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-atomic"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> ATOMIC C11 — &lt;stdatomic.h&gt;</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Perché</div>
+      <p>Leggere/scrivere una variabile condivisa senza lock è una <strong>race condition</strong>, anche per un singolo <code>int</code>: il compilatore può tenerla in registro, riordinare, e una scrittura non allineata può non essere atomica. Le operazioni in <code>&lt;stdatomic.h&gt;</code> garantiscono atomicità e ordine di memoria.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tipi e Funzioni</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;stdatomic.h&gt;</span>
+
+<span class="type">atomic_int</span>      counter = <span class="num">0</span>;
+<span class="type">atomic_bool</span>     flag    = <span class="kw">false</span>;
+<span class="type">_Atomic</span>(<span class="type">MyStruct</span> *) ptr;
+
+<span class="cmt">/* Funzioni principali */</span>
+<span class="fn">atomic_store</span>(&amp;counter, <span class="num">0</span>);
+<span class="type">int</span> v = <span class="fn">atomic_load</span>(&amp;counter);
+<span class="fn">atomic_fetch_add</span>(&amp;counter, <span class="num">1</span>);
+<span class="fn">atomic_fetch_sub</span>(&amp;counter, <span class="num">1</span>);
+<span class="fn">atomic_exchange</span>(&amp;counter, <span class="num">42</span>);
+
+<span class="cmt">/* Compare-And-Swap */</span>
+<span class="type">int</span> expected = <span class="num">0</span>;
+<span class="kw">if</span> (<span class="fn">atomic_compare_exchange_strong</span>(&amp;counter, &amp;expected, <span class="num">1</span>)) {
+    <span class="cmt">/* ha scambiato 0 → 1 */</span>
+} <span class="kw">else</span> {
+    <span class="cmt">/* expected ora contiene il valore corrente */</span>
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">atomic_flag (lock-free garantito)</div>
+<pre>
+<span class="kw">static</span> <span class="type">atomic_flag</span> spin = ATOMIC_FLAG_INIT;
+
+<span class="kw">void</span> <span class="fn">lock</span>(<span class="kw">void</span>)   { <span class="kw">while</span>(<span class="fn">atomic_flag_test_and_set</span>(&amp;spin)); }
+<span class="kw">void</span> <span class="fn">unlock</span>(<span class="kw">void</span>) { <span class="fn">atomic_flag_clear</span>(&amp;spin); }
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Built-in GCC/Clang</div>
+<pre>
+<span class="cmt">/* Pre-C11, ancora diffusi nel kernel e in molte librerie */</span>
+<span class="type">int</span> old = <span class="fn">__sync_fetch_and_add</span>(&amp;counter, <span class="num">1</span>);
+<span class="kw">if</span> (<span class="fn">__sync_bool_compare_and_swap</span>(&amp;ptr, old, new)) { <span class="cmt">/* ok */</span> }
+
+<span class="cmt">/* Più moderni: __atomic_* con memory order esplicito */</span>
+<span class="fn">__atomic_load_n</span>(&amp;counter, __ATOMIC_ACQUIRE);
+<span class="fn">__atomic_store_n</span>(&amp;counter, <span class="num">1</span>, __ATOMIC_RELEASE);
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Memory Order -->
+<span class="anchor" id="s-memorder"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> MEMORY ORDER</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">memory_order_*</div>
+      <table>
+        <tr><th>Ordering</th><th>Garanzie</th><th>Costo</th></tr>
+        <tr><td><code>relaxed</code></td><td>Solo atomicità. Nessun constraint di ordine.</td><td>Minimo</td></tr>
+        <tr><td><code>consume</code></td><td>Dipendenze sui dati. (Praticamente trattato come acquire)</td><td>Basso</td></tr>
+        <tr><td><code>acquire</code></td><td>Sulle load: nessuna lettura/scrittura successiva può migrare prima.</td><td>Medio</td></tr>
+        <tr><td><code>release</code></td><td>Sulle store: nessuna lettura/scrittura precedente può migrare dopo.</td><td>Medio</td></tr>
+        <tr><td><code>acq_rel</code></td><td>Su RMW: combina acquire (sul load) e release (sulla store).</td><td>Medio</td></tr>
+        <tr><td><code>seq_cst</code></td><td>Ordine totale globale su tutte le operazioni seq_cst. <strong>Default.</strong></td><td>Massimo</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio: Publish / Subscribe Senza Lock</div>
+<pre>
+<span class="type">_Atomic</span>(<span class="type">Item</span> *) shared = <span class="num">NULL</span>;
+
+<span class="cmt">/* Publisher */</span>
+<span class="type">Item</span> *it = <span class="fn">make_item</span>();
+<span class="fn">atomic_store_explicit</span>(&amp;shared, it, memory_order_release);
+
+<span class="cmt">/* Subscriber */</span>
+<span class="type">Item</span> *it = <span class="fn">atomic_load_explicit</span>(&amp;shared, memory_order_acquire);
+<span class="kw">if</span> (it) <span class="fn">use</span>(it);
+
+<span class="cmt">// release → acquire stabilisce "happens-before": tutte le scritture
+// fatte dal publisher PRIMA dello store sono visibili al subscriber
+// DOPO il load.</span>
+</pre>
+      <div class="warn">Il codice lock-free è <em>difficile</em>: usa memory order rilassati solo se profili e misuri. Il default <code>seq_cst</code> è quasi sempre abbastanza veloce e drasticamente più facile da ragionare.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     THREAD SAFETY
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-safety"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> THREAD-SAFETY</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Classificazione POSIX delle Funzioni libc</div>
+      <table>
+        <tr><th>Categoria</th><th>Significato</th></tr>
+        <tr><td><strong>MT-Safe</strong></td><td>Può essere chiamata da più thread simultaneamente senza problemi</td></tr>
+        <tr><td><strong>MT-Unsafe</strong></td><td>Comportamento indefinito se usata da più thread senza sincronizzazione esterna</td></tr>
+        <tr><td><strong>AS-Safe</strong></td><td>Sicura in un signal handler async</td></tr>
+        <tr><td><strong>AC-Safe</strong></td><td>Sicura rispetto alla cancellazione del thread</td></tr>
+      </table>
+      <div class="note">La classificazione dettagliata per ogni funzione libc è nella pagina di manuale della funzione, sotto la sezione ATTRIBUTES. Es.: <code>man 3 strtok</code> riporta "MT-Unsafe race:strtok".</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Funzioni Non Thread-Safe Tipiche</div>
+      <table>
+        <tr><th>Non-Safe</th><th>Alternativa reentrant</th></tr>
+        <tr><td><code>strtok</code></td><td><code>strtok_r</code></td></tr>
+        <tr><td><code>asctime</code>, <code>ctime</code></td><td><code>asctime_r</code>, <code>ctime_r</code></td></tr>
+        <tr><td><code>gmtime</code>, <code>localtime</code></td><td><code>gmtime_r</code>, <code>localtime_r</code></td></tr>
+        <tr><td><code>rand</code></td><td><code>rand_r</code>, <code>random_r</code>, o PRNG thread-local</td></tr>
+        <tr><td><code>getpwuid</code>, <code>getpwnam</code></td><td><code>getpwuid_r</code>, <code>getpwnam_r</code></td></tr>
+        <tr><td><code>readdir</code></td><td>In POSIX.1-2008 è MT-Safe con <code>DIR*</code> diversi; altrimenti <code>readdir_r</code> (deprecato)</td></tr>
+        <tr><td><code>gethostbyname</code></td><td><code>getaddrinfo</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Compilare in Modalità Thread-Safe</div>
+<pre>
+<span class="cmt">/* -pthread definisce _REENTRANT: alcune funzioni libc
+   (es. errno, stdio) usano allora versioni MT-safe. */</span>
+gcc -pthread -Wall -Wextra -c main.c
+</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Reentrant -->
+<span class="anchor" id="s-reentrant"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> REENTRANT VS THREAD-SAFE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Differenza</div>
+      <p>&#8226; <strong>Reentrant</strong>: può essere interrotta a metà e rientrata (es. da un signal handler) senza corruzione.<br>
+         &#8226; <strong>Thread-safe</strong>: può essere chiamata da thread diversi in concorrenza.</p>
+      <p>Sono concetti diversi: una funzione protetta da un mutex è thread-safe ma <strong>non</strong> reentrant (il mutex non è ricorsivo e il signal handler si auto-deadlock-erebbe).</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Regole per Scrivere Codice Reentrant</div>
+      <p>&#8226; Nessuna variabile globale/static di stato modificabile<br>
+         &#8226; Nessun buffer statico restituito (<em>ctime</em> style) &rarr; usare buffer del chiamante<br>
+         &#8226; Non chiamare funzioni non-reentrant<br>
+         &#8226; Non modificare il proprio codice, né lo stato della libc (signal mask, locale)</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── errno per thread -->
+<span class="anchor" id="s-errno"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> errno PER THREAD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Thread-Local in libc</div>
+      <p>In una libc moderna con <code>_REENTRANT</code>/<code>-pthread</code>, <code>errno</code> è una macro che si espande in una lvalue thread-local (tipicamente <code>(*__errno_location())</code>). Quindi ogni thread vede il <strong>proprio</strong> <code>errno</code>, e non c'è bisogno di sincronizzarlo.</p>
+<pre>
+<span class="cmt">/* Tipica definizione in &lt;errno.h&gt; con _REENTRANT */</span>
+<span class="dir">#define</span> errno (*<span class="fn">__errno_location</span>())
+
+<span class="cmt">/* Quindi questo è safe in un programma multithread: */</span>
+<span class="kw">if</span> (<span class="fn">read</span>(fd, buf, n) &lt; <span class="num">0</span> &amp;&amp; errno == EINTR) <span class="cmt">/* ... */</span>;
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">pthread_* NON setta errno</div>
+      <p>Ricorda: le funzioni <code>pthread_*</code> ritornano direttamente il codice errore. Non ispezionare <code>errno</code> dopo. Eccezione: <code>sem_*</code> (semafori POSIX) usano <code>errno</code>.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     PATTERN
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-prodcons"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN: PRODUTTORE-CONSUMATORE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Coda Bounded con Mutex + 2 Condvar</div>
+<pre>
+<span class="dir">#define</span> <span class="lbl">CAP</span> <span class="num">64</span>
+
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="kw">void</span>             *buf[<span class="lbl">CAP</span>];
+    <span class="type">size_t</span>            head, tail, count;
+    <span class="type">pthread_mutex_t</span>   m;
+    <span class="type">pthread_cond_t</span>    not_full;
+    <span class="type">pthread_cond_t</span>    not_empty;
+    <span class="type">int</span>               closed;
+} <span class="type">queue_t</span>;
+
+<span class="kw">void</span> <span class="fn">q_init</span>(<span class="type">queue_t</span> *q) {
+    q-&gt;head = q-&gt;tail = q-&gt;count = <span class="num">0</span>;
+    q-&gt;closed = <span class="num">0</span>;
+    <span class="fn">pthread_mutex_init</span>(&amp;q-&gt;m, <span class="num">NULL</span>);
+    <span class="fn">pthread_cond_init</span>(&amp;q-&gt;not_full,  <span class="num">NULL</span>);
+    <span class="fn">pthread_cond_init</span>(&amp;q-&gt;not_empty, <span class="num">NULL</span>);
+}
+
+<span class="type">int</span> <span class="fn">q_push</span>(<span class="type">queue_t</span> *q, <span class="kw">void</span> *v) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;q-&gt;m);
+    <span class="kw">while</span> (q-&gt;count == <span class="lbl">CAP</span> &amp;&amp; !q-&gt;closed)
+        <span class="fn">pthread_cond_wait</span>(&amp;q-&gt;not_full, &amp;q-&gt;m);
+    <span class="kw">if</span> (q-&gt;closed) { <span class="fn">pthread_mutex_unlock</span>(&amp;q-&gt;m); <span class="kw">return</span> -<span class="num">1</span>; }
+    q-&gt;buf[q-&gt;tail] = v;
+    q-&gt;tail = (q-&gt;tail + <span class="num">1</span>) % <span class="lbl">CAP</span>;
+    q-&gt;count++;
+    <span class="fn">pthread_cond_signal</span>(&amp;q-&gt;not_empty);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;q-&gt;m);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="type">int</span> <span class="fn">q_pop</span>(<span class="type">queue_t</span> *q, <span class="kw">void</span> **out) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;q-&gt;m);
+    <span class="kw">while</span> (q-&gt;count == <span class="num">0</span> &amp;&amp; !q-&gt;closed)
+        <span class="fn">pthread_cond_wait</span>(&amp;q-&gt;not_empty, &amp;q-&gt;m);
+    <span class="kw">if</span> (q-&gt;count == <span class="num">0</span>) { <span class="cmt">/* closed e vuota */</span>
+        <span class="fn">pthread_mutex_unlock</span>(&amp;q-&gt;m); <span class="kw">return</span> -<span class="num">1</span>;
+    }
+    *out = q-&gt;buf[q-&gt;head];
+    q-&gt;head = (q-&gt;head + <span class="num">1</span>) % <span class="lbl">CAP</span>;
+    q-&gt;count--;
+    <span class="fn">pthread_cond_signal</span>(&amp;q-&gt;not_full);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;q-&gt;m);
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="kw">void</span> <span class="fn">q_close</span>(<span class="type">queue_t</span> *q) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;q-&gt;m);
+    q-&gt;closed = <span class="num">1</span>;
+    <span class="fn">pthread_cond_broadcast</span>(&amp;q-&gt;not_full);
+    <span class="fn">pthread_cond_broadcast</span>(&amp;q-&gt;not_empty);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;q-&gt;m);
+}
+</pre>
+      <div class="note">Due condition variables evitano risvegli spuri inutili: il produttore sveglia solo i consumatori, e viceversa. Il flag <code>closed</code> permette lo shutdown pulito.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Varianti</div>
+      <p>&#8226; <strong>Coda unbounded</strong>: basta <code>not_empty</code>, niente <code>not_full</code> (il produttore non blocca mai).<br>
+         &#8226; <strong>Coda lock-free</strong>: uso di CAS e atomic_*; complesso, solo per latenze estreme.<br>
+         &#8226; <strong>Single-Producer Single-Consumer (SPSC)</strong>: ring buffer con due indici atomici, senza mutex.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Lettori-Scrittori -->
+<span class="anchor" id="s-readwrite"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN: LETTORI-SCRITTORI</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Implementazione con rwlock (Semplice)</div>
+<pre>
+<span class="type">pthread_rwlock_t</span> cache_lock = PTHREAD_RWLOCK_INITIALIZER;
+
+<span class="kw">void</span> *<span class="fn">reader</span>(<span class="kw">void</span> *arg) {
+    <span class="fn">pthread_rwlock_rdlock</span>(&amp;cache_lock);
+    <span class="fn">read_cache</span>();
+    <span class="fn">pthread_rwlock_unlock</span>(&amp;cache_lock);
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+<span class="kw">void</span> *<span class="fn">writer</span>(<span class="kw">void</span> *arg) {
+    <span class="fn">pthread_rwlock_wrlock</span>(&amp;cache_lock);
+    <span class="fn">update_cache</span>();
+    <span class="fn">pthread_rwlock_unlock</span>(&amp;cache_lock);
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Implementazione Manuale (Readers-Preference)</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">pthread_mutex_t</span> m;
+    <span class="type">pthread_cond_t</span>  no_writers;
+    <span class="type">int</span> readers;
+    <span class="type">int</span> writer;
+} <span class="type">rw_t</span>;
+
+<span class="kw">void</span> <span class="fn">rd_lock</span>(<span class="type">rw_t</span> *rw) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;rw-&gt;m);
+    <span class="kw">while</span> (rw-&gt;writer) <span class="fn">pthread_cond_wait</span>(&amp;rw-&gt;no_writers, &amp;rw-&gt;m);
+    rw-&gt;readers++;
+    <span class="fn">pthread_mutex_unlock</span>(&amp;rw-&gt;m);
+}
+<span class="kw">void</span> <span class="fn">rd_unlock</span>(<span class="type">rw_t</span> *rw) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;rw-&gt;m);
+    <span class="kw">if</span> (--rw-&gt;readers == <span class="num">0</span>) <span class="fn">pthread_cond_signal</span>(&amp;rw-&gt;no_writers);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;rw-&gt;m);
+}
+<span class="kw">void</span> <span class="fn">wr_lock</span>(<span class="type">rw_t</span> *rw) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;rw-&gt;m);
+    <span class="kw">while</span> (rw-&gt;writer || rw-&gt;readers &gt; <span class="num">0</span>)
+        <span class="fn">pthread_cond_wait</span>(&amp;rw-&gt;no_writers, &amp;rw-&gt;m);
+    rw-&gt;writer = <span class="num">1</span>;
+    <span class="fn">pthread_mutex_unlock</span>(&amp;rw-&gt;m);
+}
+<span class="kw">void</span> <span class="fn">wr_unlock</span>(<span class="type">rw_t</span> *rw) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;rw-&gt;m);
+    rw-&gt;writer = <span class="num">0</span>;
+    <span class="fn">pthread_cond_broadcast</span>(&amp;rw-&gt;no_writers);
+    <span class="fn">pthread_mutex_unlock</span>(&amp;rw-&gt;m);
+}
+</pre>
+      <div class="warn">Questa è una "readers-preference": se arrivano sempre lettori, gli scrittori muoiono di fame. Per writer-preference servono due contatori (waiting readers / waiting writers) e logica di priorità.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Thread Pool -->
+<span class="anchor" id="s-pool"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN: THREAD POOL</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Struttura di Base</div>
+<pre>
+<span class="kw">typedef</span> <span class="kw">void</span> (*<span class="type">task_fn</span>)(<span class="kw">void</span> *);
+
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">task_fn</span> fn;
+    <span class="kw">void</span>   *arg;
+} <span class="type">task_t</span>;
+
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">pthread_t</span>       *threads;
+    <span class="type">size_t</span>           nthreads;
+    <span class="type">queue_t</span>          q;       <span class="cmt">// coda produttore/consumatore</span>
+    <span class="type">int</span>              stop;
+} <span class="type">pool_t</span>;
+
+<span class="kw">static</span> <span class="kw">void</span> *<span class="fn">pool_worker</span>(<span class="kw">void</span> *arg) {
+    <span class="type">pool_t</span> *p = arg;
+    <span class="kw">while</span> (<span class="num">1</span>) {
+        <span class="kw">void</span> *v;
+        <span class="kw">if</span> (<span class="fn">q_pop</span>(&amp;p-&gt;q, &amp;v) &lt; <span class="num">0</span>) <span class="kw">break</span>;  <span class="cmt">// coda chiusa</span>
+        <span class="type">task_t</span> *t = v;
+        t-&gt;fn(t-&gt;arg);
+        <span class="fn">free</span>(t);
+    }
+    <span class="kw">return</span> <span class="num">NULL</span>;
+}
+
+<span class="kw">void</span> <span class="fn">pool_init</span>(<span class="type">pool_t</span> *p, <span class="type">size_t</span> n) {
+    p-&gt;nthreads = n;
+    p-&gt;threads  = <span class="fn">calloc</span>(n, <span class="kw">sizeof</span>(*p-&gt;threads));
+    <span class="fn">q_init</span>(&amp;p-&gt;q);
+    <span class="kw">for</span> (<span class="type">size_t</span> i = <span class="num">0</span>; i &lt; n; i++)
+        <span class="fn">pthread_create</span>(&amp;p-&gt;threads[i], <span class="num">NULL</span>, pool_worker, p);
+}
+
+<span class="kw">void</span> <span class="fn">pool_submit</span>(<span class="type">pool_t</span> *p, <span class="type">task_fn</span> fn, <span class="kw">void</span> *arg) {
+    <span class="type">task_t</span> *t = <span class="fn">malloc</span>(<span class="kw">sizeof</span>(*t));
+    t-&gt;fn = fn; t-&gt;arg = arg;
+    <span class="fn">q_push</span>(&amp;p-&gt;q, t);
+}
+
+<span class="kw">void</span> <span class="fn">pool_shutdown</span>(<span class="type">pool_t</span> *p) {
+    <span class="fn">q_close</span>(&amp;p-&gt;q);
+    <span class="kw">for</span> (<span class="type">size_t</span> i = <span class="num">0</span>; i &lt; p-&gt;nthreads; i++)
+        <span class="fn">pthread_join</span>(p-&gt;threads[i], <span class="num">NULL</span>);
+    <span class="fn">free</span>(p-&gt;threads);
+}
+</pre>
+      <div class="note">Una pool di N = <code>sysconf(_SC_NPROCESSORS_ONLN)</code> worker è una buona baseline per lavori CPU-bound; per I/O-bound spesso conviene alzare a 2&times;/4&times; il numero di core.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Monitor -->
+<span class="anchor" id="s-monitor"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> PATTERN: MONITOR</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Idea</div>
+      <p>Un <strong>monitor</strong> incapsula lo stato e la sincronizzazione in un'unica struttura: ogni metodo pubblico acquisisce il mutex, opera, e lo rilascia. Esterno al monitor non esistono accessi diretti allo stato.</p>
+<pre>
+<span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="type">pthread_mutex_t</span> m;
+    <span class="type">int</span> value;
+} <span class="type">counter_t</span>;
+
+<span class="kw">void</span> <span class="fn">counter_inc</span>(<span class="type">counter_t</span> *c) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;c-&gt;m);
+    c-&gt;value++;
+    <span class="fn">pthread_mutex_unlock</span>(&amp;c-&gt;m);
+}
+<span class="type">int</span> <span class="fn">counter_get</span>(<span class="type">counter_t</span> *c) {
+    <span class="fn">pthread_mutex_lock</span>(&amp;c-&gt;m);
+    <span class="type">int</span> v = c-&gt;value;
+    <span class="fn">pthread_mutex_unlock</span>(&amp;c-&gt;m);
+    <span class="kw">return</span> v;
+}
+</pre>
+      <div class="note">Rende facile ragionare sull'invariante: ogni volta che il lock è libero, lo stato è consistente.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     PROBLEMI
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-deadlock"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> DEADLOCK</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Le 4 Condizioni di Coffman</div>
+      <p>Un deadlock richiede TUTTE queste condizioni:</p>
+      <p>&#8226; <strong>Mutua esclusione</strong>: la risorsa non è condivisibile<br>
+         &#8226; <strong>Hold &amp; wait</strong>: un thread tiene una risorsa mentre ne attende un'altra<br>
+         &#8226; <strong>No preemption</strong>: la risorsa viene rilasciata solo volontariamente<br>
+         &#8226; <strong>Circular wait</strong>: esiste un ciclo di attesa T<sub>1</sub>&rarr;T<sub>2</sub>&rarr;...&rarr;T<sub>1</sub></p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio Classico</div>
+<pre>
+<span class="cmt">/* Thread A */                        /* Thread B */
+pthread_mutex_lock(&amp;m1);             pthread_mutex_lock(&amp;m2);
+pthread_mutex_lock(&amp;m2);  // blocca  pthread_mutex_lock(&amp;m1);  // blocca
+...                                   ...
+  &larr;─────── DEADLOCK ───────&rarr;</span>
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Strategie di Prevenzione</div>
+      <p>&#8226; <strong>Ordine lock totale</strong>: assegna un numero a ogni mutex; acquisiscili sempre in ordine crescente. Rompe il <em>circular wait</em>.<br>
+         &#8226; <strong>Try-lock + backoff</strong>: se un lock è occupato, rilascia quelli già presi e riprova.<br>
+         &#8226; <strong>Big lock</strong>: un unico mutex globale (semplice, non scala).<br>
+         &#8226; <strong>Lock-free</strong>: strutture dati che non usano lock (CAS).<br>
+         &#8226; <strong>Hierarchical locks</strong>: un solo lock per livello di astrazione.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Ordine Totale</div>
+<pre>
+<span class="kw">void</span> <span class="fn">lock_two</span>(<span class="type">pthread_mutex_t</span> *a, <span class="type">pthread_mutex_t</span> *b) {
+    <span class="kw">if</span> ((<span class="type">uintptr_t</span>)a &lt; (<span class="type">uintptr_t</span>)b) {
+        <span class="fn">pthread_mutex_lock</span>(a);
+        <span class="fn">pthread_mutex_lock</span>(b);
+    } <span class="kw">else</span> {
+        <span class="fn">pthread_mutex_lock</span>(b);
+        <span class="fn">pthread_mutex_lock</span>(a);
+    }
+}
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Diagnostica</div>
+      <p>&#8226; <strong>ERRORCHECK mutex</strong>: <code>pthread_mutex_lock</code> restituisce <code>EDEADLK</code> se il chiamante già lo detiene.<br>
+         &#8226; <strong>ThreadSanitizer</strong> (<code>-fsanitize=thread</code>): identifica cicli di lock.<br>
+         &#8226; <strong>helgrind</strong> (valgrind): rileva ordini di lock incoerenti.<br>
+         &#8226; <strong>gdb</strong> su un processo bloccato: <code>thread apply all bt</code> mostra dove ogni thread è bloccato.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Livelock & Starvation -->
+<span class="anchor" id="s-livelock"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> LIVELOCK &amp; STARVATION</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Livelock</div>
+      <p>I thread non sono bloccati ma non fanno progresso: entrambi continuano a riprovare "gentilmente" senza mai avanzare. Esempio: due try-lock + backoff sincronizzati.</p>
+      <p><strong>Rimedio</strong>: backoff <em>casuale</em> (esponenziale + jitter).</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Starvation</div>
+      <p>Un thread non ottiene mai una risorsa perché altri thread la prendono sempre per primi. Tipica in:</p>
+      <p>&#8226; rwlock con molti lettori (gli scrittori muoiono di fame)<br>
+         &#8226; priorità troppo basse (SCHED_OTHER con nice alti)<br>
+         &#8226; lock "unfair" dove il kernel dà sempre preferenza allo stesso thread</p>
+      <p><strong>Rimedio</strong>: lock <em>fair</em> (FIFO), priority inheritance, aging.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Priority Inversion</div>
+      <p>Un thread ad alta priorità resta in attesa di un lock tenuto da un thread a bassa priorità, che a sua volta non gira perché soppiantato da un thread a priorità media. <strong>Soluzione</strong>: attributo mutex <code>PTHREAD_PRIO_INHERIT</code>: il thread che tiene il lock eredita temporaneamente la priorità del più alto waiter.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Race Condition -->
+<span class="anchor" id="s-race"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> RACE CONDITION</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Definizione</div>
+      <p>Due o più thread accedono a una stessa variabile, di cui almeno uno in scrittura, senza una relazione <em>happens-before</em> (mutex, atomic, join, etc.). Comportamento indefinito in C11.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempi di Race Sottili</div>
+<pre>
+<span class="cmt">/* 1. Incremento non atomico */</span>
+counter++;                 <span class="cmt">// load, add, store — non atomica!</span>
+
+<span class="cmt">/* 2. Double-checked locking SENZA atomic (scorretto) */</span>
+<span class="kw">if</span> (!init) {               <span class="cmt">// read non sincronizzata → data race</span>
+    <span class="fn">pthread_mutex_lock</span>(&amp;m);
+    <span class="kw">if</span> (!init) { <span class="fn">do_init</span>(); init = <span class="num">1</span>; }
+    <span class="fn">pthread_mutex_unlock</span>(&amp;m);
+}
+<span class="cmt">/* Corretto: usare pthread_once o atomic_load(acquire) */</span>
+
+<span class="cmt">/* 3. Visibilità di un flag di shutdown */</span>
+<span class="type">volatile</span> <span class="type">int</span> done = <span class="num">0</span>;   <span class="cmt">// volatile NON basta tra thread!</span>
+<span class="cmt">/* Usa atomic_int o un mutex. */</span>
+</pre>
+      <div class="warn"><code>volatile</code> è per MMIO e setjmp, <strong>non</strong> per la concorrenza tra thread. In C/C++ moderni usa <code>_Atomic</code> o i mutex.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">TOCTOU (Time Of Check / Time Of Use)</div>
+<pre>
+<span class="kw">if</span> (<span class="fn">access</span>(<span class="str">"/tmp/file"</span>, R_OK) == <span class="num">0</span>) {      <span class="cmt">// check</span>
+    <span class="type">int</span> fd = <span class="fn">open</span>(<span class="str">"/tmp/file"</span>, O_RDONLY);   <span class="cmt">// use → un altro processo/thread
+                                                //   può aver cambiato il file!</span>
+}
+</pre>
+      <p>Tra il check e lo use può inserirsi un altro thread o processo. Soluzioni: <code>openat</code> + <code>O_NOFOLLOW</code>, <code>fstat</code> sull'<code>fd</code> già aperto, flock, transazioni.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────
+     C11 & DEBUG
+     ──────────────────────────────────────────────────────────── -->
+
+<span class="anchor" id="s-c11threads"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> C11 &lt;threads.h&gt;</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Panoramica</div>
+      <p>Lo standard C11 introduce un'API threading standard (header <code>&lt;threads.h&gt;</code>). Supportata da glibc &ge; 2.28 e Musl. È un sottoinsieme minimale di pthread ma portabile anche fuori POSIX.</p>
+      <table>
+        <tr><th>C11</th><th>Equivalente POSIX</th></tr>
+        <tr><td><code>thrd_t</code></td><td><code>pthread_t</code></td></tr>
+        <tr><td><code>thrd_create</code>, <code>thrd_join</code>, <code>thrd_detach</code>, <code>thrd_exit</code></td><td><code>pthread_create</code>, <code>pthread_join</code>, ...</td></tr>
+        <tr><td><code>mtx_t</code> (plain, recursive, timed)</td><td><code>pthread_mutex_t</code></td></tr>
+        <tr><td><code>mtx_init</code>, <code>mtx_lock</code>, <code>mtx_trylock</code>, <code>mtx_unlock</code>, <code>mtx_destroy</code></td><td><code>pthread_mutex_*</code></td></tr>
+        <tr><td><code>cnd_t</code>, <code>cnd_wait</code>, <code>cnd_signal</code>, <code>cnd_broadcast</code></td><td><code>pthread_cond_*</code></td></tr>
+        <tr><td><code>once_flag</code>, <code>call_once</code></td><td><code>pthread_once_t</code>, <code>pthread_once</code></td></tr>
+        <tr><td><code>tss_t</code>, <code>tss_create</code>, <code>tss_get</code>, <code>tss_set</code></td><td><code>pthread_key_t</code>, <code>pthread_getspecific</code></td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempio</div>
+<pre>
+<span class="dir">#include</span> <span class="str">&lt;threads.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">worker</span>(<span class="kw">void</span> *arg) {  <span class="cmt">// firma diversa: ritorna int, non void*</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="type">thrd_t</span> t;
+    <span class="fn">thrd_create</span>(&amp;t, worker, <span class="num">NULL</span>);
+    <span class="type">int</span> res;
+    <span class="fn">thrd_join</span>(t, &amp;res);
+    <span class="kw">return</span> res;
+}
+</pre>
+      <div class="note">Manca <code>thrd_cancel</code>: la cancellazione non è parte di C11. Per codice non-portabile o che usa cancellation, rimani su pthread.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Debug -->
+<span class="anchor" id="s-debug"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> DEBUGGING MULTITHREAD</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">ThreadSanitizer (tsan)</div>
+<pre>
+gcc -fsanitize=thread -g -O1 -pthread -o prog main.c
+./prog
+<span class="cmt"># Output esempio:
+# WARNING: ThreadSanitizer: data race (pid=12345)
+#   Write of size 4 at 0x7b04... by thread T2:
+#     #0 worker main.c:42
+#   Previous read of size 4 at 0x7b04... by thread T1:
+#     #0 worker main.c:38</span>
+</pre>
+      <p>Identifica data race, deadlock e uso scorretto di mutex. Leggero overhead (5&ndash;15&times;). <strong>Non</strong> combinabile con AddressSanitizer nella stessa build.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Helgrind / DRD (Valgrind)</div>
+<pre>
+valgrind --tool=helgrind ./prog
+valgrind --tool=drd      ./prog
+<span class="cmt"># helgrind: rileva race e ordering violations sui pthread
+# drd:     più focalizzato su deadlock e API misuse</span>
+</pre>
+      <p>Più lenti di tsan (20&ndash;50&times;) ma non richiedono ricompilare. Utili se la toolchain non supporta <code>-fsanitize=thread</code>.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">GDB — Thread Essentials</div>
+<pre>
+info threads                <span class="cmt"># lista tutti i thread</span>
+thread 3                    <span class="cmt"># passa al thread #3</span>
+thread apply all bt         <span class="cmt"># backtrace di tutti i thread</span>
+thread apply all bt full    <span class="cmt"># con variabili locali</span>
+set scheduler-locking on    <span class="cmt"># step solo del thread corrente</span>
+break func thread 2         <span class="cmt"># breakpoint solo per quel thread</span>
+break func if <span class="fn">pthread_self</span>()==X
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Introspezione a Runtime</div>
+<pre>
+<span class="cmt"># Contare i thread di un processo</span>
+ls /proc/&lt;PID&gt;/task | wc -l
+cat /proc/&lt;PID&gt;/status | grep Threads
+
+<span class="cmt"># top con visualizzazione per thread</span>
+top -H -p &lt;PID&gt;
+ps -T -p &lt;PID&gt;
+
+<span class="cmt"># strace di tutti i thread</span>
+strace -f -p &lt;PID&gt;
+
+<span class="cmt"># Profiling dei lock (contesa)</span>
+perf lock record -- ./prog
+perf lock report
+</pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Best Practice</div>
+      <p>&#8226; Inizializza sempre i mutex e verifica i ritorni delle API<br>
+         &#8226; Preferisci <code>_Thread_local</code> quando basta invece di <code>pthread_key_t</code><br>
+         &#8226; Tieni la sezione critica piccola (copia fuori, elabora, ri-lock per scrivere)<br>
+         &#8226; Evita <code>printf</code> dentro sezioni critiche (lock implicito su stdout)<br>
+         &#8226; Un'unica convenzione di acquisizione lock nel progetto (ordine totale)<br>
+         &#8226; Testa in debug con <code>-fsanitize=thread</code> in CI<br>
+         &#8226; Niente "volatile" per la concorrenza, solo atomic/mutex<br>
+         &#8226; Documenta le invarianti che ogni mutex protegge</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ────────────────────────────────── Codici di Errore -->
+<span class="anchor" id="s-errors"></span>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9656;</span> CODICI DI ERRORE pthread_*</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Errori Comuni</div>
+      <table>
+        <tr><th>Codice</th><th>Significato</th></tr>
+        <tr><td><code>EAGAIN</code></td><td>Risorse insufficienti (max threads, memoria stack)</td></tr>
+        <tr><td><code>EINVAL</code></td><td>Argomento non valido (mutex non inizializzato, attr errato)</td></tr>
+        <tr><td><code>EBUSY</code></td><td>Tentativo di destroy su mutex locked, o trylock fallita</td></tr>
+        <tr><td><code>EDEADLK</code></td><td>Deadlock rilevato (ERRORCHECK) o join su se stessi</td></tr>
+        <tr><td><code>EPERM</code></td><td>Unlock di un mutex non posseduto / policy scheduling non permessa</td></tr>
+        <tr><td><code>ESRCH</code></td><td>Nessun thread con quel TID (probabilmente già joinato)</td></tr>
+        <tr><td><code>ETIMEDOUT</code></td><td>Timeout scaduto in timed wait/lock</td></tr>
+        <tr><td><code>EOWNERDEAD</code></td><td>Il precedente owner di un robust mutex è morto tenendo il lock</td></tr>
+        <tr><td><code>ENOTRECOVERABLE</code></td><td>Robust mutex non recuperabile (consistent non chiamata)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Template di Gestione</div>
+<pre>
+<span class="dir">#define</span> <span class="lbl">PT_CHECK</span>(expr) <span class="kw">do</span> { \
+    <span class="type">int</span> _e = (expr); \
+    <span class="kw">if</span> (_e != <span class="num">0</span>) { \
+        <span class="fn">fprintf</span>(stderr, <span class="str">"%s:%d: %s: %s\n"</span>, \
+                __FILE__, __LINE__, #expr, <span class="fn">strerror</span>(_e)); \
+        <span class="fn">abort</span>(); \
+    } \
+} <span class="kw">while</span> (<span class="num">0</span>)
+
+<span class="lbl">PT_CHECK</span>(<span class="fn">pthread_create</span>(&amp;tid, <span class="num">NULL</span>, worker, arg));
+<span class="lbl">PT_CHECK</span>(<span class="fn">pthread_mutex_lock</span>(&amp;m));
+<span class="lbl">PT_CHECK</span>(<span class="fn">pthread_mutex_unlock</span>(&amp;m));
+</pre>
+      <div class="note">In produzione, un fallimento di <code>pthread_mutex_lock</code> è quasi sempre un bug irrecuperabile: meglio <code>abort()</code> che proseguire con invarianti rotte.</div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+</div>
+
+<script src="../assets/js/mobile.js"></script>
+</body>
+</html>
