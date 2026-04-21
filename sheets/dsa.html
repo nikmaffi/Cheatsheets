@@ -102,7 +102,9 @@
 
   <div class="nav-section">
     <div class="nav-section-title">Ricerca</div>
-    <a href="#s-search">Ricerca Lineare &amp; Binaria</a>
+    <a href="#s-search-linear">Ricerca Lineare</a>
+    <a href="#s-search-binary">Ricerca Binaria</a>
+    <a href="#s-search-fibonacci">Ricerca Fibonacci</a>
   </div>
 
   <div class="nav-section">
@@ -1309,24 +1311,36 @@
 </div>
 
 <!-- ════════════════════════════════════════════════════════════
-     RICERCA LINEARE & BINARIA
+     RICERCA LINEARE
      ════════════════════════════════════════════════════════════ -->
-<a class="anchor" id="s-search"></a>
+<a class="anchor" id="s-search-linear"></a>
 <div class="section">
-  <div class="section-header"><span class="icon">&#9672;</span> RICERCA LINEARE &amp; BINARIA</div>
+  <div class="section-header"><span class="icon">&#9672;</span> RICERCA LINEARE &mdash; O(n)</div>
   <div class="section-body">
 
     <div class="sub">
       <div class="sub-title">RICERCA LINEARE &mdash; O(n)</div>
+      <p>Scorre l'array dall'inizio alla fine confrontando ogni elemento con il <b>target</b>. Non richiede alcuna precondizione sui dati: funziona su array <b>non ordinati</b> e su qualsiasi sequenza iterabile. &Egrave; la strategia pi&ugrave; semplice, ma anche la pi&ugrave; lenta su grandi input.</p>
 <pre><span class="kw">def</span> <span class="fn">linear_search</span>(<span class="var">arr</span>, <span class="var">target</span>):
     <span class="kw">for</span> <span class="var">i</span>, <span class="var">val</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">arr</span>):
         <span class="kw">if</span> <span class="var">val</span> == <span class="var">target</span>:
             <span class="kw">return</span> <span class="var">i</span>
     <span class="kw">return</span> -<span class="num">1</span></pre>
     </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RICERCA BINARIA (DICOTOMICA)
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-search-binary"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RICERCA BINARIA &mdash; O(log n)</div>
+  <div class="section-body">
 
     <div class="sub">
-      <div class="sub-title">RICERCA BINARIA &mdash; O(log n)</div>
+      <div class="sub-title">RICERCA BINARIA (DICOTOMICA) &mdash; O(log n)</div>
+      <p>Richiede array <b>ordinato</b>. Ad ogni passo confronta il target con l'elemento centrale e scarta <b>met&agrave;</b> dell'intervallo di ricerca, dimezzando lo spazio rimanente ad ogni iterazione. Usa una <b>divisione</b> per calcolare l'indice mediano, quindi &egrave; efficiente su memoria ad accesso casuale (RAM).</p>
 <pre><span class="cmt"># Richiede array ORDINATO</span>
 
 <span class="cmt"># Iterativa</span>
@@ -1355,6 +1369,69 @@
         <span class="kw">if</span> <span class="fn">predicate</span>(<span class="var">mid</span>): <span class="var">hi</span> = <span class="var">mid</span>
         <span class="kw">else</span>:               <span class="var">lo</span> = <span class="var">mid</span> + <span class="num">1</span>
     <span class="kw">return</span> <span class="var">lo</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RICERCA FIBONACCI
+     ════════════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-search-fibonacci"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RICERCA FIBONACCI &mdash; O(log n)</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">RICERCA FIBONACCI &mdash; O(log n)</div>
+      <p>Richiede array <b>ordinato</b>. Divide l'intervallo usando i numeri di Fibonacci invece che a met&agrave;. Utile quando l'accesso agli elementi ha costo non uniforme (es. memoria su disco/nastro): usa solo <b>addizioni e sottrazioni</b>, evitando la divisione richiesta dalla ricerca binaria.</p>
+<pre><span class="cmt"># Richiede array ORDINATO</span>
+
+<span class="kw">def</span> <span class="fn">fibonacci_search</span>(<span class="var">arr</span>, <span class="var">target</span>):
+    <span class="var">n</span> = <span class="fn">len</span>(<span class="var">arr</span>)
+
+    <span class="cmt"># Trova il pi&ugrave; piccolo numero di Fibonacci &gt;= n</span>
+    <span class="var">fib2</span> = <span class="num">0</span>               <span class="cmt"># (k-2)-esimo</span>
+    <span class="var">fib1</span> = <span class="num">1</span>               <span class="cmt"># (k-1)-esimo</span>
+    <span class="var">fib</span>  = <span class="var">fib1</span> + <span class="var">fib2</span>   <span class="cmt"># k-esimo</span>
+    <span class="kw">while</span> <span class="var">fib</span> &lt; <span class="var">n</span>:
+        <span class="var">fib2</span> = <span class="var">fib1</span>
+        <span class="var">fib1</span> = <span class="var">fib</span>
+        <span class="var">fib</span>  = <span class="var">fib1</span> + <span class="var">fib2</span>
+
+    <span class="var">offset</span> = -<span class="num">1</span>           <span class="cmt"># intervallo eliminato da sinistra</span>
+
+    <span class="kw">while</span> <span class="var">fib</span> &gt; <span class="num">1</span>:
+        <span class="var">i</span> = <span class="fn">min</span>(<span class="var">offset</span> + <span class="var">fib2</span>, <span class="var">n</span> - <span class="num">1</span>)
+
+        <span class="kw">if</span> <span class="var">arr</span>[<span class="var">i</span>] &lt; <span class="var">target</span>:    <span class="cmt"># scarta sottoarray sinistro</span>
+            <span class="var">fib</span>    = <span class="var">fib1</span>
+            <span class="var">fib1</span>   = <span class="var">fib2</span>
+            <span class="var">fib2</span>   = <span class="var">fib</span> - <span class="var">fib1</span>
+            <span class="var">offset</span> = <span class="var">i</span>
+        <span class="kw">elif</span> <span class="var">arr</span>[<span class="var">i</span>] &gt; <span class="var">target</span>:  <span class="cmt"># scarta sottoarray destro</span>
+            <span class="var">fib</span>  = <span class="var">fib2</span>
+            <span class="var">fib1</span> = <span class="var">fib1</span> - <span class="var">fib2</span>
+            <span class="var">fib2</span> = <span class="var">fib</span> - <span class="var">fib1</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> <span class="var">i</span>
+
+    <span class="cmt"># Confronto finale sull'ultimo elemento</span>
+    <span class="kw">if</span> <span class="var">fib1</span> <span class="kw">and</span> <span class="var">offset</span> + <span class="num">1</span> &lt; <span class="var">n</span> <span class="kw">and</span> <span class="var">arr</span>[<span class="var">offset</span> + <span class="num">1</span>] == <span class="var">target</span>:
+        <span class="kw">return</span> <span class="var">offset</span> + <span class="num">1</span>
+    <span class="kw">return</span> -<span class="num">1</span></pre>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">CONFRONTO</div>
+      <table>
+        <tr><th>Propriet&agrave;</th><th>Lineare</th><th>Binaria</th><th>Fibonacci</th></tr>
+        <tr><td>Tempo</td><td>O(n)</td><td>O(log n)</td><td>O(log n)</td></tr>
+        <tr><td>Spazio</td><td>O(1)</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Precondizione</td><td>nessuna</td><td>array ordinato</td><td>array ordinato</td></tr>
+        <tr><td>Operazioni</td><td>confronti</td><td>confronti + divisione</td><td>solo somme/sottrazioni</td></tr>
+        <tr><td>Confronti peggiori</td><td>n</td><td>~ log&#8322;(n)</td><td>~ log&#981;(n), leggermente pi&ugrave; di log&#8322;(n)</td></tr>
+        <tr><td>Accesso</td><td>sequenziale</td><td>casuale (RAM)</td><td>non uniforme (disco/nastro)</td></tr>
+      </table>
     </div>
   </div>
 </div>
