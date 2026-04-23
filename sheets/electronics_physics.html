@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELETTRONICA — FISICA</title>
+<link rel="icon" type="image/png" href="../assets/img/icon.png">
+<link rel="stylesheet" href="../assets/css/common.css">
+<style>
+  :root {
+    --bg:        #020a0f;
+    --bg2:       #061218;
+    --panel:     #081a24;
+    --panel2:    #0a1e2a;
+    --border:    #0e3048;
+    --border2:   #1a5070;
+    --glow:      #00979C;
+    --glow2:     #33cccc;
+    --dim:       #0a4a52;
+    --text:      #88b8c8;
+    --text2:     #a8d0e0;
+    --bright:    #aaeeff;
+    --accent:    #00979C;
+    --accent2:   #44cccc;
+    --key:       #007080;
+    --kw:        #55cccc;
+    --str:       #ddaa55;
+    --num:       #ff8866;
+    --cmt:       #2a5560;
+    --lbl:       #44cccc;
+    --head:      #aaeeff;
+    --hr:        #0a2838;
+    --scan:      rgba(0,151,156,0.035);
+    --hd:        #33bbcc;
+    --glow-dim:  #003b40;
+    --sidebar-w:         240px;
+    --vignette:          rgba(0,8,14,0.75);
+    --header-top:        #081c28;
+    --header-shadow:     rgba(0,151,156,0.5);
+    --sidebar-hover-bg:  rgba(0,151,156,0.12);
+    --section-shadow:    rgba(0,100,120,0.5);
+    --section-header-bg: var(--glow);
+    --th-bg:             rgba(0,80,100,0.45);
+    --tr-even-bg:        rgba(0,50,70,0.3);
+    --tr-hover-bg:       rgba(0,80,100,0.15);
+    --note-bg:           rgba(0,80,100,0.2);
+    --warn-bg:           rgba(120,60,0,0.25);
+    --warn-brd:          #cc6600;
+    --warn-txt:          #ffbb88;
+  }
+
+  .hd  { color: var(--hd); font-weight:bold; }
+  .bright { color: var(--bright); }
+  .acc { color: var(--accent); }
+
+  code {
+    background: rgba(0,60,80,0.4);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 1px;
+    font-size: 11.5px;
+    color: var(--accent2);
+  }
+
+  .formula {
+    background: rgba(0,30,40,0.6);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--glow);
+    padding: 8px 14px;
+    margin: 8px 0;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .formula .label {
+    display: block;
+    font-size: 10px;
+    color: var(--kw);
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .formula .f-main {
+    display: block;
+    font-size: 14px;
+    color: var(--bright);
+    padding: 4px 0;
+  }
+
+  .formula .f-sub {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  .formula .f-where {
+    display: block;
+    font-size: 11px;
+    color: var(--text);
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--hr);
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <a class="back-btn" href="../index.html">&larr; INDEX</a>
+  <h1>&gt; ELETTRONICA &mdash; FISICA <span class="cursor"></span></h1>
+  <div class="subtitle">RETRO TERMINAL CHEATSHEETS &mdash; <span>Fondamenti Teorici &amp; Componenti &amp; Circuiti</span> &mdash; v2.0</div>
+</div>
+
+<div id="layout">
+
+<nav id="sidebar">
+  <div class="nav-head">&#9672; INDICE</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Carica Elettrica</div>
+    <a href="#s-charge-def">Definizione &amp; Quantizzazione</a>
+    <a href="#s-coulomb">Legge di Coulomb</a>
+    <a href="#s-efield">Campo Elettrico</a>
+    <a href="#s-potential">Potenziale Elettrico</a>
+    <a href="#s-gauss">Legge di Gauss</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Elettromagnetismo</div>
+    <a href="#s-lorentz">Forza di Lorentz</a>
+    <a href="#s-biot">Legge di Biot-Savart</a>
+    <a href="#s-ampere">Legge di Ampere</a>
+    <a href="#s-faraday">Legge di Faraday</a>
+    <a href="#s-maxwell">Equazioni di Maxwell</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Tensione</div>
+    <a href="#s-voltage-def">Definizione &amp; DDP</a>
+    <a href="#s-emf">FEM &amp; Generatori</a>
+    <a href="#s-kvl">KVL (Kirchhoff Tensioni)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Corrente</div>
+    <a href="#s-current-def">Definizione &amp; Densit&agrave;</a>
+    <a href="#s-drude">Modello di Drude</a>
+    <a href="#s-kcl">KCL (Kirchhoff Correnti)</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Resistenza</div>
+    <a href="#s-resistance-def">Legge di Ohm</a>
+    <a href="#s-resistivity">Resistivit&agrave; &amp; Temperatura</a>
+    <a href="#s-power">Potenza &amp; Effetto Joule</a>
+    <a href="#s-series-parallel-r">Serie &amp; Parallelo</a>
+    <a href="#s-color-code">Codice Colori</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Capacit&agrave;</div>
+    <a href="#s-capacitor-def">Definizione &amp; Geometria</a>
+    <a href="#s-cap-energy">Energia nel Condensatore</a>
+    <a href="#s-dielectric">Dielettrico</a>
+    <a href="#s-series-parallel-c">Serie &amp; Parallelo</a>
+    <a href="#s-rc">Circuito RC</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Induttanza</div>
+    <a href="#s-inductor-def">Definizione &amp; Autoinduzione</a>
+    <a href="#s-inductor-energy">Energia &amp; Circuito RL</a>
+    <a href="#s-mutual">Induzione Mutua &amp; Trasformatori</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Impedenza &amp; AC</div>
+    <a href="#s-phasor">Fasori &amp; Impedenza</a>
+    <a href="#s-rlc">Risonanza RLC</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Diodi</div>
+    <a href="#s-diode-pn">Giunzione PN</a>
+    <a href="#s-diode-types">Tipi di Diodo</a>
+    <a href="#s-diode-circuits">Circuiti con Diodi</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">BJT</div>
+    <a href="#s-bjt-basics">Struttura &amp; Regioni</a>
+    <a href="#s-bjt-models">Modello &amp; Parametri</a>
+    <a href="#s-bjt-configs">Configurazioni</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">MOSFET</div>
+    <a href="#s-mosfet-basics">Struttura &amp; Funzionamento</a>
+    <a href="#s-mosfet-regions">Regioni di Lavoro</a>
+    <a href="#s-mosfet-cmos">CMOS &amp; Switch</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Circuiti Utili</div>
+    <a href="#s-filters">Filtri RC/RL/RLC</a>
+    <a href="#s-protection">Protezione &amp; Disturbi</a>
+    <a href="#s-practical">Pratiche Essenziali</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ═══════════════════════════════════════════════════════
+     CARICA ELETTRICA
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-charge-def"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CARICA ELETTRICA &mdash; DEFINIZIONE &amp; QUANTIZZAZIONE</div>
+  <div class="section-body">
+    <p>La <b>carica elettrica</b> <i>q</i> &egrave; una propriet&agrave; intrinseca della materia che determina l'interazione elettromagnetica. Esistono due segni: positivo (protone) e negativo (elettrone). Cariche dello stesso segno si respingono; di segno opposto si attraggono.</p>
+
+    <div class="sub">
+      <div class="sub-title">Quantizzazione della Carica</div>
+      <div class="formula">
+        <span class="label">Carica quantizzata</span>
+        <span class="f-main">q = n &middot; e</span>
+        <span class="f-where">n &isin; &#8484;,&nbsp; e = 1.602 &times; 10<sup>−19</sup> C &nbsp;(carica elementare)</span>
+      </div>
+      <p>La carica &egrave; <b>quantizzata</b>: ogni carica osservabile &egrave; un multiplo intero della carica elementare <i>e</i>. Non esistono frazioni di <i>e</i> libere in natura (i quark hanno carica &plusmn;e/3, ma non si osservano isolati per confinamento QCD).</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Conservazione della Carica</div>
+      <p>La carica elettrica totale di un sistema isolato &egrave; costante nel tempo. Forma locale (equazione di continuit&agrave;):</p>
+      <div class="formula">
+        <span class="f-main">&part;&rho;/&part;t + &nabla;&middot;<b>J</b> = 0</span>
+        <span class="f-where">&rho; = densit&agrave; di carica volumetrica [C/m&sup3;],&nbsp; <b>J</b> = densit&agrave; di corrente [A/m&sup2;]<br>
+        Forma integrale: dQ<sub>enc</sub>/dt = &minus;&#8750;<sub>S</sub> <b>J</b>&middot;d<b>A</b> (la variazione di carica in un volume = flusso di corrente uscente)</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Grandezze di Distribuzione della Carica</div>
+      <table>
+        <tr><th>Grandezza</th><th>Simbolo</th><th>Unit&agrave; SI</th><th>Definizione</th></tr>
+        <tr><td>Carica totale</td><td><i>q, Q</i></td><td>Coulomb [C = A&middot;s]</td><td>propriet&agrave; scalare</td></tr>
+        <tr><td>Carica elementare</td><td><i>e</i></td><td>1.602&times;10<sup>−19</sup> C</td><td>carica del protone</td></tr>
+        <tr><td>Densit&agrave; volumetrica</td><td><i>&rho;</i></td><td>[C/m&sup3;]</td><td>Q = &int;&int;&int; &rho; dV</td></tr>
+        <tr><td>Densit&agrave; superficiale</td><td><i>&sigma;</i></td><td>[C/m&sup2;]</td><td>Q = &int;&int; &sigma; dA</td></tr>
+        <tr><td>Densit&agrave; lineare</td><td><i>&lambda;</i></td><td>[C/m]</td><td>Q = &int; &lambda; dl</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-coulomb"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LEGGE DI COULOMB</div>
+  <div class="section-body">
+    <p>La <b>Legge di Coulomb</b> descrive la forza tra due cariche puntiformi <i>q</i><sub>1</sub> e <i>q</i><sub>2</sub> separate da una distanza <i>r</i> nel vuoto.</p>
+
+    <div class="formula">
+      <span class="label">Forma vettoriale</span>
+      <span class="f-main"><b>F</b><sub>12</sub> = k<sub>e</sub> &middot; (q<sub>1</sub>q<sub>2</sub> / r&sup2;) &middot; r&#770;<sub>12</sub></span>
+      <span class="f-sub">k<sub>e</sub> = 1/(4&pi;&epsilon;<sub>0</sub>) = 8.988 &times; 10<sup>9</sup> N&middot;m&sup2;/C&sup2;</span>
+      <span class="f-where">r&#770;<sub>12</sub> = versore da q<sub>1</sub> verso q<sub>2</sub><br>
+      &epsilon;<sub>0</sub> = 8.854 &times; 10<sup>−12</sup> F/m &nbsp;(permittivit&agrave; del vuoto)</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Principio di Sovrapposizione</div>
+      <p>La forza su una carica di prova <i>q</i> dovuta a N cariche sorgente &egrave; la <b>somma vettoriale</b> delle forze singole:</p>
+      <div class="formula">
+        <span class="f-main"><b>F</b> = &Sigma;<sub>i</sub> k<sub>e</sub> &middot; (qQ<sub>i</sub> / r<sub>i</sub>&sup2;) &middot; r&#770;<sub>i</sub></span>
+        <span class="f-where">Valido nell'elettrostatica lineare. Per distribuzioni continue: <b>F</b> = q &int; k<sub>e</sub>(dq'/r&sup2;) r&#770; dV'</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Coulomb vs Gravit&agrave;</div>
+      <table>
+        <tr><th>Propriet&agrave;</th><th>Gravit&agrave; (Newton)</th><th>Coulomb</th></tr>
+        <tr><td>Formula</td><td>F = G m<sub>1</sub>m<sub>2</sub>/r&sup2;</td><td>F = k<sub>e</sub> q<sub>1</sub>q<sub>2</sub>/r&sup2;</td></tr>
+        <tr><td>Costante</td><td>G = 6.67&times;10<sup>−11</sup> N&middot;m&sup2;/kg&sup2;</td><td>k<sub>e</sub> = 8.99&times;10<sup>9</sup> N&middot;m&sup2;/C&sup2;</td></tr>
+        <tr><td>Segno</td><td>sempre attrattiva</td><td>attrattiva o repulsiva</td></tr>
+        <tr><td>Schermatura</td><td>non schermabile</td><td>s&igrave; (gabbia di Faraday)</td></tr>
+        <tr><td>F<sub>e</sub>/F<sub>g</sub> (e<sup>−</sup>-p<sup>+</sup>)</td><td colspan="2">&asymp; 10<sup>36</sup> &mdash; la forza EM &egrave; di gran lunga dominante a scala atomica</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-efield"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CAMPO ELETTRICO</div>
+  <div class="section-body">
+    <p>Il <b>campo elettrico</b> <b>E</b> &egrave; la forza per unit&agrave; di carica che agirebbe su una carica di prova q<sub>0</sub> infinitesima (per non perturbarne le sorgenti):</p>
+
+    <div class="formula">
+      <span class="label">Definizione operativa</span>
+      <span class="f-main"><b>E</b> = lim<sub>q<sub>0</sub>&rarr;0</sub> <b>F</b>/q<sub>0</sub> &nbsp; [V/m = N/C]</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Campo di Carica Puntiforme</div>
+      <div class="formula">
+        <span class="f-main"><b>E</b> = k<sub>e</sub> Q / r&sup2; &middot; r&#770;</span>
+        <span class="f-where">Radiale uscente per Q &gt; 0, entrante per Q &lt; 0. Le linee di campo partono da cariche positive e terminano su cariche negative.</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Distribuzioni Continue (simmetria)</div>
+      <table>
+        <tr><th>Distribuzione</th><th>Campo E</th></tr>
+        <tr><td>Filo &infin; (&lambda; C/m, dist. r)</td><td>E = &lambda; / (2&pi;&epsilon;<sub>0</sub>r) &mdash; radiale</td></tr>
+        <tr><td>Piano &infin; (&sigma; C/m&sup2;)</td><td>E = &sigma; / (2&epsilon;<sub>0</sub>) &mdash; perpendicolare, uniforme</td></tr>
+        <tr><td>Sfera conduttrice carica Q, r &gt; R</td><td>E = kQ/r&sup2; (come carica puntiforme)</td></tr>
+        <tr><td>Sfera conduttrice, r &lt; R</td><td>E = 0 (interno del conduttore)</td></tr>
+        <tr><td>Condensatore piano (&sigma; C/m&sup2;)</td><td>E = &sigma;/&epsilon;<sub>0</sub> tra le armature (uniforme)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Flusso del Campo Elettrico</div>
+      <div class="formula">
+        <span class="f-main">&Phi;<sub>E</sub> = &#8753;<sub>S</sub> <b>E</b> &middot; d<b>A</b> &nbsp; [V&middot;m = N&middot;m&sup2;/C]</span>
+        <span class="f-where">d<b>A</b> = dA &middot; n&#770; (versore normale uscente dalla superficie)</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Relazione Campo &mdash; Potenziale</div>
+      <div class="formula">
+        <span class="f-main"><b>E</b> = &minus;&nabla;V &nbsp;&rarr;&nbsp; E<sub>x</sub> = &minus;&part;V/&part;x,&nbsp; E<sub>y</sub> = &minus;&part;V/&part;y,&nbsp; E<sub>z</sub> = &minus;&part;V/&part;z</span>
+        <span class="f-where">Il campo elettrico punta nella direzione di massima diminuzione del potenziale e &egrave; perpendicolare alle superfici equipotenziali.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-potential"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> POTENZIALE ELETTRICO</div>
+  <div class="section-body">
+    <p>Il <b>potenziale elettrico</b> V &egrave; l'energia potenziale per unit&agrave; di carica. &Egrave; uno scalare, spesso pi&ugrave; comodo del campo vettoriale <b>E</b>. Il campo elettrostatico &egrave; conservativo: il lavoro dipende solo dagli estremi, non dal cammino.</p>
+
+    <div class="formula">
+      <span class="label">Definizione tramite lavoro</span>
+      <span class="f-main">V(P) = W<sub>&infin;&rarr;P</sub> / q<sub>0</sub> = &minus;&int;<sub>&infin;</sub><sup>P</sup> <b>E</b> &middot; d<b>l</b> &nbsp; [V = J/C]</span>
+      <span class="f-where">V(&infin;) = 0 per convenzione. Il potenziale &egrave; definito a meno di una costante additiva.</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Potenziale di Carica Puntiforme</div>
+      <div class="formula">
+        <span class="f-main">V(r) = k<sub>e</sub> Q / r</span>
+        <span class="f-where">Superfici equipotenziali: sfere concentriche. Per distribuzione di cariche: V = &Sigma;<sub>i</sub> k<sub>e</sub>Q<sub>i</sub>/r<sub>i</sub> (sovrapposizione scalare).</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Differenza di Potenziale (ddp)</div>
+      <div class="formula">
+        <span class="f-main">V<sub>AB</sub> = V<sub>A</sub> &minus; V<sub>B</sub> = &minus;&int;<sub>B</sub><sup>A</sup> <b>E</b> &middot; d<b>l</b> = W<sub>B&rarr;A</sub> / q</span>
+        <span class="f-where">Il cammino di integrazione &egrave; arbitrario (campo conservativo).</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Energia Potenziale del Sistema</div>
+      <div class="formula">
+        <span class="label">Sistema di N cariche</span>
+        <span class="f-main">U = (1/2) &Sigma;<sub>i</sub> &Sigma;<sub>j&ne;i</sub> k<sub>e</sub> q<sub>i</sub>q<sub>j</sub> / r<sub>ij</sub></span>
+        <span class="f-sub">Coppia singola: U = k<sub>e</sub> q<sub>1</sub>q<sub>2</sub> / r<sub>12</sub></span>
+        <span class="f-where">Il fattore 1/2 evita il doppio conteggio. U &gt; 0 = repulsione; U &lt; 0 = attrazione.</span>
+      </div>
+    </div>
+
+    <div class="note">In un conduttore in equilibrio elettrostatico: <b>E</b><sub>interno</sub> = 0, tutto il conduttore &egrave; a potenziale costante (equipotenziale). La carica libera risiede esclusivamente sulla superficie esterna.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-gauss"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LEGGE DI GAUSS</div>
+  <div class="section-body">
+    <p>La <b>Legge di Gauss</b> (1&ordf; equazione di Maxwell) mette in relazione il flusso elettrico uscente da qualsiasi superficie chiusa con la carica totale racchiusa al suo interno.</p>
+
+    <div class="formula">
+      <span class="label">Forma integrale</span>
+      <span class="f-main">&#8750;<sub>S</sub> <b>E</b> &middot; d<b>A</b> = Q<sub>enc</sub> / &epsilon;<sub>0</sub></span>
+    </div>
+
+    <div class="formula">
+      <span class="label">Forma differenziale (1&ordf; equazione di Maxwell)</span>
+      <span class="f-main">&nabla; &middot; <b>E</b> = &rho; / &epsilon;<sub>0</sub></span>
+      <span class="f-where">&rho; = densit&agrave; volumetrica di carica libera [C/m&sup3;]</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Applicazioni con Alta Simmetria</div>
+      <p>Si sceglie una superficie di Gauss che sfrutti la simmetria per estrarre <b>E</b> dall'integrale:</p>
+      <table>
+        <tr><th>Geometria</th><th>Superficie di Gauss</th><th>Campo risultante</th></tr>
+        <tr><td>Sfera carica Q (raggio R), r &gt; R</td><td>sfera r</td><td>E = kQ/r&sup2; radiale</td></tr>
+        <tr><td>Sfera isolante uniforme, r &lt; R</td><td>sfera r &lt; R</td><td>E = kQr/R&sup3; (cresce linearm.)</td></tr>
+        <tr><td>Cilindro &infin; (&lambda; C/m)</td><td>cilindro coassiale r</td><td>E = &lambda;/(2&pi;&epsilon;<sub>0</sub>r)</td></tr>
+        <tr><td>Piano &infin; (&sigma; C/m&sup2;)</td><td>pillbox simmetrico</td><td>E = &sigma;/(2&epsilon;<sub>0</sub>)</td></tr>
+        <tr><td>Conduttore (qualsiasi forma)</td><td>superficie interna</td><td>E = 0</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ELETTROMAGNETISMO
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-lorentz"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> FORZA DI LORENTZ</div>
+  <div class="section-body">
+    <p>La <b>forza di Lorentz</b> &egrave; la forza totale su una carica <i>q</i> in presenza di campi <b>E</b> e <b>B</b>:</p>
+
+    <div class="formula">
+      <span class="label">Forza di Lorentz</span>
+      <span class="f-main"><b>F</b> = q (<b>E</b> + <b>v</b> &times; <b>B</b>)</span>
+      <span class="f-where"><b>v</b> = velocit&agrave; della carica,&nbsp; <b>B</b> = campo magnetico [T = Wb/m&sup2; = kg/(A&middot;s&sup2;)]</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Componente Magnetica</div>
+      <div class="formula">
+        <span class="f-main"><b>F</b><sub>B</sub> = q <b>v</b> &times; <b>B</b></span>
+        <span class="f-sub">|F<sub>B</sub>| = qvB sin&theta; &nbsp;(&theta; = angolo tra <b>v</b> e <b>B</b>)</span>
+        <span class="f-where">La forza magnetica &egrave; sempre &perp; a <b>v</b> &rarr; non compie lavoro &rarr; non cambia il modulo della velocit&agrave;, solo la direzione.</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Moto in Campo Magnetico Uniforme</div>
+      <table>
+        <tr><th>Condizione</th><th>Traiettoria</th><th>Formula</th></tr>
+        <tr><td><b>v</b> &perp; <b>B</b></td><td>Circolare uniforme</td><td>r = mv/(qB),&nbsp; &omega;<sub>c</sub> = qB/m (frequenza di ciclotrone)</td></tr>
+        <tr><td><b>v</b> &parallel; <b>B</b></td><td>Lineare uniforme</td><td>F<sub>B</sub> = 0</td></tr>
+        <tr><td><b>v</b> generico</td><td>Elicoidale</td><td>composizione delle due</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Forza su Conduttore Percorso da Corrente</div>
+      <div class="formula">
+        <span class="f-main">d<b>F</b> = I d<b>l</b> &times; <b>B</b></span>
+        <span class="f-sub">Filo rettilineo di lunghezza L in campo uniforme: <b>F</b> = I L <b>l</b>&#770; &times; <b>B</b></span>
+        <span class="f-where">Principio del motore elettrico: la corrente in un campo magnetico subisce una forza meccanica.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-biot"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LEGGE DI BIOT-SAVART</div>
+  <div class="section-body">
+    <p>La <b>Legge di Biot-Savart</b> permette di calcolare il campo magnetico generato da qualsiasi distribuzione stazionaria di corrente:</p>
+
+    <div class="formula">
+      <span class="label">Forma differenziale</span>
+      <span class="f-main">d<b>B</b> = (&mu;<sub>0</sub>/4&pi;) &middot; I d<b>l</b> &times; r&#770; / r&sup2;</span>
+      <span class="f-where">&mu;<sub>0</sub> = 4&pi; &times; 10<sup>−7</sup> T&middot;m/A (permeabilit&agrave; magnetica del vuoto)<br>
+      r = distanza dall'elemento di corrente al punto campo, r&#770; = versore corrispondente</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Risultati Notevoli</div>
+      <table>
+        <tr><th>Configurazione</th><th>Campo B</th></tr>
+        <tr><td>Filo rettilineo &infin; (dist. r, corrente I)</td><td>B = &mu;<sub>0</sub>I / (2&pi;r) &mdash; circolare intorno al filo (regola della mano destra)</td></tr>
+        <tr><td>Centro di una spira circolare (raggio R)</td><td>B = &mu;<sub>0</sub>I / (2R) &mdash; perpendicolare alla spira</td></tr>
+        <tr><td>Solenoide ideale (n spire/m)</td><td>B = &mu;<sub>0</sub>nI = &mu;<sub>0</sub>NI/l &mdash; uniforme interno, nullo esterno</td></tr>
+        <tr><td>Toroide (N spire, raggio r)</td><td>B = &mu;<sub>0</sub>NI / (2&pi;r) &mdash; confinato all'anello</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-ampere"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LEGGE DI AMPERE</div>
+  <div class="section-body">
+
+    <div class="formula">
+      <span class="label">Forma integrale (regime stazionario)</span>
+      <span class="f-main">&#8750;<sub>C</sub> <b>B</b> &middot; d<b>l</b> = &mu;<sub>0</sub> I<sub>enc</sub></span>
+    </div>
+
+    <div class="formula">
+      <span class="label">Forma differenziale generalizzata (4&ordf; equazione di Maxwell)</span>
+      <span class="f-main">&nabla; &times; <b>B</b> = &mu;<sub>0</sub><b>J</b> + &mu;<sub>0</sub>&epsilon;<sub>0</sub> &part;<b>E</b>/&part;t</span>
+      <span class="f-where">Il termine &mu;<sub>0</sub>&epsilon;<sub>0</sub>&part;<b>E</b>/&part;t &egrave; la <b>corrente di spostamento</b> di Maxwell: un campo E variabile genera B anche in assenza di cariche fisiche in movimento.</span>
+    </div>
+
+    <div class="note">La corrente di spostamento &egrave; essenziale per la coerenza delle equazioni (conservazione della carica) e per la propagazione delle onde elettromagnetiche nel vuoto.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-faraday"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LEGGE DI FARADAY &mdash; INDUZIONE ELETTROMAGNETICA</div>
+  <div class="section-body">
+    <p>La <b>Legge di Faraday</b> (3&ordf; equazione di Maxwell) afferma che una variazione del flusso magnetico concatenato con un circuito induce una forza elettromotrice:</p>
+
+    <div class="formula">
+      <span class="label">Forma integrale</span>
+      <span class="f-main">EMF = &minus;d&Phi;<sub>B</sub>/dt &nbsp;&rarr;&nbsp; &#8750;<sub>C</sub> <b>E</b> &middot; d<b>l</b> = &minus;d/dt &#8746;<sub>S</sub> <b>B</b> &middot; d<b>A</b></span>
+    </div>
+
+    <div class="formula">
+      <span class="label">Forma differenziale (3&ordf; equazione di Maxwell)</span>
+      <span class="f-main">&nabla; &times; <b>E</b> = &minus;&part;<b>B</b>/&part;t</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Legge di Lenz</div>
+      <p>Il segno negativo esprime la <b>Legge di Lenz</b>: la FEM indotta produce una corrente il cui effetto magnetico <b>si oppone alla variazione</b> di flusso che l'ha generata. &Egrave; un'espressione del principio di conservazione dell'energia.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Auto-Induttanza</div>
+      <div class="formula">
+        <span class="f-main">&Phi;<sub>B</sub> = L &middot; I &nbsp;&rarr;&nbsp; EMF = &minus;L &middot; dI/dt</span>
+        <span class="f-sub">Solenoide: L = &mu;<sub>0</sub>n&sup2;V = &mu;<sub>0</sub>N&sup2;A/l &nbsp; [H = Wb/A = V&middot;s/A]</span>
+        <span class="f-where">n = spire/m, V = volume, A = sezione, l = lunghezza<br>
+        Un induttore si oppone alle variazioni di corrente (inerzia magnetica). Energia immagazzinata: U<sub>L</sub> = &frac12;LI&sup2;</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Mutua Induttanza (base dei trasformatori)</div>
+      <div class="formula">
+        <span class="f-main">EMF<sub>2</sub> = &minus;M &middot; dI<sub>1</sub>/dt</span>
+        <span class="f-sub">M = k&radic;(L<sub>1</sub>L<sub>2</sub>) &nbsp; con k &isin; [0,1] = fattore di accoppiamento</span>
+        <span class="f-where">M = &mu;<sub>0</sub>N<sub>1</sub>N<sub>2</sub>A/l per solenoidi coassiali ideali<br>
+        Trasformatore ideale: V<sub>2</sub>/V<sub>1</sub> = N<sub>2</sub>/N<sub>1</sub>, &nbsp; I<sub>2</sub>/I<sub>1</sub> = N<sub>1</sub>/N<sub>2</sub></span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Densit&agrave; di Energia del Campo Magnetico</div>
+      <div class="formula">
+        <span class="f-main">u<sub>B</sub> = B&sup2; / (2&mu;<sub>0</sub>) &nbsp; [J/m&sup3;]</span>
+        <span class="f-where">Duale di u<sub>E</sub> = &epsilon;<sub>0</sub>E&sup2;/2. In un'onda EM: u<sub>E</sub> = u<sub>B</sub> in media.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-maxwell"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> EQUAZIONI DI MAXWELL (Riepilogo)</div>
+  <div class="section-body">
+    <p>Le <b>equazioni di Maxwell</b> costituiscono la teoria completa dell'elettromagnetismo classico. Nel vuoto, forma differenziale:</p>
+
+    <table>
+      <tr><th>#</th><th>Equazione differenziale</th><th>Forma integrale</th><th>Significato fisico</th></tr>
+      <tr>
+        <td>I</td>
+        <td>&nabla; &middot; <b>E</b> = &rho;/&epsilon;<sub>0</sub></td>
+        <td>&#8750;<b>E</b>&middot;d<b>A</b> = Q<sub>enc</sub>/&epsilon;<sub>0</sub></td>
+        <td>Gauss: le cariche generano <b>E</b></td>
+      </tr>
+      <tr>
+        <td>II</td>
+        <td>&nabla; &middot; <b>B</b> = 0</td>
+        <td>&#8750;<b>B</b>&middot;d<b>A</b> = 0</td>
+        <td>Non esistono monopoli magnetici</td>
+      </tr>
+      <tr>
+        <td>III</td>
+        <td>&nabla; &times; <b>E</b> = &minus;&part;<b>B</b>/&part;t</td>
+        <td>&#8750;<b>E</b>&middot;d<b>l</b> = &minus;d&Phi;<sub>B</sub>/dt</td>
+        <td>Faraday: <b>B</b> variabile genera <b>E</b></td>
+      </tr>
+      <tr>
+        <td>IV</td>
+        <td>&nabla; &times; <b>B</b> = &mu;<sub>0</sub><b>J</b> + &mu;<sub>0</sub>&epsilon;<sub>0</sub>&part;<b>E</b>/&part;t</td>
+        <td>&#8750;<b>B</b>&middot;d<b>l</b> = &mu;<sub>0</sub>(I + I<sub>d</sub>)</td>
+        <td>Amp&egrave;re-Maxwell: correnti e <b>E</b> variabile generano <b>B</b></td>
+      </tr>
+    </table>
+
+    <div class="sub">
+      <div class="sub-title">Costanti Fondamentali e Velocit&agrave; della Luce</div>
+      <div class="formula">
+        <span class="f-main">c = 1/&radic;(&mu;<sub>0</sub>&epsilon;<sub>0</sub>) = 2.998 &times; 10<sup>8</sup> m/s</span>
+        <span class="f-sub">Nel mezzo: v = c/n,&nbsp; n = &radic;(&epsilon;<sub>r</sub>&mu;<sub>r</sub>) = indice di rifrazione</span>
+        <span class="f-where">Le onde EM sono auto-sostenute dall'accoppiamento fra eq. III e IV: <b>E</b> variabile genera <b>B</b>, <b>B</b> variabile genera <b>E</b>.</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Equazioni in un Mezzo Lineare</div>
+      <table>
+        <tr><th>Grandezza</th><th>Formula</th><th>Note</th></tr>
+        <tr><td>Vettore <b>D</b> (spostamento)</td><td><b>D</b> = &epsilon;<b>E</b> = &epsilon;<sub>0</sub>&epsilon;<sub>r</sub><b>E</b></td><td>Permittivit&agrave; relativa &epsilon;<sub>r</sub></td></tr>
+        <tr><td>Vettore <b>H</b> (campo H)</td><td><b>H</b> = <b>B</b>/(&mu;<sub>0</sub>&mu;<sub>r</sub>)</td><td>Permeabilit&agrave; relativa &mu;<sub>r</sub></td></tr>
+        <tr><td>Gauss nel mezzo</td><td>&nabla;&middot;<b>D</b> = &rho;<sub>f</sub></td><td>solo cariche libere</td></tr>
+        <tr><td>Amp&egrave;re nel mezzo</td><td>&nabla;&times;<b>H</b> = <b>J</b><sub>f</sub> + &part;<b>D</b>/&part;t</td><td>solo correnti libere</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TENSIONE
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-voltage-def"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TENSIONE &mdash; DIFFERENZA DI POTENZIALE</div>
+  <div class="section-body">
+    <p>In un circuito, la <b>tensione</b> (o <b>differenza di potenziale</b>, ddp) tra due nodi A e B &egrave; il lavoro compiuto per unit&agrave; di carica per spostare una carica positiva da B ad A attraverso il circuito:</p>
+
+    <div class="formula">
+      <span class="label">Definizione circuitale</span>
+      <span class="f-main">V<sub>AB</sub> = V<sub>A</sub> &minus; V<sub>B</sub> = W<sub>B&rarr;A</sub> / q &nbsp; [V = J/C]</span>
+      <span class="f-where">La tensione &egrave; relativa. Si fissa un nodo di riferimento (massa/ground) a V = 0.</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Convenzioni e Notazioni</div>
+      <table>
+        <tr><th>Simbolo</th><th>Significato</th></tr>
+        <tr><td>GND / &#9178;</td><td>Ground: nodo di riferimento a 0 V</td></tr>
+        <tr><td>V<sub>pp</sub></td><td>Tensione picco-picco (AC): V<sub>max</sub> &minus; V<sub>min</sub></td></tr>
+        <tr><td>V<sub>rms</sub></td><td>Tensione efficace: V<sub>rms</sub> = V<sub>p</sub>/&radic;2 (onda sinusoidale)</td></tr>
+        <tr><td>V<sub>avg</sub></td><td>Valore medio su un periodo T: V<sub>avg</sub> = (1/T)&int;<sub>0</sub><sup>T</sup> v(t) dt</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tensione AC Sinusoidale</div>
+      <div class="formula">
+        <span class="f-main">v(t) = V<sub>p</sub> sin(&omega;t + &phi;)</span>
+        <span class="f-sub">V<sub>rms</sub> = V<sub>p</sub> / &radic;2 &asymp; 0.707 V<sub>p</sub></span>
+        <span class="f-where">&omega; = 2&pi;f = pulsazione [rad/s],&nbsp; &phi; = fase iniziale [rad]<br>
+        Esempio rete italiana: 230 V<sub>rms</sub> @ 50 Hz &rarr; V<sub>p</sub> &asymp; 325 V</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-emf"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> FORZA ELETTROMOTRICE (FEM) &amp; GENERATORI</div>
+  <div class="section-body">
+    <p>La <b>forza elettromotrice</b> (FEM, o EMF) &egrave; il lavoro per unit&agrave; di carica compiuto da forze <i>non</i>-elettrostatiche (chimica, meccanica, termica&hellip;) all'interno del generatore che mantiene la separazione di carica:</p>
+
+    <div class="formula">
+      <span class="f-main">EMF = &epsilon; = W<sub>non-EM</sub> / q &nbsp; [V]</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Modello di Thevenin del Generatore Reale</div>
+      <div class="formula">
+        <span class="f-main">V<sub>term</sub> = &epsilon; &minus; I &middot; r<sub>i</sub></span>
+        <span class="f-where">r<sub>i</sub> = resistenza interna del generatore.<br>
+        Circuito aperto (I=0): V = &epsilon;. &nbsp; Cortocircuito: I<sub>cc</sub> = &epsilon;/r<sub>i</sub>, V = 0.</span>
+      </div>
+      <table>
+        <tr><th>Condizione</th><th>Tensione terminale</th><th>Corrente</th></tr>
+        <tr><td>Circuito aperto</td><td>V = &epsilon;</td><td>I = 0</td></tr>
+        <tr><td>Cortocircuito</td><td>V = 0</td><td>I<sub>cc</sub> = &epsilon;/r<sub>i</sub></td></tr>
+        <tr><td>Carico R<sub>L</sub></td><td>V = &epsilon;R<sub>L</sub>/(R<sub>L</sub>+r<sub>i</sub>)</td><td>I = &epsilon;/(R<sub>L</sub>+r<sub>i</sub>)</td></tr>
+        <tr><td>Max trasferimento potenza</td><td>V = &epsilon;/2</td><td>R<sub>L</sub> = r<sub>i</sub> &rarr; P<sub>max</sub> = &epsilon;&sup2;/(4r<sub>i</sub>)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Teoremi di Thevenin e Norton</div>
+      <p>Qualsiasi rete lineare bipodale pu&ograve; essere sostituita da un equivalente:</p>
+      <table>
+        <tr><th>Modello</th><th>Equivalente</th><th>Parametri</th></tr>
+        <tr><td>Thevenin</td><td>Gen. tensione V<sub>th</sub> + R<sub>th</sub> in serie</td><td>V<sub>th</sub> = V<sub>oc</sub>,&nbsp; R<sub>th</sub> = V<sub>oc</sub>/I<sub>sc</sub></td></tr>
+        <tr><td>Norton</td><td>Gen. corrente I<sub>N</sub> in parallelo a R<sub>N</sub></td><td>I<sub>N</sub> = I<sub>sc</sub>,&nbsp; R<sub>N</sub> = R<sub>th</sub></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-kvl"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LEGGE DI KIRCHHOFF DELLE TENSIONI (KVL)</div>
+  <div class="section-body">
+    <p>La <b>KVL</b> &egrave; conseguenza diretta della conservativit&agrave; del campo elettrostatico:</p>
+
+    <div class="formula">
+      <span class="label">Seconda legge di Kirchhoff</span>
+      <span class="f-main">&Sigma;<sub>k</sub> V<sub>k</sub> = 0 &nbsp; (lungo qualsiasi maglia chiusa)</span>
+      <span class="f-where">La somma algebrica delle tensioni in un percorso chiuso &egrave; zero.<br>
+      Convenzione: (+) se si percorre l'elemento nel verso della tensione (da &minus; a +), (&minus;) altrimenti.</span>
+    </div>
+
+    <div class="note"><b>Attenzione:</b> la KVL &egrave; esatta per circuiti a parametri concentrati con variazioni di flusso magnetico trascurabili fuori dai componenti. In presenza di flusso variabile concatenato con la maglia (es. induttore), la FEM indotta va inclusa esplicitamente come generatore.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CORRENTE ELETTRICA
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-current-def"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CORRENTE ELETTRICA &mdash; DEFINIZIONE &amp; DENSIT&Agrave;</div>
+  <div class="section-body">
+    <p>La <b>corrente elettrica</b> &egrave; il flusso netto di carica attraverso una sezione del conduttore nell'unit&agrave; di tempo:</p>
+
+    <div class="formula">
+      <span class="label">Definizione</span>
+      <span class="f-main">I = dq/dt &nbsp; [A = C/s]</span>
+      <span class="f-where">Corrente convenzionale: direzione del moto delle cariche positive (nei metalli &egrave; opposta al moto degli elettroni).</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Densit&agrave; di Corrente</div>
+      <div class="formula">
+        <span class="f-main"><b>J</b> = I / A &middot; &acirc; &nbsp; [A/m&sup2;] &nbsp; (conduttore uniforme)</span>
+        <span class="f-sub">In generale: I = &#8746;<sub>S</sub> <b>J</b> &middot; d<b>A</b></span>
+        <span class="f-where">&acirc; = versore nella direzione del flusso di corrente</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Velocit&agrave; di Deriva</div>
+      <div class="formula">
+        <span class="f-main">I = n &middot; q &middot; v<sub>d</sub> &middot; A &nbsp;&rarr;&nbsp; <b>J</b> = nqv<sub>d</sub></span>
+        <span class="f-where">n = densit&agrave; numerica dei portatori [m<sup>−3</sup>]<br>
+        v<sub>d</sub> = velocit&agrave; di deriva [m/s] &mdash; nei metalli tipicamente mm/s, molto inferiore alla velocit&agrave; termica (~10<sup>6</sup> m/s)</span>
+      </div>
+      <div class="note">La velocit&agrave; del segnale (&asymp; c) &egrave; quella del campo EM, non degli elettroni. In un filo di Cu &Oslash;1mm con I = 1 A: v<sub>d</sub> &asymp; 0.07 mm/s.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-drude"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MODELLO DI DRUDE &amp; LEGGE DI OHM MICROSCOPICA</div>
+  <div class="section-body">
+    <p>Il <b>modello di Drude</b> (1900) descrive i metalli come un gas di elettroni liberi soggetti a collisioni con il reticolo ionico. Tra una collisione e l'altra (tempo libero medio &tau;), un elettrone accelera sotto il campo <b>E</b>:</p>
+
+    <div class="formula">
+      <span class="f-main">m<sub>e</sub> <b>a</b> = e<b>E</b> &nbsp;&rarr;&nbsp; v<sub>d</sub> = e&tau;E/m<sub>e</sub> &nbsp;&rarr;&nbsp; <b>J</b> = nev<sub>d</sub> = (ne&sup2;&tau;/m<sub>e</sub>)<b>E</b></span>
+      <span class="f-sub"><b>J</b> = &sigma;<b>E</b> &nbsp;(Legge di Ohm microscopica)</span>
+      <span class="f-where">&sigma; = ne&sup2;&tau;/m<sub>e</sub> = conducibilit&agrave; [S/m = &Omega;<sup>−1</sup>m<sup>−1</sup>]<br>
+      &rho; = 1/&sigma; = resistivit&agrave; [&Omega;&middot;m]</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Conducibilit&agrave; dei Materiali</div>
+      <table>
+        <tr><th>Materiale</th><th>&sigma; [S/m]</th><th>&rho; [&Omega;&middot;m]</th><th>Tipo</th></tr>
+        <tr><td>Argento (Ag)</td><td>6.3 &times; 10<sup>7</sup></td><td>1.59 &times; 10<sup>&minus;8</sup></td><td>Conduttore</td></tr>
+        <tr><td>Rame (Cu)</td><td>5.8 &times; 10<sup>7</sup></td><td>1.72 &times; 10<sup>&minus;8</sup></td><td>Conduttore</td></tr>
+        <tr><td>Alluminio (Al)</td><td>3.5 &times; 10<sup>7</sup></td><td>2.65 &times; 10<sup>&minus;8</sup></td><td>Conduttore</td></tr>
+        <tr><td>Silicio (Si) intrinseco</td><td>&asymp; 1.6 &times; 10<sup>&minus;3</sup></td><td>&asymp; 640</td><td>Semiconduttore</td></tr>
+        <tr><td>Germanio (Ge)</td><td>&asymp; 2.2</td><td>&asymp; 0.46</td><td>Semiconduttore</td></tr>
+        <tr><td>Vetro</td><td>&asymp; 10<sup>&minus;12</sup></td><td>&asymp; 10<sup>12</sup></td><td>Isolante</td></tr>
+        <tr><td>Aria secca</td><td>&asymp; 10<sup>&minus;15</sup></td><td>&asymp; 10<sup>15</sup></td><td>Isolante</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-kcl"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> LEGGE DI KIRCHHOFF DELLE CORRENTI (KCL)</div>
+  <div class="section-body">
+    <p>La <b>KCL</b> &egrave; conseguenza diretta della conservazione della carica:</p>
+
+    <div class="formula">
+      <span class="label">Prima legge di Kirchhoff</span>
+      <span class="f-main">&Sigma;<sub>k</sub> I<sub>k</sub> = 0 &nbsp; (in ogni nodo)</span>
+      <span class="f-where">La somma algebrica delle correnti in un nodo &egrave; zero.<br>
+      Convenzione standard: correnti entranti (+), uscenti (&minus;).</span>
+    </div>
+
+    <div class="note">Forma locale: &nabla;&middot;<b>J</b> = &minus;&part;&rho;/&part;t. In regime stazionario (DC): &nabla;&middot;<b>J</b> = 0, la corrente non si accumula in nessun nodo. La KCL &egrave; la versione a parametri concentrati di questo principio.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     RESISTENZA
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-resistance-def"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RESISTENZA &mdash; LEGGE DI OHM</div>
+  <div class="section-body">
+    <p>La <b>resistenza</b> R di un elemento &egrave; il rapporto tra tensione e corrente (per elementi <b>ohmici</b>, cio&egrave; lineari):</p>
+
+    <div class="formula">
+      <span class="label">Legge di Ohm macroscopica</span>
+      <span class="f-main">V = I &middot; R &nbsp; [&Omega; = V/A]</span>
+      <span class="f-sub">Conduttanza: G = 1/R &nbsp; [S = &Omega;<sup>−1</sup> = A/V]</span>
+    </div>
+
+    <div class="note">Un componente &egrave; <b>ohmico</b> se R non dipende da V n&eacute; da I. I resistori reali lo sono in prima approssimazione entro il range operativo. Diodi, transistor, lampade ecc. sono <b>non-ohmici</b> (non-lineari).</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-resistivity"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RESISTIVIT&Agrave; &amp; DIPENDENZA DALLA TEMPERATURA</div>
+  <div class="section-body">
+
+    <div class="formula">
+      <span class="label">Resistenza geometrica</span>
+      <span class="f-main">R = &rho; &middot; L / A</span>
+      <span class="f-where">&rho; = resistivit&agrave; del materiale [&Omega;&middot;m],&nbsp; L = lunghezza [m],&nbsp; A = sezione trasversale [m&sup2;]<br>
+      Raddoppiando L &rarr; R raddoppia; raddoppiando A &rarr; R dimezza.</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Dipendenza dalla Temperatura</div>
+      <div class="formula">
+        <span class="f-main">R(T) = R<sub>0</sub> [1 + &alpha;(T &minus; T<sub>0</sub>)]</span>
+        <span class="f-sub">&rho;(T) = &rho;<sub>0</sub> [1 + &alpha;(T &minus; T<sub>0</sub>)]</span>
+        <span class="f-where">&alpha; = coefficiente termico di resistivit&agrave; [K<sup>−1</sup>]<br>
+        &alpha; &gt; 0 nei metalli (R aumenta con T: pi&ugrave; collisioni termiche)<br>
+        &alpha; &lt; 0 nei semiconduttori (R diminuisce con T: pi&ugrave; portatori liberi)<br>
+        T<sub>0</sub> = 20&deg;C (riferimento standard)</span>
+      </div>
+      <table>
+        <tr><th>Materiale</th><th>&alpha; [&times;10<sup>−3</sup> K<sup>−1</sup>]</th><th>Nota</th></tr>
+        <tr><td>Rame (Cu)</td><td>+3.9</td><td>Conduttore tipico</td></tr>
+        <tr><td>Alluminio (Al)</td><td>+4.0</td><td>Conduttore</td></tr>
+        <tr><td>Tungsteno (W)</td><td>+4.5</td><td>Filamento lampade</td></tr>
+        <tr><td>Nichel-Cromo (Ni-Cr)</td><td>+0.1</td><td>Resistori di precisione, riscaldatori</td></tr>
+        <tr><td>Constantan (Cu-Ni 55-45)</td><td>&asymp; 0</td><td>Resistenze di precisione, termocoppia</td></tr>
+        <tr><td>Silicio (Si)</td><td>&minus;75</td><td>Semiconduttore: R cala con T</td></tr>
+        <tr><td>NTC (termistor)</td><td>&minus;3%&hellip;&minus;5%/&deg;C</td><td>Sensore di temperatura</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Superconduttivit&agrave;</div>
+      <p>Sotto la temperatura critica T<sub>c</sub>, certi materiali mostrano &rho; = 0 esatto (effetto Meissner: espulsione di <b>B</b>). Esempi: Hg (T<sub>c</sub> = 4.2 K), Pb (7.2 K), YBCO (93 K, superconduttore ad alta temperatura).</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-power"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> POTENZA ELETTRICA &amp; EFFETTO JOULE</div>
+  <div class="section-body">
+
+    <div class="formula">
+      <span class="label">Potenza istantanea</span>
+      <span class="f-main">P = dW/dt = V &middot; I &nbsp; [W = J/s = V&middot;A]</span>
+    </div>
+
+    <div class="formula">
+      <span class="label">Resistore (tutto convertito in calore &mdash; effetto Joule)</span>
+      <span class="f-main">P = V &middot; I = I&sup2; &middot; R = V&sup2; / R</span>
+      <span class="f-where">Densit&agrave; di potenza nel volume del conduttore: p = <b>J</b>&middot;<b>E</b> = &sigma;E&sup2; = &rho;J&sup2; [W/m&sup3;]</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Energia e Calorimetria</div>
+      <div class="formula">
+        <span class="f-main">W = P &middot; t = I&sup2;Rt &nbsp; [J]</span>
+        <span class="f-sub">Calore sviluppato: Q = mc<sub>p</sub>&Delta;T &rarr; &Delta;T = I&sup2;Rt/(mc<sub>p</sub>)</span>
+        <span class="f-where">Principio di fusibili, riscaldatori, forni a resistenza.</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Potenza in AC</div>
+      <table>
+        <tr><th>Grandezza</th><th>Formula</th><th>Unit&agrave;</th><th>Note</th></tr>
+        <tr><td>Potenza attiva (reale)</td><td>P = V<sub>rms</sub>I<sub>rms</sub>cos&phi;</td><td>[W]</td><td>Lavoro utile, dissipata in R</td></tr>
+        <tr><td>Potenza reattiva</td><td>Q = V<sub>rms</sub>I<sub>rms</sub>sin&phi;</td><td>[VAR]</td><td>Scambiata con L e C (non dissipata)</td></tr>
+        <tr><td>Potenza apparente</td><td>S = V<sub>rms</sub>I<sub>rms</sub></td><td>[VA]</td><td>S&sup2; = P&sup2; + Q&sup2;</td></tr>
+        <tr><td>Fattore di potenza</td><td>PF = cos&phi; = P/S</td><td>adim.</td><td>PF = 1 per carico puramente R</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-series-parallel-r"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RESISTENZE IN SERIE E PARALLELO</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Serie</div>
+        <div class="formula">
+          <span class="f-main">R<sub>eq</sub> = R<sub>1</sub> + R<sub>2</sub> + &hellip; + R<sub>n</sub></span>
+          <span class="f-sub">Stessa corrente, tensioni si sommano</span>
+        </div>
+        <p>Partitore di tensione:</p>
+        <div class="formula">
+          <span class="f-main">V<sub>k</sub> = V<sub>tot</sub> &middot; R<sub>k</sub> / &Sigma;R<sub>i</sub></span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Parallelo</div>
+        <div class="formula">
+          <span class="f-main">1/R<sub>eq</sub> = 1/R<sub>1</sub> + 1/R<sub>2</sub> + &hellip; + 1/R<sub>n</sub></span>
+          <span class="f-sub">Due rami: R<sub>eq</sub> = R<sub>1</sub>R<sub>2</sub>/(R<sub>1</sub>+R<sub>2</sub>)</span>
+          <span class="f-sub">Stessa tensione, correnti si sommano</span>
+        </div>
+        <p>Partitore di corrente (due rami):</p>
+        <div class="formula">
+          <span class="f-main">I<sub>1</sub> = I<sub>tot</sub> &middot; R<sub>2</sub>/(R<sub>1</sub>+R<sub>2</sub>)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Trasformazione Triangolo &hArr; Stella (&Delta;&harr;Y)</div>
+      <table>
+        <tr><th>Trasformazione</th><th>Formula</th></tr>
+        <tr><td>&Delta; &rarr; Y</td><td>R<sub>1</sub> = R<sub>b</sub>R<sub>c</sub>/(R<sub>a</sub>+R<sub>b</sub>+R<sub>c</sub>) (ciclicamente)</td></tr>
+        <tr><td>Y &rarr; &Delta;</td><td>R<sub>a</sub> = (R<sub>1</sub>R<sub>2</sub>+R<sub>2</sub>R<sub>3</sub>+R<sub>3</sub>R<sub>1</sub>)/R<sub>1</sub></td></tr>
+        <tr><td>Caso simmetrico R<sub>&Delta;</sub> = R</td><td>R<sub>Y</sub> = R/3</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-color-code"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CODICE COLORI RESISTORI (IEC 60062)</div>
+  <div class="section-body">
+    <table>
+      <tr>
+        <th>Colore</th><th>Cifra</th><th>Moltiplicatore</th><th>Tolleranza</th><th>TCR [ppm/&deg;C]</th>
+      </tr>
+      <tr><td>&#11035; Nero</td><td>0</td><td>&times;1</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td>&#129521; Marrone</td><td>1</td><td>&times;10</td><td>&plusmn;1%</td><td>100</td></tr>
+      <tr><td>&#128308; Rosso</td><td>2</td><td>&times;100</td><td>&plusmn;2%</td><td>50</td></tr>
+      <tr><td>&#128992; Arancio</td><td>3</td><td>&times;1k</td><td>&mdash;</td><td>15</td></tr>
+      <tr><td>&#128993; Giallo</td><td>4</td><td>&times;10k</td><td>&mdash;</td><td>25</td></tr>
+      <tr><td>&#128994; Verde</td><td>5</td><td>&times;100k</td><td>&plusmn;0.5%</td><td>&mdash;</td></tr>
+      <tr><td>&#128309; Blu</td><td>6</td><td>&times;1M</td><td>&plusmn;0.25%</td><td>10</td></tr>
+      <tr><td>&#128995; Viola</td><td>7</td><td>&times;10M</td><td>&plusmn;0.1%</td><td>5</td></tr>
+      <tr><td>&#11036; Grigio</td><td>8</td><td>&times;100M</td><td>&plusmn;0.05%</td><td>&mdash;</td></tr>
+      <tr><td>&#11036; Bianco</td><td>9</td><td>&times;1G</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td>&#127775; Oro</td><td>&mdash;</td><td>&times;0.1</td><td>&plusmn;5%</td><td>&mdash;</td></tr>
+      <tr><td>&#127774; Argento</td><td>&mdash;</td><td>&times;0.01</td><td>&plusmn;10%</td><td>&mdash;</td></tr>
+    </table>
+
+    <div class="note">Mnemonico: <b>N</b>ero <b>M</b>arrone <b>R</b>osso <b>A</b>rancio <b>G</b>iallo <b>V</b>erde <b>B</b>lu <b>V</b>ioletto <b>G</b>rigio <b>B</b>ianco &rarr; <b>"Non Mi Riesce Ancora Guadagnar, But Very Good Boy"</b></div>
+
+    <div class="sub">
+      <div class="sub-title">Lettura Resistori 4 e 5 Fasce</div>
+      <table>
+        <tr><th>Fasce</th><th>Struttura</th><th>Esempio</th></tr>
+        <tr><td>4 bande</td><td>[c][c][molt.][toll.]</td><td>Giallo-Viola-Rosso-Oro = 47 &times; 100 &plusmn;5% = 4700 &Omega; &plusmn;5%</td></tr>
+        <tr><td>5 bande</td><td>[c][c][c][molt.][toll.]</td><td>Rosso-Nero-Nero-Marrone-Marrone = 200 &times; 10 &plusmn;1% = 2000 &Omega; &plusmn;1%</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CAPACITÀ
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-capacitor-def"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CAPACIT&Agrave; &mdash; DEFINIZIONE &amp; GEOMETRIA</div>
+  <div class="section-body">
+    <p>La <b>capacit&agrave;</b> C di un condensatore misura la sua attitudine ad accumulare carica per unit&agrave; di differenza di potenziale:</p>
+
+    <div class="formula">
+      <span class="label">Definizione</span>
+      <span class="f-main">C = Q / V &nbsp; [F = C/V]</span>
+      <span class="f-where">C dipende solo dalla geometria e dal dielettrico, non da Q n&eacute; da V.</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Condensatori Idealizzati per Geometria</div>
+      <table>
+        <tr><th>Geometria</th><th>Capacit&agrave;</th><th>Campo interno</th></tr>
+        <tr><td>Piano-parallelo (area A, dist. d)</td><td>C = &epsilon;<sub>0</sub>A/d</td><td>E = &sigma;/&epsilon;<sub>0</sub> uniforme</td></tr>
+        <tr><td>Cilindrico (raggi a&lt;b, lung. L)</td><td>C = 2&pi;&epsilon;<sub>0</sub>L / ln(b/a)</td><td>E = &lambda;/(2&pi;&epsilon;<sub>0</sub>r) radiale</td></tr>
+        <tr><td>Sferico (raggi a&lt;b)</td><td>C = 4&pi;&epsilon;<sub>0</sub>ab/(b&minus;a)</td><td>E = Q/(4&pi;&epsilon;<sub>0</sub>r&sup2;)</td></tr>
+        <tr><td>Sfera isolata (raggio R)</td><td>C = 4&pi;&epsilon;<sub>0</sub>R</td><td>(limite b&rarr;&infin;)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Relazione I-V del Condensatore (dominio del tempo)</div>
+      <div class="formula">
+        <span class="f-main">I = C &middot; dV/dt &nbsp;&rarr;&nbsp; V(t) = (1/C) &int; I dt</span>
+        <span class="f-where">In DC (dV/dt = 0): I = 0 &rarr; il condensatore si comporta come circuito aperto a regime.<br>
+        In AC: Z<sub>C</sub> = 1/(j&omega;C) &rarr; |Z<sub>C</sub>| = 1/(&omega;C) diminuisce all'aumentare della frequenza.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-cap-energy"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> ENERGIA NEL CONDENSATORE</div>
+  <div class="section-body">
+
+    <div class="formula">
+      <span class="label">Energia elettrostatica immagazzinata</span>
+      <span class="f-main">U = Q&sup2;/(2C) = CV&sup2;/2 = QV/2 &nbsp; [J]</span>
+      <span class="f-where">Derivazione: U = &int;<sub>0</sub><sup>Q</sup> (q/C) dq = Q&sup2;/(2C)</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Densit&agrave; di Energia del Campo E</div>
+      <div class="formula">
+        <span class="f-main">u<sub>E</sub> = &epsilon;<sub>0</sub>E&sup2; / 2 &nbsp; [J/m&sup3;]</span>
+        <span class="f-sub">Per condensatore piano: U = u<sub>E</sub> &middot; Ad = (&epsilon;<sub>0</sub>E&sup2;/2)&middot;Ad = CV&sup2;/2 &#10003;</span>
+        <span class="f-where">L'energia elettrostatica &egrave; distribuita nello spazio dove esiste il campo E, non nelle cariche sulle armature.</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Forza tra le Armature</div>
+      <div class="formula">
+        <span class="f-main">F = Q&sup2;/(2&epsilon;<sub>0</sub>A) = &epsilon;<sub>0</sub>E&sup2;A/2 &nbsp; (attrattiva)</span>
+        <span class="f-where">Ricavata da F = &minus;dU/dd a Q costante (il condensatore non &egrave; connesso ad un generatore).</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-dielectric"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DIELETTRICO &amp; POLARIZZAZIONE</div>
+  <div class="section-body">
+    <p>Inserire un materiale dielettrico riduce il campo interno: i dipoli molecolari del materiale si allineano con <b>E</b> creando un campo di polarizzazione opposto (<b>P</b>).</p>
+
+    <div class="formula">
+      <span class="f-main">C = &epsilon;<sub>r</sub> &epsilon;<sub>0</sub> A/d &nbsp;&rarr;&nbsp; C<sub>dielettr.</sub> = &epsilon;<sub>r</sub> C<sub>vuoto</sub></span>
+      <span class="f-sub">Campo ridotto a Q fissa: E = E<sub>0</sub>/&epsilon;<sub>r</sub></span>
+      <span class="f-where">&epsilon;<sub>r</sub> = permittivit&agrave; relativa (costante dielettrica), adimensionale, &ge; 1</span>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Polarizzazione e Suscettibilit&agrave;</div>
+      <div class="formula">
+        <span class="f-main"><b>P</b> = &epsilon;<sub>0</sub>&chi;<sub>e</sub><b>E</b> &nbsp;&rarr;&nbsp; <b>D</b> = &epsilon;<sub>0</sub><b>E</b> + <b>P</b> = &epsilon;<sub>0</sub>(1+&chi;<sub>e</sub>)<b>E</b> = &epsilon;<b>E</b></span>
+        <span class="f-where">&chi;<sub>e</sub> = &epsilon;<sub>r</sub> &minus; 1 = suscettibilit&agrave; elettrica<br>
+        <b>D</b> = vettore di spostamento dielettrico [C/m&sup2;]</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Materiali Dielettrici Comuni</div>
+      <table>
+        <tr><th>Materiale</th><th>&epsilon;<sub>r</sub></th><th>E<sub>breakdown</sub> [MV/m]</th><th>Applicazione tipica</th></tr>
+        <tr><td>Vuoto / Aria</td><td>1.000 / 1.0006</td><td>3</td><td>Riferimento</td></tr>
+        <tr><td>Teflon (PTFE)</td><td>2.1</td><td>60</td><td>PCB alta frequenza, RF</td></tr>
+        <tr><td>Polipropilene (PP)</td><td>2.2</td><td>50&ndash;100</td><td>Condensatori film audio</td></tr>
+        <tr><td>Vetro</td><td>5&ndash;10</td><td>10&ndash;30</td><td>Condensatori vetro-mica</td></tr>
+        <tr><td>FR4 (PCB standard)</td><td>4.4&ndash;4.8</td><td>20</td><td>PCB digitali/analogici</td></tr>
+        <tr><td>Ossido di alluminio (Al<sub>2</sub>O<sub>3</sub>)</td><td>9&ndash;10</td><td>10&ndash;20</td><td>Condensatori elettrolitici Al</td></tr>
+        <tr><td>BaTiO<sub>3</sub> (ferroelettrico)</td><td>10<sup>3</sup>&ndash;10<sup>4</sup></td><td>variabile</td><td>Condensatori ceramici MLCC (X5R, X7R)</td></tr>
+      </table>
+    </div>
+
+    <div class="warn"><b>Tensione di breakdown:</b> superare E<sub>breakdown</sub> ionizza il dielettrico: scorre corrente e il condensatore &egrave; distrutto in modo irreversibile. Lavorare sempre con un margine &ge;20% rispetto alla tensione nominale massima.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-series-parallel-c"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CONDENSATORI IN SERIE E PARALLELO</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Parallelo</div>
+        <div class="formula">
+          <span class="f-main">C<sub>eq</sub> = C<sub>1</sub> + C<sub>2</sub> + &hellip; + C<sub>n</sub></span>
+          <span class="f-sub">Stessa tensione; cariche si sommano</span>
+          <span class="f-where">Analogo a R in serie. Si usa per aumentare la capacit&agrave; totale.</span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Serie</div>
+        <div class="formula">
+          <span class="f-main">1/C<sub>eq</sub> = 1/C<sub>1</sub> + 1/C<sub>2</sub> + &hellip; + 1/C<sub>n</sub></span>
+          <span class="f-sub">Due C: C<sub>eq</sub> = C<sub>1</sub>C<sub>2</sub>/(C<sub>1</sub>+C<sub>2</sub>)</span>
+          <span class="f-sub">Stessa carica; tensioni si sommano</span>
+          <span class="f-where">C<sub>eq</sub> &lt; min(C<sub>i</sub>). Serve per aumentare la tensione max sopportabile.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note"><b>Dualit&agrave;:</b> C in parallelo si comporta come R in serie; C in serie come R in parallelo. Questo riflette la dualit&agrave; tra tensione e corrente nell'equazione I = C dV/dt.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-rc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CIRCUITO RC &mdash; CARICA, SCARICA E RISPOSTA IN FREQUENZA</div>
+  <div class="section-body">
+    <p>Il circuito RC &egrave; il mattone fondamentale di filtri, timer e integratori. La costante di tempo &tau; = RC determina la scala temporale dei transitori.</p>
+
+    <div class="sub">
+      <div class="sub-title">Carica (V<sub>0</sub> applicata, condensatore inizialmente scarico)</div>
+      <div class="formula">
+        <span class="f-main">V<sub>C</sub>(t) = V<sub>0</sub> (1 &minus; e<sup>&minus;t/&tau;</sup>)</span>
+        <span class="f-sub">I(t) = (V<sub>0</sub>/R) e<sup>&minus;t/&tau;</sup></span>
+        <span class="f-where">&tau; = RC [s]. &nbsp; a t = &tau;: V<sub>C</sub> &asymp; 0.632 V<sub>0</sub>. &nbsp; a t = 5&tau;: V<sub>C</sub> &asymp; 0.993 V<sub>0</sub> (carica completa).</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Scarica (condensatore carico a V<sub>0</sub>, sorgente rimossa)</div>
+      <div class="formula">
+        <span class="f-main">V<sub>C</sub>(t) = V<sub>0</sub> e<sup>&minus;t/&tau;</sup></span>
+        <span class="f-sub">I(t) = &minus;(V<sub>0</sub>/R) e<sup>&minus;t/&tau;</sup></span>
+        <span class="f-where">a t = &tau;: V<sub>C</sub> &asymp; 0.368 V<sub>0</sub>. &nbsp; a t = 5&tau;: V<sub>C</sub> &asymp; 0.007 V<sub>0</sub>.</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Risposta in Frequenza (filtri del 1&ordm; ordine)</div>
+      <table>
+        <tr><th>Configurazione</th><th>Tipo filtro</th><th>f<sub>c</sub></th><th>Pendenza</th></tr>
+        <tr><td>Uscita su C</td><td>Passa-basso (LP)</td><td>1/(2&pi;RC)</td><td>&minus;20 dB/dec</td></tr>
+        <tr><td>Uscita su R</td><td>Passa-alto (HP)</td><td>1/(2&pi;RC)</td><td>&minus;20 dB/dec (per f &lt;&lt; f<sub>c</sub>)</td></tr>
+      </table>
+      <div class="formula">
+        <span class="label">Funzione di trasferimento low-pass</span>
+        <span class="f-main">H(j&omega;) = 1 / (1 + j&omega;RC) = 1 / (1 + j f/f<sub>c</sub>)</span>
+        <span class="f-sub">|H| = 1/&radic;(1+(f/f<sub>c</sub>)&sup2;),&nbsp; &phi; = &minus;arctan(f/f<sub>c</sub>)</span>
+        <span class="f-where">A f = f<sub>c</sub>: |H| = 1/&radic;2 &asymp; 0.707 (&minus;3 dB), &phi; = &minus;45&deg;</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Esempi Pratici di &tau; = RC</div>
+      <table>
+        <tr><th>Applicazione</th><th>R tipico</th><th>C tipico</th><th>&tau;</th></tr>
+        <tr><td>Filtro audio passa-basso 1 kHz</td><td>1.6 k&Omega;</td><td>100 nF</td><td>&asymp; 160 &mu;s</td></tr>
+        <tr><td>Timer NE555 @ ~1 Hz</td><td>1 M&Omega;</td><td>1.4 &mu;F</td><td>&asymp; 1.4 s</td></tr>
+        <tr><td>Decoupling alimentazione</td><td>0.1 &Omega; (ESR)</td><td>100 &mu;F</td><td>&asymp; 10 &mu;s</td></tr>
+        <tr><td>Integratore op-amp</td><td>10 k&Omega;</td><td>10 nF</td><td>&asymp; 100 &mu;s</td></tr>
+      </table>
+    </div>
+
+    <div class="note">Regola pratica: dopo <b>5&tau;</b> il transitorio &egrave; completato (&gt;99%). Il transitorio &egrave; al 63.2% a 1&tau;, 86.5% a 2&tau;, 95.0% a 3&tau;, 98.2% a 4&tau;.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     INDUTTANZA
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-inductor-def"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INDUTTANZA &mdash; DEFINIZIONE &amp; AUTOINDUZIONE</div>
+  <div class="section-body">
+    <p>Un <b>induttore</b> (bobina) immagazzina energia nel campo magnetico. L'<b>autoinduzione</b> &egrave; il fenomeno per cui la variazione di corrente nel conduttore induce una FEM che si oppone alla variazione stessa (legge di Lenz).</p>
+
+    <div class="sub">
+      <div class="sub-title">Flusso Concatenato e Induttanza</div>
+      <div class="formula">
+        <span class="label">Definizione di autoinduttanza</span>
+        <span class="f-main">L = N&Phi;/I &nbsp;&nbsp; [H = V&middot;s/A = &Omega;&middot;s]</span>
+        <span class="f-sub">FEM autoindotta (conv. passiva): V<sub>L</sub> = L dI/dt</span>
+        <span class="f-where">L = autoinduttanza [H],&nbsp; N = numero di spire,&nbsp; &Phi; = flusso per spira [Wb]</span>
+      </div>
+      <div class="formula">
+        <span class="label">Induttanza solenoide ideale</span>
+        <span class="f-main">L = &mu;<sub>0</sub>&mu;<sub>r</sub> N<sup>2</sup> A / l</span>
+        <span class="f-where">A = area sezione [m<sup>2</sup>],&nbsp; l = lunghezza [m],&nbsp; &mu;<sub>r</sub> = permeabilit&agrave; relativa (aria: &asymp;1, ferrite: 100&ndash;10000)</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Serie e Parallelo</div>
+      <table>
+        <tr><th>Configurazione</th><th>Formula</th><th>Nota</th></tr>
+        <tr><td>Serie (senza accoppiamento)</td><td>L<sub>tot</sub> = L<sub>1</sub> + L<sub>2</sub> + &hellip;</td><td>come le resistenze</td></tr>
+        <tr><td>Parallelo (senza accoppiamento)</td><td>1/L<sub>tot</sub> = 1/L<sub>1</sub> + 1/L<sub>2</sub> + &hellip;</td><td>come le resistenze</td></tr>
+        <tr><td>Serie con accoppiamento M</td><td>L<sub>tot</sub> = L<sub>1</sub> + L<sub>2</sub> &plusmn; 2M</td><td>+ se flussi concordi</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tipologie di Nucleo</div>
+      <table>
+        <tr><th>Tipo</th><th>&mu;<sub>r</sub> tipico</th><th>Applicazioni</th><th>Limite</th></tr>
+        <tr><td>Aria</td><td>&asymp;1</td><td>RF, alta frequenza</td><td>L bassa</td></tr>
+        <tr><td>Ferrite</td><td>100&ndash;3000</td><td>SMPS, filtri EMI</td><td>saturazione, perdite</td></tr>
+        <tr><td>Toroidale</td><td>variabile</td><td>trasformatori, filtri potenza</td><td>avvolgimento difficile</td></tr>
+        <tr><td>Polvere di ferro</td><td>10&ndash;100</td><td>induttori potenza DC/DC</td><td>perdite a RF</td></tr>
+      </table>
+    </div>
+
+    <div class="warn">L'induttore <b>si oppone alla variazione di corrente</b>: non pu&ograve; cambiare I istantaneamente. Interrompere bruscamente la corrente genera V = L&middot;dI/dt &rarr; picco potenzialmente distruttivo. Prevedere sempre un percorso di dissipazione (diodo flyback, snubber).</div>
+  </div>
+</div>
+
+<a class="anchor" id="s-inductor-energy"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INDUTTANZA &mdash; ENERGIA &amp; CIRCUITO RL</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Energia Immagazzinata</div>
+      <div class="formula">
+        <span class="label">Energia nel campo magnetico</span>
+        <span class="f-main">W<sub>L</sub> = &frac12; L I<sup>2</sup> &nbsp;&nbsp; [J]</span>
+        <span class="f-sub">Densit&agrave; volumetrica: w = B<sup>2</sup>/(2&mu;) &nbsp; [J/m<sup>3</sup>]</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Circuito RL &mdash; Transitorio</div>
+      <div class="formula">
+        <span class="label">Costante di tempo</span>
+        <span class="f-main">&tau; = L / R &nbsp;&nbsp; [s]</span>
+      </div>
+      <div class="formula">
+        <span class="label">Carica (V<sub>0</sub> applicata, I(0)=0)</span>
+        <span class="f-main">I(t) = (V<sub>0</sub>/R)(1 &minus; e<sup>&minus;t/&tau;</sup>)</span>
+        <span class="f-sub">V<sub>L</sub>(t) = V<sub>0</sub> e<sup>&minus;t/&tau;</sup></span>
+        <span class="f-where">a t=&tau;: I &asymp; 63.2% del valore finale. A t=5&tau;: I &asymp; 99.3%.</span>
+      </div>
+      <div class="formula">
+        <span class="label">Scarica (sorgente rimossa, I(0)=I<sub>0</sub>)</span>
+        <span class="f-main">I(t) = I<sub>0</sub> e<sup>&minus;t/&tau;</sup></span>
+        <span class="f-sub">V<sub>L</sub>(t) = &minus;R&middot;I<sub>0</sub> e<sup>&minus;t/&tau;</sup></span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Confronto RC vs RL</div>
+      <table>
+        <tr><th>Parametro</th><th>Circuito RC</th><th>Circuito RL</th></tr>
+        <tr><td>Costante di tempo</td><td>&tau; = RC</td><td>&tau; = L/R</td></tr>
+        <tr><td>Grandezza continua</td><td>V<sub>C</sub> (non salta)</td><td>I<sub>L</sub> (non salta)</td></tr>
+        <tr><td>Energia immagazzinata</td><td>&frac12;CV<sup>2</sup></td><td>&frac12;LI<sup>2</sup></td></tr>
+        <tr><td>Impedenza complessa</td><td>Z<sub>C</sub> = 1/(j&omega;C)</td><td>Z<sub>L</sub> = j&omega;L</td></tr>
+        <tr><td>Freq. di taglio 1&ordm; ordine</td><td>f<sub>c</sub> = 1/(2&pi;RC)</td><td>f<sub>c</sub> = R/(2&pi;L)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-mutual"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> INDUZIONE MUTUA &amp; TRASFORMATORI</div>
+  <div class="section-body">
+    <div class="formula">
+      <span class="label">Mutua induttanza</span>
+      <span class="f-main">M = k &radic;(L<sub>1</sub>L<sub>2</sub>) &nbsp;&nbsp; 0 &le; k &le; 1</span>
+      <span class="f-sub">FEM indotta in 2 da 1: V<sub>2</sub> = M dI<sub>1</sub>/dt</span>
+      <span class="f-where">k = coefficiente di accoppiamento (k=1 accoppiamento perfetto, k&asymp;0 nessuno)</span>
+    </div>
+    <div class="formula">
+      <span class="label">Trasformatore ideale (k=1)</span>
+      <span class="f-main">V<sub>2</sub>/V<sub>1</sub> = N<sub>2</sub>/N<sub>1</sub> = n &nbsp;&nbsp;&nbsp; I<sub>2</sub>/I<sub>1</sub> = 1/n</span>
+      <span class="f-sub">Z' = Z<sub>carico</sub>/n<sup>2</sup> &nbsp; (impedenza riflessa al primario)</span>
+      <span class="f-where">Potenza conservata: V<sub>1</sub>I<sub>1</sub> = V<sub>2</sub>I<sub>2</sub>. Rendimento reale tipico: 95&ndash;99%.</span>
+    </div>
+    <div class="note">Nei trasformatori reali: perdite nel rame (R avvolgimenti), perdite nel ferro (isteresi + correnti di Foucault), flusso disperso (k &lt; 1). Il nucleo a E-I o toroidale minimizza il flusso disperso.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     IMPEDENZA & AC
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-phasor"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> FASORI &amp; IMPEDENZA</div>
+  <div class="section-body">
+    <p>In regime sinusoidale stazionario ogni segnale &egrave; rappresentato da un <b>fasore</b> (numero complesso). La legge di Ohm generalizzata vale con l'<b>impedenza</b> Z = <b>V</b>/<b>I</b> al posto di R.</p>
+
+    <div class="sub">
+      <div class="sub-title">Rappresentazione Fasoriale</div>
+      <div class="formula">
+        <span class="f-main">v(t) = V<sub>m</sub> cos(&omega;t + &phi;) &nbsp;&harr;&nbsp; <b>V</b> = V<sub>m</sub>&ang;&phi;</span>
+        <span class="f-where">&omega; = 2&pi;f [rad/s],&nbsp; V<sub>m</sub> = ampiezza,&nbsp; &phi; = fase iniziale,&nbsp; V<sub>rms</sub> = V<sub>m</sub>/&radic;2</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Impedenze dei Componenti</div>
+      <table>
+        <tr><th>Componente</th><th>Impedenza Z</th><th>|Z|</th><th>&ang;Z</th></tr>
+        <tr><td>Resistore R</td><td>R</td><td>R</td><td>0&deg;</td></tr>
+        <tr><td>Induttore L</td><td>j&omega;L</td><td>&omega;L</td><td>+90&deg;</td></tr>
+        <tr><td>Condensatore C</td><td>&minus;j/(&omega;C)</td><td>1/(&omega;C)</td><td>&minus;90&deg;</td></tr>
+      </table>
+      <div class="note">Mnemonica <b>ELI the ICE man</b>: in un <b>L</b> la tensione (<b>E</b>) precede la corrente (<b>I</b>); in un <b>C</b> la corrente (<b>I</b>) precede la tensione (<b>E</b>).</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Reattanza, Ammettenza e Potenza</div>
+      <table>
+        <tr><th>Grandezza</th><th>Simbolo</th><th>Definizione</th><th>Unit&agrave;</th></tr>
+        <tr><td>Reattanza induttiva</td><td>X<sub>L</sub></td><td>&omega;L = 2&pi;fL</td><td>&Omega;</td></tr>
+        <tr><td>Reattanza capacitiva</td><td>X<sub>C</sub></td><td>1/(&omega;C)</td><td>&Omega;</td></tr>
+        <tr><td>Impedenza</td><td>Z</td><td>R + jX</td><td>&Omega;</td></tr>
+        <tr><td>Ammettenza</td><td>Y = 1/Z</td><td>G + jB</td><td>S</td></tr>
+        <tr><td>Potenza apparente</td><td>S</td><td>V<sub>rms</sub>I<sub>rms</sub></td><td>VA</td></tr>
+        <tr><td>Potenza attiva (reale)</td><td>P</td><td>S cos&phi;</td><td>W</td></tr>
+        <tr><td>Potenza reattiva</td><td>Q</td><td>S sin&phi;</td><td>VAR</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-rlc"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> RISONANZA RLC</div>
+  <div class="section-body">
+    <p>Un circuito RLC risuona quando X<sub>L</sub> = X<sub>C</sub>, ovvero &omega;<sub>0</sub> = 1/&radic;(LC). In serie Z &egrave; minima; in parallelo Z &egrave; massima.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="sub-title">RLC Serie</div>
+        <div class="formula">
+          <span class="f-main">Z = R + j(&omega;L &minus; 1/(&omega;C))</span>
+          <span class="f-sub">Z<sub>min</sub> = R &nbsp; (a &omega;<sub>0</sub>)</span>
+          <span class="f-where">Q = &omega;<sub>0</sub>L/R = 1/(&omega;<sub>0</sub>CR)</span>
+        </div>
+      </div>
+      <div>
+        <div class="sub-title">RLC Parallelo</div>
+        <div class="formula">
+          <span class="f-main">Y = 1/R + j(&omega;C &minus; 1/(&omega;L))</span>
+          <span class="f-sub">Z<sub>max</sub> = R &nbsp; (a &omega;<sub>0</sub>)</span>
+          <span class="f-where">Q = R&omega;<sub>0</sub>C = R/(&omega;<sub>0</sub>L)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Fattore di Qualit&agrave; Q e Banda</div>
+      <div class="formula">
+        <span class="f-main">&omega;<sub>0</sub> = 1/&radic;(LC) &nbsp;&nbsp; BW = f<sub>0</sub>/Q &nbsp;&nbsp; [Hz]</span>
+        <span class="f-where">Q elevato &rarr; picco stretto e alto; Q basso &rarr; risposta piatta e smorzata.</span>
+      </div>
+      <table>
+        <tr><th>Q</th><th>Tipo risposta</th><th>Uso tipico</th></tr>
+        <tr><td>Q &lt; 0.5</td><td>Sovrasmorzato</td><td>filtri wideband, stabilit&agrave;</td></tr>
+        <tr><td>Q = 1/&radic;2 &asymp; 0.707</td><td>Butterworth</td><td>LP/HP 2&ordm; ordine massima piattezza</td></tr>
+        <tr><td>Q = 1</td><td>Moderatamente risonante</td><td>filtri banda media</td></tr>
+        <tr><td>Q &gg; 1</td><td>Altamente risonante</td><td>oscillatori, filtri notch</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Risposta in Frequenza 2&ordm; Ordine</div>
+      <div class="formula">
+        <span class="label">Low-pass RLC serie (uscita su C)</span>
+        <span class="f-main">H(s) = &omega;<sub>0</sub><sup>2</sup> / (s<sup>2</sup> + s&omega;<sub>0</sub>/Q + &omega;<sub>0</sub><sup>2</sup>)</span>
+        <span class="f-where">Pendenza &minus;40 dB/dec per f &gg; f<sub>0</sub> (doppio rispetto al 1&ordm; ordine RC)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     DIODI
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-diode-pn"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> DIODI &mdash; GIUNZIONE PN</div>
+  <div class="section-body">
+    <p>Il <b>diodo a giunzione PN</b> nasce dall'unione di semiconduttore tipo P (lacune maggioritarie) e tipo N (elettroni maggioritari). Al confine si forma la <b>zona di svuotamento</b> e una barriera di potenziale V<sub>bi</sub> (&asymp;0.7 V per Si). In polarizzazione diretta la barriera si abbassa e scorre corrente; in inversa si allarga e la corrente &egrave; trascurabile.</p>
+
+    <div class="sub">
+      <div class="sub-title">Equazione del Diodo (Shockley)</div>
+      <div class="formula">
+        <span class="label">Corrente di diodo</span>
+        <span class="f-main">I<sub>D</sub> = I<sub>S</sub> (e<sup>V<sub>D</sub>/(nV<sub>T</sub>)</sup> &minus; 1)</span>
+        <span class="f-sub">V<sub>T</sub> = kT/q &asymp; 25.85 mV a 300 K (tensione termica)</span>
+        <span class="f-where">I<sub>S</sub> = corrente di saturazione inversa (10<sup>−15</sup>&ndash;10<sup>−6</sup> A),&nbsp; n = fattore di idealit&agrave; (1&ndash;2)</span>
+      </div>
+      <div class="note">In diretta (V<sub>D</sub> &gg; V<sub>T</sub>): I<sub>D</sub> &asymp; I<sub>S</sub>e<sup>V<sub>D</sub>/(nV<sub>T</sub>)</sup>. La corrente <b>raddoppia ogni &asymp;18 mV</b> (n=1). In inversa (V<sub>D</sub> &ll; 0): I<sub>D</sub> &asymp; &minus;I<sub>S</sub>.</div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Modelli Pratici</div>
+      <table>
+        <tr><th>Modello</th><th>Descrizione</th><th>Uso</th></tr>
+        <tr><td>Ideale</td><td>Cortocircuito in diretta, aperto in inversa</td><td>analisi qualitativa</td></tr>
+        <tr><td>Caduta costante</td><td>V<sub>D</sub> = 0.7 V (Si) in diretta</td><td>analisi a bassa freq.</td></tr>
+        <tr><td>Piccolo segnale</td><td>r<sub>d</sub> = nV<sub>T</sub>/I<sub>D</sub></td><td>amplificatori, RF</td></tr>
+        <tr><td>SPICE</td><td>Shockley + R<sub>s</sub>, C<sub>j</sub>, C<sub>diff</sub>, breakdown</td><td>simulazione accurata</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tensioni di Soglia Tipiche</div>
+      <table>
+        <tr><th>Tipo</th><th>V<sub>F</sub></th><th>Note</th></tr>
+        <tr><td>Silicio (Si)</td><td>0.6&ndash;0.7 V</td><td>pi&ugrave; comune</td></tr>
+        <tr><td>Germanio (Ge)</td><td>0.2&ndash;0.3 V</td><td>RF, sensore T</td></tr>
+        <tr><td>Schottky (metallo-Si)</td><td>0.15&ndash;0.45 V</td><td>alta velocit&agrave;, bassa perdita</td></tr>
+        <tr><td>LED rosso (GaAsP)</td><td>1.8&ndash;2.2 V</td><td>620&ndash;750 nm</td></tr>
+        <tr><td>LED verde (GaP)</td><td>2.0&ndash;2.5 V</td><td>520&ndash;560 nm</td></tr>
+        <tr><td>LED blu/bianco (GaN)</td><td>2.8&ndash;3.5 V</td><td>450&ndash;480 nm</td></tr>
+        <tr><td>SiC</td><td>2.5&ndash;3.3 V</td><td>alta T, alta tensione</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Capacit&agrave; di Giunzione</div>
+      <div class="formula">
+        <span class="label">Capacit&agrave; di svuotamento (varicap)</span>
+        <span class="f-main">C<sub>j</sub>(V) = C<sub>j0</sub> / (1 &minus; V/V<sub>bi</sub>)<sup>m</sup></span>
+        <span class="f-where">m = 0.33&ndash;0.5,&nbsp; C<sub>j0</sub> = capacit&agrave; a zero polarizzazione. Base per i <b>varicap</b> (diodi a capacit&agrave; variabile), usati nei VCO.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-diode-types"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> TIPI DI DIODO</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Diodo Zener</div>
+        <p>Progettato per operare in breakdown a tensione V<sub>Z</sub> definita. La tensione rimane quasi costante al variare della corrente (per I &ge; I<sub>Zmin</sub>). Usato come riferimento di tensione e regolatore shunt.</p>
+        <div class="formula">
+          <span class="f-main">V<sub>Z</sub> = costante &nbsp; (2.4&ndash;200 V)</span>
+          <span class="f-sub">Z<sub>Z</sub> = &Delta;V<sub>Z</sub>/&Delta;I<sub>Z</sub> &nbsp; (impedenza dinamica, ideale = 0)</span>
+          <span class="f-where">P<sub>max</sub> = V<sub>Z</sub> &middot; I<sub>Zmax</sub>. Effetto Zener (&lt;5 V): tunnel. Effetto valanga (&gt;7 V): moltiplicazione a impatto. 5&ndash;7 V: misto.</span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Diodo Schottky</div>
+        <p>Giunzione metallo-semiconduttore. Nessuna carica di diffusione immagazzinata &rarr; commutazione molto rapida (t<sub>rr</sub> &asymp; 0). V<sub>F</sub> bassa (&asymp;0.3 V). Elevata corrente inversa a caldo.</p>
+        <div class="formula">
+          <span class="f-main">t<sub>rr</sub> &asymp; 0 ns &nbsp;(no minority carrier storage)</span>
+          <span class="f-where">Uso: raddrizzatori SMPS, protezione pin logici, mixer RF, OR-ing di alimentazioni.</span>
+        </div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Fotodiodo</div>
+        <p>Operato in inversa (photoconductive) o senza polarizzazione (photovoltaic). La corrente &egrave; proporzionale alla luce incidente.</p>
+        <div class="formula">
+          <span class="f-main">I<sub>ph</sub> = R<sub>&lambda;</sub> &middot; P<sub>opt</sub></span>
+          <span class="f-where">R<sub>&lambda;</sub> = responsivit&agrave; [A/W], tipica 0.4&ndash;0.8 A/W per Si a 800&ndash;900 nm. In modalit&agrave; fotovoltaica: celle solari.</span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">LED</div>
+        <p>Ricombinazione radiativa: lacuna + elettrone &rarr; fotone con E = hf = hc/&lambda;. Il colore dipende dal gap energetico del materiale.</p>
+        <div class="formula">
+          <span class="f-main">I<sub>LED</sub> = (V<sub>cc</sub> &minus; V<sub>F</sub>) / R<sub>serie</sub></span>
+          <span class="f-where">Corrente tipica: 5&ndash;20 mA indicatori, 350 mA&ndash;3 A LED di potenza.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-diode-circuits"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> CIRCUITI CON DIODI</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Raddrizzatore Mezza Onda</div>
+        <pre>AC ─── D1 ──┬── V+
+             │
+            R_L
+             │
+            GND</pre>
+        <p>Conduce solo il semiciclo positivo. V<sub>avg</sub> = V<sub>pk</sub>/&pi; &asymp; 0.318 V<sub>pk</sub>. Ripple elevato (f<sub>ripple</sub> = f<sub>line</sub>).</p>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Ponte di Graetz (Full-Wave)</div>
+        <pre>  D1     D3
+┌─&gt;─┬───&lt;─┐
+│   │     │ V+
+AC+ │     ├── R_L
+AC- │     │
+└─&lt;─┴───&gt;─┘ GND
+  D4     D2</pre>
+        <p>Usa entrambi i semicicli. V<sub>avg</sub> &asymp; 0.637 V<sub>pk</sub>. Perdita: 2&middot;V<sub>F</sub>. f<sub>ripple</sub> = 2f<sub>line</sub>.</p>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Regolatore Zener</div>
+        <div class="formula">
+          <span class="f-main">R<sub>s</sub> = (V<sub>in</sub> &minus; V<sub>Z</sub>) / (I<sub>Z</sub> + I<sub>carico</sub>)</span>
+          <span class="f-where">Dimensionare per I<sub>Z</sub> &ge; I<sub>Zmin</sub> anche a I<sub>carico,max</sub> e V<sub>in,min</sub>.</span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Clipper e Clamper</div>
+        <p><b>Clipper</b>: limita il segnale sopra/sotto una soglia. <b>Clamper</b>: sposta il livello DC mantenendo la forma d'onda.</p>
+        <div class="formula">
+          <span class="f-main">V<sub>clip</sub> = V<sub>Z</sub> + V<sub>F</sub> &nbsp; (TVS bidirezionale)</span>
+          <span class="f-where">TVS (Transient Voltage Suppressor): risposta &lt; 1 ps, ottimizzato per ESD e lightning.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Diodo Flyback (Freewheeling)</div>
+      <div class="formula">
+        <span class="label">Protezione carichi induttivi</span>
+        <span class="f-main">D<sub>flyback</sub> in antiparallelo al carico induttivo</span>
+        <span class="f-where">Quando il transistore si spegne, L mantiene la corrente: senza diodo V = L&middot;dI/dt &rarr; picco distruttivo. Il diodo offre il percorso di ricircolo. Usare Schottky per switching veloce.</span>
+      </div>
+      <div class="warn">Il diodo flyback &egrave; <b>obbligatorio</b> per relè, motori, solenoidi pilotati da transistori/FET. Senza di esso il driver si distrugge al primo spegnimento.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     BJT
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-bjt-basics"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BJT &mdash; STRUTTURA &amp; REGIONI DI LAVORO</div>
+  <div class="section-body">
+    <p>Il <b>Bipolar Junction Transistor</b> &egrave; controllato in <b>corrente</b>. Tre terminali: Base (B), Collettore (C), Emettitore (E). Tipi: <b>NPN</b> e <b>PNP</b>. Detto "bipolare" perch&eacute; coinvolge sia portatori maggioritari che minoritari.</p>
+
+    <div class="sub">
+      <div class="sub-title">Regioni di Lavoro</div>
+      <table>
+        <tr><th>Regione</th><th>Giunzione BE</th><th>Giunzione BC</th><th>Stato</th><th>Uso</th></tr>
+        <tr><td>Interdizione (Cutoff)</td><td>Inversa</td><td>Inversa</td><td>OFF &mdash; I<sub>C</sub>&asymp;0</td><td>interruttore aperto</td></tr>
+        <tr><td>Attiva Diretta</td><td>Diretta</td><td>Inversa</td><td>Amplificazione</td><td>amplificatori</td></tr>
+        <tr><td>Saturazione</td><td>Diretta</td><td>Diretta</td><td>ON &mdash; V<sub>CE</sub>&asymp;0.2 V</td><td>interruttore chiuso</td></tr>
+        <tr><td>Attiva Inversa</td><td>Inversa</td><td>Diretta</td><td>&beta; molto basso</td><td>da evitare</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Equazioni Fondamentali (regione attiva, NPN)</div>
+      <div class="formula">
+        <span class="label">Correnti dei terminali</span>
+        <span class="f-main">I<sub>C</sub> = &beta; I<sub>B</sub> = &alpha; I<sub>E</sub> &nbsp;&nbsp;&nbsp; I<sub>E</sub> = I<sub>C</sub> + I<sub>B</sub></span>
+        <span class="f-sub">&alpha; = &beta;/(&beta;+1) &nbsp;&nbsp; &beta; = &alpha;/(1&minus;&alpha;) &nbsp;&nbsp; tipico: &beta; = 50&ndash;500</span>
+        <span class="f-where">&beta; = h<sub>FE</sub> (guadagno DC),&nbsp; &alpha; = h<sub>FB</sub> &asymp; 0.98&ndash;0.999</span>
+      </div>
+      <div class="formula">
+        <span class="label">Corrente di collettore (Ebers-Moll)</span>
+        <span class="f-main">I<sub>C</sub> = I<sub>S</sub> e<sup>V<sub>BE</sub>/V<sub>T</sub></sup> &middot; (1 + V<sub>CE</sub>/V<sub>A</sub>)</span>
+        <span class="f-sub">V<sub>BE</sub> &asymp; 0.6&ndash;0.7 V in attiva per Si</span>
+        <span class="f-where">V<sub>A</sub> = tensione di Early (15&ndash;150 V): modella la modulazione della larghezza di base con V<sub>CE</sub>.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-bjt-models"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BJT &mdash; MODELLO A PICCOLO SEGNALE &amp; POLARIZZAZIONE</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Parametri del Modello Ibrido-&pi;</div>
+      <div class="grid2">
+        <div class="formula">
+          <span class="label">Transconduttanza</span>
+          <span class="f-main">g<sub>m</sub> = I<sub>C</sub>/V<sub>T</sub></span>
+          <span class="f-where">Tipico 10&ndash;100 mA/V a I<sub>C</sub> = mA</span>
+        </div>
+        <div class="formula">
+          <span class="label">Resistenza base-emettitore</span>
+          <span class="f-main">r<sub>&pi;</sub> = &beta;/g<sub>m</sub> = &beta;V<sub>T</sub>/I<sub>C</sub></span>
+        </div>
+        <div class="formula">
+          <span class="label">Resistenza di uscita</span>
+          <span class="f-main">r<sub>o</sub> = V<sub>A</sub>/I<sub>C</sub></span>
+          <span class="f-where">Sorgente di corrente con r<sub>o</sub> finita</span>
+        </div>
+        <div class="formula">
+          <span class="label">Guadagno di corrente AC</span>
+          <span class="f-main">h<sub>fe</sub> = &beta; = g<sub>m</sub>r<sub>&pi;</sub></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Polarizzazione a Partitore (Voltage Divider Bias)</div>
+      <div class="formula">
+        <span class="label">Punto di lavoro Q stabile in temperatura</span>
+        <span class="f-main">V<sub>B</sub> = V<sub>cc</sub>&middot;R<sub>2</sub>/(R<sub>1</sub>+R<sub>2</sub>) &nbsp;&nbsp; V<sub>E</sub> = V<sub>B</sub> &minus; V<sub>BE</sub></span>
+        <span class="f-sub">I<sub>C</sub> &asymp; I<sub>E</sub> = V<sub>E</sub>/R<sub>E</sub> &nbsp;&nbsp; V<sub>CE</sub> = V<sub>cc</sub> &minus; I<sub>C</sub>(R<sub>C</sub>+R<sub>E</sub>)</span>
+        <span class="f-where">Stabilit&agrave;: I<sub>partitore</sub> = V<sub>cc</sub>/(R<sub>1</sub>+R<sub>2</sub>) &ge; 10&middot;I<sub>B</sub>. R<sub>E</sub> introduce retroazione negativa che stabilizza il punto Q al variare di &beta; e T.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-bjt-configs"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> BJT &mdash; CONFIGURAZIONI FONDAMENTALI</div>
+  <div class="section-body">
+    <div class="table-scroll">
+    <table>
+      <tr><th>Config.</th><th>Ingresso</th><th>Uscita</th><th>A<sub>v</sub></th><th>A<sub>i</sub></th><th>Z<sub>in</sub></th><th>Z<sub>out</sub></th><th>Fase</th><th>Uso tipico</th></tr>
+      <tr><td><b>CE</b> (Emettitore comune)</td><td>B</td><td>C</td><td>&minus;g<sub>m</sub>R<sub>C</sub></td><td>&asymp;&beta;</td><td>r<sub>&pi;</sub></td><td>&asymp;R<sub>C</sub></td><td>180&deg;</td><td>amplificatore tensione</td></tr>
+      <tr><td><b>CB</b> (Base comune)</td><td>E</td><td>C</td><td>g<sub>m</sub>R<sub>C</sub></td><td>&asymp;1</td><td>1/g<sub>m</sub> (bassa)</td><td>r<sub>o</sub> (alta)</td><td>0&deg;</td><td>RF, buffer corrente</td></tr>
+      <tr><td><b>CC</b> (Emitter follower)</td><td>B</td><td>E</td><td>&asymp;1</td><td>&asymp;&beta;+1</td><td>&beta;R<sub>E</sub> (alta)</td><td>&asymp;1/g<sub>m</sub> (bassa)</td><td>0&deg;</td><td>buffer, adattamento Z</td></tr>
+    </table>
+    </div>
+    <div class="note">CE: configurazione standard per amplificazione. CC (emitter follower): Z<sub>in</sub> alta e Z<sub>out</sub> bassa &rarr; ottimo buffer. CB: rara, usata a RF per la sua alta Z<sub>out</sub> e buona risposta in frequenza (no effetto Miller).</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MOSFET
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-mosfet-basics"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MOSFET &mdash; STRUTTURA &amp; FUNZIONAMENTO</div>
+  <div class="section-body">
+    <p>Il <b>MOSFET</b> (Metal-Oxide-Semiconductor FET) &egrave; controllato in <b>tensione</b> (corrente di gate quasi nulla in DC). Quattro terminali: Gate (G), Drain (D), Source (S), Bulk/Body (B). Varianti: Enhancement (pi&ugrave; comune) e Depletion; N-channel e P-channel.</p>
+
+    <div class="sub">
+      <div class="sub-title">Struttura Fisica N-channel Enhancement</div>
+      <p>Substrato P; regioni N<sup>+</sup> di source e drain. Il gate &egrave; isolato dal canale da ossido (SiO<sub>2</sub>), tipicamente 2&ndash;10 nm nei moderni processi CMOS. Applicando V<sub>GS</sub> &gt; V<sub>th</sub> si inverte il canale (canale N) e scorre corrente D&rarr;S.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Parametri Fondamentali</div>
+      <table>
+        <tr><th>Parametro</th><th>Simbolo</th><th>Tipico</th><th>Descrizione</th></tr>
+        <tr><td>Tensione di soglia</td><td>V<sub>th</sub></td><td>0.5&ndash;4 V (N-ch)</td><td>V<sub>GS</sub> minima per aprire il canale</td></tr>
+        <tr><td>Resistenza di on</td><td>R<sub>DS(on)</sub></td><td>m&Omega;&ndash;&Omega;</td><td>in triode profondo</td></tr>
+        <tr><td>Transconduttanza</td><td>g<sub>m</sub></td><td>mA/V&ndash;A/V</td><td>&part;I<sub>D</sub>/&part;V<sub>GS</sub></td></tr>
+        <tr><td>Capacit&agrave; gate</td><td>C<sub>GS</sub>, C<sub>GD</sub></td><td>pF&ndash;nF</td><td>limitano la velocit&agrave; di switching</td></tr>
+        <tr><td>Tensione di breakdown</td><td>BV<sub>DSS</sub></td><td>20&ndash;1200 V</td><td>max V<sub>DS</sub> sicura</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-mosfet-regions"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MOSFET &mdash; REGIONI DI LAVORO</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">N-channel Enhancement MOSFET</div>
+      <table>
+        <tr><th>Regione</th><th>Condizione</th><th>I<sub>D</sub></th></tr>
+        <tr><td>Interdizione (Off)</td><td>V<sub>GS</sub> &lt; V<sub>th</sub></td><td>&asymp;0</td></tr>
+        <tr><td>Triodo (Lineare)</td><td>V<sub>GS</sub> &gt; V<sub>th</sub>, V<sub>DS</sub> &lt; V<sub>ov</sub></td><td>k<sub>n</sub>(W/L)[(V<sub>GS</sub>&minus;V<sub>th</sub>)V<sub>DS</sub> &minus; V<sub>DS</sub><sup>2</sup>/2]</td></tr>
+        <tr><td>Saturazione</td><td>V<sub>GS</sub> &gt; V<sub>th</sub>, V<sub>DS</sub> &ge; V<sub>ov</sub></td><td>&frac12;k<sub>n</sub>(W/L)(V<sub>GS</sub>&minus;V<sub>th</sub>)<sup>2</sup></td></tr>
+      </table>
+      <div class="formula">
+        <span class="label">Parametri del modello</span>
+        <span class="f-main">V<sub>ov</sub> = V<sub>GS</sub> &minus; V<sub>th</sub> &nbsp;(overdrive) &nbsp;&nbsp; k<sub>n</sub> = &mu;<sub>n</sub>C<sub>ox</sub> [A/V<sup>2</sup>]</span>
+        <span class="f-sub">g<sub>m</sub> = k<sub>n</sub>(W/L)V<sub>ov</sub> = &radic;(2k<sub>n</sub>(W/L)I<sub>D</sub>) &nbsp;&nbsp; r<sub>o</sub> = |V<sub>A</sub>|/I<sub>D</sub></span>
+        <span class="f-where">&mu;<sub>n</sub> &asymp; 450 cm<sup>2</sup>/Vs (elettroni Si),&nbsp; &mu;<sub>p</sub> &asymp; 160 cm<sup>2</sup>/Vs (lacune Si) &rarr; NMOS circa 2&ndash;3&times; pi&ugrave; veloce di PMOS a parit&agrave; di W/L.</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">BJT vs MOSFET &mdash; Confronto</div>
+      <table>
+        <tr><th>Caratteristica</th><th>BJT</th><th>MOSFET</th></tr>
+        <tr><td>Controllo</td><td>Corrente (I<sub>B</sub>)</td><td>Tensione (V<sub>GS</sub>)</td></tr>
+        <tr><td>Corrente di controllo DC</td><td>I<sub>B</sub> = I<sub>C</sub>/&beta;</td><td>I<sub>G</sub> &asymp; 0</td></tr>
+        <tr><td>Transconduttanza</td><td>I<sub>C</sub>/V<sub>T</sub> (alta a bassi mA)</td><td>k(W/L)V<sub>ov</sub> (scalabile)</td></tr>
+        <tr><td>Tensione di saturazione</td><td>V<sub>CE,sat</sub> &asymp; 0.2 V</td><td>V<sub>DS,on</sub> = I<sub>D</sub>&middot;R<sub>DS(on)</sub></td></tr>
+        <tr><td>Rumore 1/f</td><td>Basso</td><td>Pi&ugrave; elevato</td></tr>
+        <tr><td>Integrazione VLSI</td><td>Difficile</td><td>Ottimale (CMOS)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-mosfet-cmos"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> MOSFET &mdash; CMOS &amp; USO COME SWITCH</div>
+  <div class="section-body">
+
+    <div class="sub">
+      <div class="sub-title">Logica CMOS</div>
+      <p>La logica CMOS usa coppie NMOS+PMOS complementari. In stato statico uno dei due &egrave; sempre OFF: corrente DC &asymp; 0. La dissipazione avviene durante le commutazioni (carica/scarica C<sub>gate</sub>).</p>
+      <div class="formula">
+        <span class="label">Potenza dinamica CMOS</span>
+        <span class="f-main">P = &alpha; C<sub>L</sub> V<sub>dd</sub><sup>2</sup> f</span>
+        <span class="f-where">&alpha; = attivit&agrave; di commutazione (0&ndash;1),&nbsp; C<sub>L</sub> = capacit&agrave; di carico. Ridurre V<sub>dd</sub> &egrave; l'azione pi&ugrave; efficace (effetto quadratico).</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">MOSFET come Switch di Potenza</div>
+      <table>
+        <tr><th>Parametro</th><th>Perdita</th><th>Come ottimizzare</th></tr>
+        <tr><td>R<sub>DS(on)</sub></td><td>P<sub>cond</sub> = I<sub>D</sub><sup>2</sup>R<sub>DS(on)</sub>&middot;D</td><td>MOSFET bassa R<sub>DS(on)</sub>, V<sub>GS</sub> alta</td></tr>
+        <tr><td>Q<sub>g</sub> (gate charge)</td><td>P<sub>sw</sub> = Q<sub>g</sub>V<sub>GS</sub>f</td><td>driver rapido, Q<sub>g</sub> bassa</td></tr>
+        <tr><td>t<sub>r</sub>, t<sub>f</sub> (rise/fall time)</td><td>P<sub>sw</sub> &prop; (t<sub>r</sub>+t<sub>f</sub>)f</td><td>R<sub>gate</sub> bassa, driver capace</td></tr>
+      </table>
+      <div class="formula">
+        <span class="label">Perdite totali switch MOSFET</span>
+        <span class="f-main">P<sub>tot</sub> = I<sub>D</sub><sup>2</sup>R<sub>DS(on)</sub>D + &frac12;V<sub>DS</sub>I<sub>D</sub>(t<sub>r</sub>+t<sub>f</sub>)f</span>
+        <span class="f-where">D = duty cycle. Le perdite di commutazione crescono linearmente con f &rarr; limite superiore alla frequenza di switching.</span>
+      </div>
+      <div class="note">Per NMOS high-side (source non a GND) serve un <b>bootstrap</b> o gate driver isolato: V<sub>GS</sub> deve essere &ge; V<sub>th</sub> + V<sub>ov</sub> sopra V<sub>source</sub>, che pu&ograve; superare V<sub>dd</sub>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CIRCUITI UTILI
+     ═══════════════════════════════════════════════════════ -->
+<a class="anchor" id="s-filters"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> FILTRI &mdash; RC, RL, RLC</div>
+  <div class="section-body">
+    <p>I filtri selezionano componenti in frequenza del segnale. I filtri passivi usano R, L, C; quelli attivi aggiungono un op-amp per guadagno e migliore isolamento.</p>
+
+    <div class="sub">
+      <div class="sub-title">Filtri del 1&ordm; Ordine</div>
+      <table>
+        <tr><th>Tipo</th><th>Topologia</th><th>H(j&omega;)</th><th>f<sub>c</sub></th><th>Pendenza</th></tr>
+        <tr><td>LP-RC</td><td>R serie, C a GND</td><td>1/(1+j&omega;RC)</td><td>1/(2&pi;RC)</td><td>&minus;20 dB/dec</td></tr>
+        <tr><td>HP-RC</td><td>C serie, R a GND</td><td>j&omega;RC/(1+j&omega;RC)</td><td>1/(2&pi;RC)</td><td>+20 dB/dec</td></tr>
+        <tr><td>LP-RL</td><td>R serie, L a GND</td><td>1/(1+j&omega;L/R)</td><td>R/(2&pi;L)</td><td>&minus;20 dB/dec</td></tr>
+        <tr><td>HP-RL</td><td>L serie, R a GND</td><td>j&omega;L/R/(1+j&omega;L/R)</td><td>R/(2&pi;L)</td><td>+20 dB/dec</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Filtri del 2&ordm; Ordine RLC</div>
+      <div class="formula">
+        <span class="label">Low-pass RLC serie (uscita su C)</span>
+        <span class="f-main">H(s) = &omega;<sub>0</sub><sup>2</sup> / (s<sup>2</sup> + s&omega;<sub>0</sub>/Q + &omega;<sub>0</sub><sup>2</sup>)</span>
+        <span class="f-sub">f<sub>0</sub> = 1/(2&pi;&radic;(LC)) &nbsp;&nbsp; Q = (1/R)&radic;(L/C)</span>
+        <span class="f-where">Pendenza: &minus;40 dB/dec. Tipi: LP (uscita su C), HP (uscita su L), BP (uscita su R), Notch (uscita su serie L+C).</span>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Filtri Attivi con Op-Amp</div>
+      <table>
+        <tr><th>Topologia</th><th>Tipo</th><th>Vantaggi</th></tr>
+        <tr><td>Sallen-Key</td><td>LP/HP 2&ordm; ordine</td><td>Q controllabile, guadagno unitario semplice</td></tr>
+        <tr><td>Multiple Feedback (MFB)</td><td>LP/BP 2&ordm; ordine</td><td>bassa sensibilit&agrave; ai componenti</td></tr>
+        <tr><td>State Variable</td><td>LP+HP+BP simultaneo</td><td>Q e f<sub>0</sub> regolabili indipendentemente</td></tr>
+        <tr><td>Butterworth</td><td>qualsiasi</td><td>massima piattezza in banda passante</td></tr>
+        <tr><td>Chebyshev</td><td>qualsiasi</td><td>rolloff pi&ugrave; ripido, ripple in banda</td></tr>
+        <tr><td>Bessel</td><td>LP</td><td>ritardo di gruppo costante (fase lineare)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Filtro di Alimentazione a &pi;</div>
+      <pre>V_in ─── C1 ─┬─ L ─┬─── V_out
+             GND   C2
+                   │
+                  GND</pre>
+      <div class="formula">
+        <span class="f-main">Att &asymp; &minus;60 dB/dec per f &gg; f<sub>c</sub> &nbsp;&nbsp; f<sub>c</sub> &asymp; 1/(2&pi;&radic;(LC<sub>tot</sub>))</span>
+        <span class="f-where">Superiore al semplice LC (&minus;40 dB/dec). Tipico: L=10&ndash;100 &mu;H, C=10&ndash;470 &mu;F per alimentatori DC.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-protection"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PROTEZIONE &amp; RIDUZIONE DISTURBI</div>
+  <div class="section-body">
+
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Snubber RC</div>
+        <p>Limita il dV/dt sui transistori di potenza durante la commutazione. Assorbe l'energia del picco induttivo.</p>
+        <div class="formula">
+          <span class="f-main">R<sub>s</sub> &asymp; &radic;(L<sub>par</sub>/C<sub>s</sub>)</span>
+          <span class="f-where">L<sub>par</sub> = induttanza parassita del layout. Tenere i loop di commutazione il pi&ugrave; piccoli possibile sul PCB.</span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">TVS &mdash; Transient Voltage Suppressor</div>
+        <p>Diodo Zener ottimizzato per picchi ad alta corrente (ESD, lightning, inductive kick). Risposta &lt; 1 ps. Disponibile unidirezionale e bidirezionale.</p>
+        <div class="formula">
+          <span class="f-main">P<sub>pulse</sub> = V<sub>Br</sub> &middot; I<sub>PP</sub> &le; P<sub>PP,max</sub></span>
+          <span class="f-where">Scegliere V<sub>Br</sub> &gt; V<sub>max,normale</sub> ma abbastanza bassa da proteggere il componente a valle.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Ferrite Bead</div>
+        <p>Induttore ad alta perdita per RF: presenta alta impedenza (resistiva) alle alte frequenze, filtrando i disturbi EMI senza creare risonanze. Usato in serie su alimentazioni e linee segnale.</p>
+        <div class="formula">
+          <span class="f-main">Z<sub>bead</sub> = R(f) + jX(f) &nbsp; (vedere datasheet)</span>
+          <span class="f-where">La corrente di saturazione riduce drasticamente Z. Scegliere il bead con Z massima alla frequenza del disturbo da attenuare.</span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Protezione ESD</div>
+        <table>
+          <tr><th>Modello</th><th>Tensione</th><th>Contesto</th></tr>
+          <tr><td>HBM (Human Body)</td><td>&asymp;1.5 kV</td><td>handling manuale</td></tr>
+          <tr><td>CDM (Charged Device)</td><td>0.5&ndash;1 kV</td><td>automazione PCB</td></tr>
+          <tr><td>IEC 61000-4-2</td><td>4&ndash;30 kV</td><td>livello sistema</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="anchor" id="s-practical"></a>
+<div class="section">
+  <div class="section-header"><span class="icon">&#9672;</span> PRATICHE ESSENZIALI &mdash; DECOUPLING, PULL-UP, PARTITORE, DEBOUNCE</div>
+  <div class="section-body">
+
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Condensatori di Bypass</div>
+        <p>Ogni IC deve avere condensatori di bypass il pi&ugrave; vicino possibile ai pin VCC. Filtrano i transitori di corrente ad alta frequenza che l'alimentatore non pu&ograve; seguire.</p>
+        <table>
+          <tr><th>Valore</th><th>Tipo</th><th>Scopo</th></tr>
+          <tr><td>100 nF</td><td>ceramico X7R/X5R</td><td>bypass HF (10&ndash;100 MHz)</td></tr>
+          <tr><td>10 &mu;F</td><td>ceramico o tantalio</td><td>bypass MF (1&ndash;10 MHz)</td></tr>
+          <tr><td>100 &mu;F</td><td>elettrolitico</td><td>bulk charge, bassa frequenza</td></tr>
+        </table>
+        <div class="note">100 nF ceramico su ogni pin VCC, il pi&ugrave; vicino possibile. Il via &egrave; pi&ugrave; vicino al pad IC che alla rete di alimentazione.</div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Pull-up e Pull-down</div>
+        <p>Definiscono lo stato logico in assenza di driver attivo (alta Z, bus I<sup>2</sup>C, switch).</p>
+        <table>
+          <tr><th>Tipo</th><th>Collegamento</th><th>Stato default</th></tr>
+          <tr><td>Pull-up</td><td>R verso VCC</td><td>HIGH (1)</td></tr>
+          <tr><td>Pull-down</td><td>R verso GND</td><td>LOW (0)</td></tr>
+        </table>
+        <div class="formula">
+          <span class="f-main">R<sub>pullup</sub> tipico: 1 k&Omega;&ndash;100 k&Omega;</span>
+          <span class="f-where">I<sup>2</sup>C: 4.7 k&Omega; a 100 kHz, 2.2 k&Omega; a 400 kHz, 1 k&Omega; a 1 MHz. R bassa = fronte veloce, ma corrente elevata (dispositivo in stato basso).</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="sub">
+        <div class="sub-title">Partitore di Tensione</div>
+        <div class="formula">
+          <span class="f-main">V<sub>out</sub> = V<sub>in</sub> &middot; R<sub>2</sub> / (R<sub>1</sub>+R<sub>2</sub>)</span>
+          <span class="f-sub">Z<sub>out</sub> = R<sub>1</sub>||R<sub>2</sub></span>
+          <span class="f-where">Valido se R<sub>carico</sub> &ge; 10&middot;R<sub>2</sub>. Per ADC: Z<sub>out</sub> &le; 1/10 dell'impedenza di ingresso ADC. Uso: adattamento 5V&rarr;3.3V, riferimenti, polarizzazione BJT.</span>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Debounce dei Contatti</div>
+        <p>Ogni contatto meccanico genera rimbalzi per 1&ndash;100 ms. Devono essere eliminati prima della logica digitale.</p>
+        <div class="formula">
+          <span class="label">RC + Schmitt trigger</span>
+          <span class="f-main">&tau; = RC &asymp; 10&ndash;50 ms &nbsp; (R=10 k&Omega;, C=1&ndash;10 &mu;F)</span>
+          <span class="f-where">Lo Schmitt trigger (es. 74HC14) ha isteresi: elimina le false commutazioni ai bordi. Debounce SW: due letture concordi a 20&ndash;50 ms di distanza.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Regole Pratiche di Layout PCB</div>
+      <table>
+        <tr><th>Regola</th><th>Motivo</th></tr>
+        <tr><td>Loop di commutazione il pi&ugrave; piccoli possibile</td><td>Riduce L<sub>par</sub> e EMI irradiata</td></tr>
+        <tr><td>Piano di massa continuo (ground plane)</td><td>Bassa impedenza di ritorno, schermatura</td></tr>
+        <tr><td>Separare masse analogica e digitale (star ground)</td><td>Evita iniezione di rumore digitale nel segnale analogico</td></tr>
+        <tr><td>Via del condensatore di bypass corto, vicino al pad</td><td>L del via riduce l'efficacia ad alta frequenza</td></tr>
+        <tr><td>Tracce differenziali di uguale lunghezza</td><td>Riduce Common-Mode noise e skew</td></tr>
+        <tr><td>Non attraversare slot nel piano di massa</td><td>Interrompe il ritorno della corrente, crea EMI</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script src="../assets/js/mobile.js"></script>
+<script>
+const sections = document.querySelectorAll('.anchor');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    const href = a.getAttribute('href').replace('#', '');
+    a.style.borderLeftColor = href === current ? 'var(--glow)' : 'transparent';
+    a.style.color = href === current ? 'var(--bright)' : '';
+  });
+});
+</script>
+</body>
+</html>
